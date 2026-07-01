@@ -1,44 +1,67 @@
 export default function Featured() {
+  const cards = [
+    {
+      title: "Wedding Stories",
+      category: "WEDDINGS",
+      image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80",
+    },
+    {
+      title: "Portraits",
+      category: "PORTRAITS",
+      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&q=80",
+    },
+    {
+      title: "Events",
+      category: "EVENTS",
+      image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&q=80",
+    },
+    {
+      title: "Food",
+      category: "FOOD",
+      image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",
+    },
+    {
+      title: "Industrial",
+      category: "INDUSTRIAL",
+      image: "https://images.unsplash.com/photo-1513828583688-c52646db42da?w=600&q=80",
+    },
+  ];
+
   return (
     <section className="featured">
 
-      <h2 className="section-title">
-        Featured Weddings
-      </h2>
+      <div className="container">
 
-      <div className="featured-grid">
+        <div className="featured-heading">
 
-        <div className="card">
-          <img
-            src="https://images.unsplash.com/photo-1519741497674-611481863552?w=900"
-            alt="Wedding"
-          />
+          <span>OUR DISCIPLINES</span>
 
-          <h3>Aditi & Rahul</h3>
+          <h2>
+            One eye,
+            <br />
+            <em>many languages.</em>
+          </h2>
 
-          <p>Pune</p>
         </div>
 
-        <div className="card">
-          <img
-            src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900"
-            alt="Wedding"
-          />
+        <div className="featured-grid">
 
-          <h3>Neha & Karan</h3>
+          {cards.map((card) => (
+            <div className="featured-card" key={card.title}>
 
-          <p>Mumbai</p>
-        </div>
+              <img src={card.image} alt={card.title} />
 
-        <div className="card">
-          <img
-            src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900"
-            alt="Wedding"
-          />
+              <div className="featured-overlay">
 
-          <h3>Riya & Akash</h3>
+                <span>{card.category}</span>
 
-          <p>Goa</p>
+                <h3>{card.title}</h3>
+
+              </div>
+
+            </div>
+          ))}
+
         </div>
 
       </div>

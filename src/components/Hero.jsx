@@ -6,10 +6,9 @@ export default function Hero() {
 
     <section className="hero">
 
-      <img
-        src={hero}
-        alt="Wedding Photography"
-      />
+      <img src={hero} alt="Wedding Couple" />
+
+      <div className="hero-overlay"></div>
 
       <div className="hero-content">
 

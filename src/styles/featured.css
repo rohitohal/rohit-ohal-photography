@@ -1,0 +1,118 @@
+/* ===============================
+   FEATURED
+================================ */
+
+.featured{
+    padding:120px 0;
+    background:#ffffff;
+}
+
+.featured-heading{
+    text-align:center;
+    margin-bottom:70px;
+}
+
+.featured-heading span{
+    display:block;
+    color:#8a8a8a;
+    font-size:13px;
+    letter-spacing:5px;
+    margin-bottom:18px;
+}
+
+.featured-heading h2{
+    font-family:"Cormorant Garamond",serif;
+    font-size:68px;
+    font-weight:400;
+    line-height:1.05;
+    color:#111;
+}
+
+.featured-heading em{
+    font-style:italic;
+    font-weight:300;
+}
+
+.featured-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:22px;
+}
+
+.featured-card{
+    position:relative;
+    overflow:hidden;
+    cursor:pointer;
+    border-radius:2px;
+}
+
+.featured-card img{
+    width:100%;
+    height:620px;
+    object-fit:cover;
+    transition:transform .7s ease;
+}
+
+.featured-card:hover img{
+    transform:scale(1.08);
+}
+
+.featured-overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top,
+        rgba(0,0,0,.75),
+        rgba(0,0,0,.15),
+        transparent);
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:35px;
+}
+
+.featured-overlay span{
+    color:#ffffff;
+    font-size:12px;
+    letter-spacing:4px;
+    margin-bottom:12px;
+}
+
+.featured-overlay h3{
+    color:#ffffff;
+    font-family:"Cormorant Garamond",serif;
+    font-size:34px;
+    font-weight:500;
+    line-height:1.1;
+}
+
+@media(max-width:1200px){
+
+.featured-grid{
+grid-template-columns:repeat(2,1fr);
+}
+
+.featured-card img{
+height:500px;
+}
+
+}
+
+@media(max-width:768px){
+
+.featured{
+padding:80px 0;
+}
+
+.featured-heading h2{
+font-size:42px;
+}
+
+.featured-grid{
+grid-template-columns:1fr;
+}
+
+.featured-card img{
+height:450px;
+}
+
+}

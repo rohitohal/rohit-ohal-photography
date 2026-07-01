@@ -1,27 +1,41 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
   return (
-    <nav className="navbar">
+    <header className="navbar">
+      <div className="container navbar-container">
 
-      <div className="logo">
-        Rohit Ohal
+        <NavLink to="/" className="logo">
+          Rohit Ohal
+        </NavLink>
+
+        <nav>
+          <ul className="nav-menu">
+
+            <li>
+              <NavLink to="/">HOME</NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/weddings">WEDDINGS</NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/journal">JOURNAL</NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/about">ABOUT</NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/contact">CONTACT</NavLink>
+            </li>
+
+          </ul>
+        </nav>
+
       </div>
-
-      <div className="nav-links">
-
-        <Link to="/">Home</Link>
-
-        <Link to="/weddings">Weddings</Link>
-
-        <Link to="/journal">Journal</Link>
-
-        <Link to="/about">About</Link>
-
-        <Link to="/contact">Contact</Link>
-
-      </div>
-
-    </nav>
+    </header>
   );
 }
