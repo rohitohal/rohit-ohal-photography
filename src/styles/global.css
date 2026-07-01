@@ -2,6 +2,10 @@
 @import "./hero.css";
 @import "./featured.css";
 @import "./about.css";
+@import "./journal.css";
+@import "./quote.css";
+@import "./cta.css";
+@import "./footer.css";
 
 *{
     margin:0;

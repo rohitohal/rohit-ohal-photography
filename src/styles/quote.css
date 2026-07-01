@@ -1,0 +1,47 @@
+/* ===================================
+   QUOTE
+=================================== */
+
+.quote{
+    background:#0c0c0c;
+    color:#fff;
+    text-align:center;
+    padding:180px 20px;
+}
+
+.quote-label{
+    display:block;
+    color:#c79c47;
+    letter-spacing:5px;
+    font-size:12px;
+    margin-bottom:40px;
+}
+
+.quote blockquote{
+    font-family:"Cormorant Garamond",serif;
+    font-size:48px;
+    line-height:1.5;
+    max-width:900px;
+    margin:auto;
+    font-style:italic;
+    font-weight:400;
+}
+
+.quote p{
+    margin-top:50px;
+    letter-spacing:5px;
+    font-size:12px;
+    color:#999;
+}
+
+@media(max-width:768px){
+
+.quote{
+padding:120px 25px;
+}
+
+.quote blockquote{
+font-size:34px;
+}
+
+}

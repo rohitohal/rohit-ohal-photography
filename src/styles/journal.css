@@ -1,0 +1,121 @@
+/* ===================================
+   JOURNAL
+=================================== */
+
+.journal{
+    background:#0c0c0c;
+    color:#ffffff;
+    padding:140px 0;
+}
+
+.journal-header{
+    margin-bottom:70px;
+}
+
+.journal-header span{
+    display:block;
+    color:#c79c47;
+    letter-spacing:4px;
+    font-size:12px;
+    margin-bottom:15px;
+}
+
+.journal-header h2{
+    font-family:"Cormorant Garamond",serif;
+    font-size:70px;
+    font-weight:400;
+}
+
+.journal-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:50px;
+}
+
+.journal-feature img{
+    width:100%;
+    height:550px;
+    object-fit:cover;
+}
+
+.journal-content{
+    margin-top:30px;
+}
+
+.journal-content span{
+    color:#c79c47;
+    font-size:12px;
+    letter-spacing:3px;
+}
+
+.journal-content h3{
+    margin:20px 0;
+    font-family:"Cormorant Garamond",serif;
+    font-size:42px;
+    font-weight:400;
+    line-height:1.2;
+}
+
+.journal-content a{
+    color:#ffffff;
+    letter-spacing:2px;
+    font-size:12px;
+}
+
+.journal-sidebar{
+    display:flex;
+    flex-direction:column;
+    gap:35px;
+}
+
+.journal-small{
+    display:flex;
+    gap:20px;
+}
+
+.journal-small img{
+    width:170px;
+    height:170px;
+    object-fit:cover;
+}
+
+.journal-small span{
+    color:#c79c47;
+    font-size:11px;
+    letter-spacing:3px;
+}
+
+.journal-small h4{
+    margin:15px 0;
+    font-family:"Cormorant Garamond",serif;
+    font-size:26px;
+    font-weight:400;
+    line-height:1.3;
+}
+
+.journal-small a{
+    color:#ffffff;
+    font-size:12px;
+    letter-spacing:2px;
+}
+
+@media(max-width:992px){
+
+.journal-grid{
+grid-template-columns:1fr;
+}
+
+.journal-small{
+flex-direction:column;
+}
+
+.journal-small img{
+width:100%;
+height:260px;
+}
+
+.journal-feature img{
+height:400px;
+}
+
+}
