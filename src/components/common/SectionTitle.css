@@ -1,0 +1,57 @@
+.section-title{
+
+    margin-bottom:70px;
+
+}
+
+.section-title.center{
+
+    text-align:center;
+
+}
+
+.section-title span{
+
+    display:block;
+
+    color:#c89a43;
+
+    letter-spacing:5px;
+
+    font-size:12px;
+
+    margin-bottom:20px;
+
+}
+
+.section-title h2{
+
+    font-family:"Cormorant Garamond",serif;
+
+    font-size:72px;
+
+    line-height:1;
+
+    font-weight:400;
+
+}
+
+.section-title em{
+
+    color:#c89a43;
+
+    font-style:italic;
+
+    font-weight:400;
+
+}
+
+@media(max-width:768px){
+
+.section-title h2{
+
+font-size:46px;
+
+}
+
+}

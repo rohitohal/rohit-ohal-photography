@@ -1,0 +1,59 @@
+.page-header{
+
+    height:70vh;
+
+    background-size:cover;
+
+    background-position:center;
+
+    position:relative;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+.page-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    background:rgba(0,0,0,.35);
+
+}
+
+.page-header-content{
+
+    position:relative;
+
+    z-index:10;
+
+    color:white;
+
+    text-align:center;
+
+}
+
+.page-header-content span{
+
+    letter-spacing:6px;
+
+    font-size:13px;
+
+}
+
+.page-header-content h1{
+
+    margin-top:20px;
+
+    font-family:"Cormorant Garamond",serif;
+
+    font-size:90px;
+
+    font-weight:400;
+
+}

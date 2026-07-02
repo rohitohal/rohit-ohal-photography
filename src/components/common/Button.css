@@ -1,0 +1,57 @@
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:18px 38px;
+
+    font-size:12px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+
+    cursor:pointer;
+
+    transition:.35s;
+
+    text-decoration:none;
+}
+
+/* Outline */
+
+.btn-outline{
+
+    border:1px solid #c89a43;
+
+    color:#ffffff;
+
+    background:transparent;
+
+}
+
+.btn-outline:hover{
+
+    background:#c89a43;
+
+    color:#111;
+
+}
+
+/* Solid */
+
+.btn-solid{
+
+    background:#c89a43;
+
+    color:#111;
+
+    border:1px solid #c89a43;
+
+}
+
+.btn-solid:hover{
+
+    background:#ffffff;
+
+    border-color:#ffffff;
+
+}
