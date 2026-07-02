@@ -1,5 +1,5 @@
 import Hero from "../components/home/Hero";
-import Featured from "../components/home/Featured";
+import SelectedDisciplines from "../components/home/SelectedDisciplines";
 import About from "../components/home/About";
 import Journal from "../components/home/Journal";
 import Quote from "../components/home/Quote";
@@ -10,11 +10,17 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <Featured />
+
+      <SelectedDisciplines />
+
       <About />
+
       <Journal />
+
       <Quote />
+
       <CTA />
+
       <Footer />
     </>
   );
