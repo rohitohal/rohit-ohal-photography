@@ -1,52 +1,36 @@
-import { useEffect, useState } from "react";
+import portfolio from "../data/portfolio";
 
-import PageHeader from "../components/common/PageHeader";
-import SectionTitle from "../components/common/SectionTitle";
-import Container from "../components/common/Container";
+import PageHero from "../components/common/PageHero";
 import PortfolioGrid from "../components/portfolio/PortfolioGrid";
 
-import { api } from "../services/api";
-
 export default function Weddings() {
-  const [weddings, setWeddings] = useState([]);
 
-  useEffect(() => {
-    async function loadData() {
-      const data = await api.getWeddings();
-      setWeddings(data);
-    }
-
-    loadData();
-  }, []);
+  const featured = portfolio.find(
+    (item) =>
+      item.discipline === "weddings" &&
+      item.featured
+  );
 
   return (
-    <>
-      <PageHeader
-        image="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80"
-        subtitle="LUXURY WEDDINGS"
+
+    <main>
+
+      <PageHero
+
+        eyebrow="PORTFOLIO"
+
         title="Wedding Stories"
+
+        description="Elegant wedding stories captured with honesty, emotion and timeless documentary storytelling."
+
+        image={featured.cover}
+
       />
 
-      <section className="weddings-intro">
-        <Container>
-          <SectionTitle
-            label="WEDDINGS"
-            title="Stories filled"
-            highlight="with emotion."
-          />
+      <PortfolioGrid category="weddings" />
 
-          <p>
-            Every wedding is unique. My approach is to document genuine
-            emotions, timeless moments, and beautiful stories.
-          </p>
+    </main>
 
-          <PortfolioGrid
-            items={weddings}
-            featured={true}
-            onSelect={(item) => console.log(item)}
-          />
-        </Container>
-      </section>
-    </>
   );
+
 }

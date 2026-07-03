@@ -1,24 +1,45 @@
+import { Link } from "react-router-dom";
+
 import "./PortfolioCard.css";
-import Image from "../common/Image";
 
-export default function PortfolioCard({
-  image,
-  title,
-  category,
-  onClick,
-  featured = false,
-}) {
+export default function PortfolioCard({ project }) {
   return (
-    <article
-      className={`portfolio-card ${featured ? "featured" : ""}`}
-      onClick={onClick}
+    <Link
+      to={`/${project.discipline}/${project.slug}`}
+      className="portfolio-card"
     >
-      <Image src={image} alt={title} className="portfolio-image" />
+      <div className="portfolio-image">
 
-      <div className="portfolio-overlay">
-        <span>{category}</span>
-        <h3>{title}</h3>
+        <img
+          src={project.cover}
+          alt={project.title}
+          loading="lazy"
+        />
+
       </div>
-    </article>
+
+      <div className="portfolio-content">
+
+        <span>
+
+          {project.location}
+
+        </span>
+
+        <h2>
+
+          {project.title}
+
+        </h2>
+
+        <p>
+
+          {project.description}
+
+        </p>
+
+      </div>
+
+    </Link>
   );
 }

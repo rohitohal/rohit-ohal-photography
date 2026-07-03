@@ -1,39 +1,68 @@
+import { Link } from "react-router-dom";
+import "./Footer.css";
+
 export default function Footer() {
   return (
     <footer className="footer">
 
-      <div className="container footer-container">
+      <div className="footer-container">
 
         <div className="footer-brand">
 
-          <h2>Rohit Ohal</h2>
+          <h2>ROHIT OHAL</h2>
 
-          <p>Photography</p>
+          <p>
+            Fine Art Wedding, Portrait, Commercial &
+            Editorial Photography.
+          </p>
 
         </div>
 
         <div className="footer-links">
 
-          <h4>Navigation</h4>
+          <div>
 
-          <a href="/">Home</a>
-          <a href="/weddings">Weddings</a>
-          <a href="/journal">Journal</a>
-          <a href="/about">About</a>
-          <a href="/contact">Contact</a>
+            <h4>Portfolio</h4>
 
-        </div>
+            <Link to="/weddings">Wedding Stories</Link>
 
-        <div className="footer-contact">
+            <Link to="/portraits">Portraits</Link>
 
-          <h4>Contact</h4>
+            <Link to="/events">Events</Link>
 
-          <p>Pune, Maharashtra</p>
-          <p>India</p>
+            <Link to="/industrial">Industrial</Link>
 
-          <br />
+            <Link to="/food">Food</Link>
 
-          <p>info@rohitohal.com</p>
+            <Link to="/editorial">Editorial</Link>
+
+          </div>
+
+          <div>
+
+            <h4>Company</h4>
+
+            <Link to="/about">About</Link>
+
+            <Link to="/journal">Journal</Link>
+
+            <Link to="/contact">Contact</Link>
+
+          </div>
+
+          <div>
+
+            <h4>Connect</h4>
+
+            <a href="#">Instagram</a>
+
+            <a href="#">Facebook</a>
+
+            <a href="#">WhatsApp</a>
+
+            <a href="#">Email</a>
+
+          </div>
 
         </div>
 
@@ -41,8 +70,11 @@ export default function Footer() {
 
       <div className="footer-bottom">
 
-        © 2026 Rohit Ohal Photography.
-        All Rights Reserved.
+        <p>
+
+          © 2026 Rohit Ohal Photography. All Rights Reserved.
+
+        </p>
 
       </div>
 

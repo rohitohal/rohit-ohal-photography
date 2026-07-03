@@ -1,110 +1,218 @@
-/* ===================================
-   NAVBAR
-=================================== */
+/* ==========================================
+   PREMIUM NAVBAR
+========================================== */
 
 .navbar{
     position:fixed;
     top:0;
     left:0;
     width:100%;
-    height:80px;
+    height:90px;
     z-index:1000;
-    background:rgba(10,10,10,.20);
+
+    background:transparent;
+
+    transition:
+        background .35s ease,
+        backdrop-filter .35s ease,
+        height .35s ease,
+        box-shadow .35s ease;
+}
+
+.navbar-scrolled{
+
+    height:72px;
+
+    background:rgba(15,15,15,.82);
+
     backdrop-filter:blur(18px);
-    transition:.35s ease;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.18);
+
 }
 
 .navbar-container{
+
     width:min(92%,1450px);
-    margin:auto;
+
     height:100%;
+
+    margin:auto;
+
     display:flex;
-    align-items:center;
+
     justify-content:space-between;
+
+    align-items:center;
+
 }
 
+/* ==========================================
+   LOGO
+========================================== */
+
 .navbar-logo{
-    text-decoration:none;
+
     color:#fff;
-    font-size:20px;
-    letter-spacing:6px;
-    font-weight:600;
-    transition:.3s;
+
+    text-decoration:none;
+
+    font-family:"Cormorant Garamond",serif;
+
+    font-size:34px;
+
+    letter-spacing:5px;
+
+    font-weight:500;
+
+    transition:.35s;
+
 }
 
 .navbar-logo:hover{
-    color:#d4af37;
+
+    color:#d6b25e;
+
 }
 
-/* ========================= */
+/* ==========================================
+   MENU
+========================================== */
 
 .navbar-links{
+
     display:flex;
+
     align-items:center;
-    gap:45px;
+
+    gap:46px;
+
 }
 
-.navbar-links>a,
+.navbar-links a,
+
 .portfolio-button{
-    color:#fff;
+
+    position:relative;
+
     background:none;
+
     border:none;
+
+    color:#fff;
+
     text-decoration:none;
-    cursor:pointer;
-    font-size:12px;
-    letter-spacing:3px;
+
     text-transform:uppercase;
-    transition:.3s;
+
+    font-size:12px;
+
+    letter-spacing:3px;
+
+    cursor:pointer;
+
+    transition:.35s;
+
 }
 
-.navbar-links>a:hover,
+/* underline animation */
+
+.navbar-links a::after,
+
+.portfolio-button::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    bottom:-8px;
+
+    width:0;
+
+    height:1px;
+
+    background:#d6b25e;
+
+    transition:.35s;
+
+}
+
+.navbar-links a:hover,
+
 .portfolio-button:hover{
-    color:#d4af37;
+
+    color:#d6b25e;
+
 }
 
-/* ========================= */
+.navbar-links a:hover::after,
+
+.portfolio-button:hover::after{
+
+    width:100%;
+
+}
+
+.navbar-links .active{
+
+    color:#d6b25e;
+
+}
+
+.navbar-links .active::after{
+
+    width:100%;
+
+}
+
+/* ==========================================
+   PORTFOLIO
+========================================== */
 
 .portfolio-wrapper{
-    position:relative;
-}
 
-/* ===================================
+    position:relative;
+
+}
+/* ==========================================
    MEGA MENU
-=================================== */
+========================================== */
 
 .mega-menu{
 
     position:absolute;
 
-    top:58px;
+    top:62px;
 
     left:50%;
 
     transform:translateX(-50%) translateY(20px);
 
-    width:920px;
+    width:1080px;
 
-    height:470px;
+    height:600px;
 
     display:flex;
 
     overflow:hidden;
 
-    background:#111;
+    border-radius:22px;
 
-    border-radius:12px;
+    background:#111;
 
     opacity:0;
 
     visibility:hidden;
 
-    transition:.35s ease;
+    transition:.4s ease;
 
-    box-shadow:0 25px 80px rgba(0,0,0,.45);
+    box-shadow:0 40px 120px rgba(0,0,0,.45);
 
 }
 
-.portfolio-wrapper:hover .mega-menu{
+.mega-menu.open{
 
     opacity:1;
 
@@ -114,15 +222,17 @@
 
 }
 
-/* ========================= */
+/* ==========================================
+   LEFT PANEL
+========================================== */
 
 .mega-left{
 
-    width:40%;
+    width:38%;
 
-    padding:38px;
+    background:#161616;
 
-    background:#101010;
+    padding:55px 45px;
 
     display:flex;
 
@@ -132,69 +242,81 @@
 
 }
 
-/* ========================= */
+/* ==========================================
+   MENU ITEMS
+========================================== */
 
 .mega-item{
 
     display:block;
 
+    padding:18px 0;
+
     text-decoration:none;
 
     color:#fff;
 
-    padding:18px 0;
+    border-bottom:1px solid rgba(255,255,255,.06);
 
-    border-bottom:1px solid rgba(255,255,255,.08);
-
-    transition:.3s;
+    transition:.35s;
 
 }
 
 .mega-item:last-child{
 
-    border:none;
+    border-bottom:none;
 
 }
 
 .mega-item h3{
 
+    margin:0 0 6px;
+
     font-family:"Cormorant Garamond",serif;
 
-    font-size:28px;
+    font-size:30px;
 
     font-weight:500;
 
-    margin-bottom:6px;
-
-    transition:.3s;
+    transition:.35s;
 
 }
 
 .mega-item p{
 
+    margin:0;
+
+    color:#8f8f8f;
+
     font-size:13px;
 
-    color:#9b9b9b;
+    line-height:1.6;
 
-    line-height:1.5;
+}
+
+.mega-item:hover{
+
+    padding-left:10px;
 
 }
 
 .mega-item:hover h3{
 
-    color:#d4af37;
-
-    padding-left:8px;
+    color:#d6b25e;
 
 }
 
-/* ========================= */
+/* ==========================================
+   IMAGE SIDE
+========================================== */
 
 .mega-right{
 
     position:relative;
 
-    width:60%;
+    width:62%;
+
+    overflow:hidden;
 
 }
 
@@ -206,19 +328,27 @@
 
     object-fit:cover;
 
-    border-radius:0 12px 12px 0;
-
-    transition:.5s;
+    transition:transform .7s ease;
 
 }
+
+.mega-menu:hover .mega-right img{
+
+    transform:scale(1.05);
+
+}
+
+/* ==========================================
+   IMAGE OVERLAY
+========================================== */
 
 .mega-image-overlay{
 
     position:absolute;
 
-    left:35px;
+    left:45px;
 
-    bottom:35px;
+    bottom:45px;
 
     color:#fff;
 
@@ -226,90 +356,226 @@
 
 .mega-image-overlay h2{
 
+    margin:0;
+
     font-family:"Cormorant Garamond",serif;
 
-    font-size:36px;
+    font-size:44px;
 
     font-weight:500;
-
-    margin-bottom:8px;
 
 }
 
 .mega-image-overlay span{
 
+    display:block;
+
+    margin-top:10px;
+
     font-size:13px;
 
-    letter-spacing:2px;
+    letter-spacing:3px;
 
     color:#ddd;
 
-}
+    text-transform:uppercase;
 
-/* ===================================
-   MOBILE
-=================================== */
+}
+/* ==========================================
+   MOBILE BUTTON
+========================================== */
 
 .mobile-button{
 
     display:none;
 
+    width:46px;
+
+    height:46px;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:28px;
+
+    color:#fff;
+
     background:none;
 
     border:none;
 
-    color:#fff;
-
-    font-size:28px;
-
     cursor:pointer;
+
+    transition:.35s;
 
 }
 
-@media(max-width:1024px){
+.mobile-button:hover{
+
+    color:#d6b25e;
+
+}
+
+/* ==========================================
+   MOBILE MENU
+========================================== */
+
+@media (max-width:1024px){
+
+.navbar{
+
+    height:80px;
+
+}
+
+.navbar-scrolled{
+
+    height:70px;
+
+}
 
 .mobile-button{
 
-display:block;
+    display:flex;
 
 }
 
 .navbar-links{
 
-position:fixed;
+    position:fixed;
 
-top:80px;
+    top:80px;
 
-right:-100%;
+    right:-100%;
 
-width:300px;
+    width:340px;
 
-height:calc(100vh - 80px);
+    height:calc(100vh - 80px);
 
-background:#111;
+    background:#111;
 
-flex-direction:column;
+    backdrop-filter:blur(20px);
 
-align-items:flex-start;
+    display:flex;
 
-padding:45px 30px;
+    flex-direction:column;
 
-gap:28px;
+    align-items:flex-start;
 
-transition:.35s;
+    padding:45px 35px;
+
+    gap:28px;
+
+    transition:.4s ease;
+
+    box-shadow:-20px 0 60px rgba(0,0,0,.25);
 
 }
 
 .navbar-links.active{
 
-right:0;
+    right:0;
+
+}
+
+.navbar-links a,
+
+.portfolio-button{
+
+    font-size:13px;
+
+    letter-spacing:2px;
 
 }
 
 .mega-menu{
 
-display:none;
+    display:none;
 
 }
+
+}
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width:768px){
+
+.navbar-logo{
+
+    font-size:28px;
+
+    letter-spacing:3px;
+
+}
+
+.navbar-container{
+
+    width:92%;
+
+}
+
+.navbar-links{
+
+    width:100%;
+
+}
+
+}
+
+/* ==========================================
+   SMALL MOBILE
+========================================== */
+
+@media (max-width:480px){
+
+.navbar{
+
+    height:72px;
+
+}
+
+.navbar-scrolled{
+
+    height:66px;
+
+}
+
+.mobile-button{
+
+    width:42px;
+
+    height:42px;
+
+    font-size:24px;
+
+}
+
+.navbar-logo{
+
+    font-size:24px;
+
+    letter-spacing:2px;
+
+}
+
+}
+
+/* ==========================================
+   SMOOTH ANIMATIONS
+========================================== */
+
+.navbar,
+.navbar-logo,
+.navbar-links a,
+.portfolio-button,
+.mobile-button,
+.mega-menu,
+.mega-item,
+.mega-right img{
+
+    will-change:transform,opacity;
 
 }

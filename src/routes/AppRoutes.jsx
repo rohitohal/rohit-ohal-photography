@@ -4,6 +4,7 @@ import MainLayout from "../layouts/MainLayout";
 
 import Home from "../pages/Home";
 import Weddings from "../pages/Weddings";
+import WeddingStory from "../pages/WeddingStory";
 import Journal from "../pages/Journal";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
@@ -11,6 +12,7 @@ import Contact from "../pages/Contact";
 export default function AppRoutes() {
   return (
     <Routes>
+
       <Route
         path="/"
         element={
@@ -25,6 +27,15 @@ export default function AppRoutes() {
         element={
           <MainLayout>
             <Weddings />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/weddings/:slug"
+        element={
+          <MainLayout>
+            <WeddingStory />
           </MainLayout>
         }
       />
@@ -55,6 +66,7 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
+
     </Routes>
   );
 }

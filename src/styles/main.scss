@@ -1,0 +1,34 @@
+/* ==========================================
+   ABSTRACTS
+========================================== */
+
+@use "./abstracts/variables";
+@use "./abstracts/mixins";
+@use "./abstracts/animations";
+
+/* ==========================================
+   BASE
+========================================== */
+
+@use "./base/reset";
+
+/* Typography will be added next */
+// @use "./base/typography";
+
+/* ==========================================
+   COMPONENTS
+========================================== */
+
+/* We'll migrate these one by one */
+// @use "./components/navbar";
+// @use "./components/hero";
+// @use "./components/footer";
+
+/* ==========================================
+   PAGES
+========================================== */
+
+// @use "./pages/home";
+// @use "./pages/about";
+// @use "./pages/contact";
+// @use "./pages/portfolio";

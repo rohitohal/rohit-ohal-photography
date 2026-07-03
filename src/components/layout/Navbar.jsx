@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 import "./Navbar.css";
@@ -8,19 +8,41 @@ export default function Navbar() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [megaMenu, setMegaMenu] = useState(false);
   const [active, setActive] = useState(disciplines[0]);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () =>
+      window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="navbar">
-
+    <header
+      className={
+        scrolled ? "navbar navbar-scrolled" : "navbar"
+      }
+    >
       <div className="navbar-container">
 
-        <Link to="/" className="navbar-logo">
-
-          <span>ROHIT OHAL</span>
-
+        <Link
+          to="/"
+          className="navbar-logo"
+        >
+          ROHIT OHAL
         </Link>
 
-        <nav className={mobileMenu ? "navbar-links active" : "navbar-links"}>
+        <nav
+          className={
+            mobileMenu
+              ? "navbar-links active"
+              : "navbar-links"
+          }
+        >
 
           <div
             className="portfolio-wrapper"
@@ -30,11 +52,17 @@ export default function Navbar() {
 
             <button className="portfolio-button">
 
-              PORTFOLIO
+              Portfolio
 
             </button>
 
-            <div className={megaMenu ? "mega-menu open" : "mega-menu"}>
+            <div
+              className={
+                megaMenu
+                  ? "mega-menu open"
+                  : "mega-menu"
+              }
+            >
 
               <div className="mega-left">
 
@@ -44,7 +72,9 @@ export default function Navbar() {
                     key={item.id}
                     to={item.slug}
                     className="mega-item"
-                    onMouseEnter={() => setActive(item)}
+                    onMouseEnter={() =>
+                      setActive(item)
+                    }
                   >
 
                     <h3>{item.title}</h3>
@@ -68,7 +98,9 @@ export default function Navbar() {
 
                   <h2>{active.title}</h2>
 
-                  <span>{active.description}</span>
+                  <span>
+                    {active.description}
+                  </span>
 
                 </div>
 
@@ -79,28 +111,24 @@ export default function Navbar() {
           </div>
 
           <NavLink to="/journal">
-
-            JOURNAL
-
+            Journal
           </NavLink>
 
           <NavLink to="/about">
-
-            ABOUT
-
+            About
           </NavLink>
 
           <NavLink to="/contact">
-
-            INQUIRE
-
+            Inquire
           </NavLink>
 
         </nav>
 
         <button
           className="mobile-button"
-          onClick={() => setMobileMenu(!mobileMenu)}
+          onClick={() =>
+            setMobileMenu(!mobileMenu)
+          }
         >
 
           ☰
@@ -108,7 +136,6 @@ export default function Navbar() {
         </button>
 
       </div>
-
     </header>
   );
 }

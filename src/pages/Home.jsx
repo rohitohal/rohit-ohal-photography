@@ -1,27 +1,29 @@
 import Hero from "../components/home/Hero";
 import SelectedDisciplines from "../components/home/SelectedDisciplines";
-import About from "../components/home/About";
-import Journal from "../components/home/Journal";
-import Quote from "../components/home/Quote";
-import CTA from "../components/home/CTA";
-import Footer from "../components/layout/Footer";
+import AboutPreview from "../components/home/AboutPreview";
+import WhyChooseMe from "../components/home/WhyChooseMe";
+import Testimonials from "../components/home/Testimonials";
+import JournalPreview from "../components/home/JournalPreview";
+import CallToAction from "../components/home/CallToAction";
 
 export default function Home() {
   return (
-    <>
+    <main>
+
       <Hero />
 
       <SelectedDisciplines />
 
-      <About />
+      <AboutPreview />
 
-      <Journal />
+      <WhyChooseMe />
 
-      <Quote />
+      <Testimonials />
 
-      <CTA />
+      <JournalPreview />
 
-      <Footer />
-    </>
+      <CallToAction />
+
+    </main>
   );
 }

@@ -1,42 +1,33 @@
-import "./PortfolioGrid.css";
+import portfolio from "../../data/portfolio";
 import PortfolioCard from "./PortfolioCard";
 
-export default function PortfolioGrid({
+import "./PortfolioGrid.css";
 
-    items=[],
+export default function PortfolioGrid({ category }) {
 
-    featured=false,
+  const projects = portfolio.filter(
+    (item) => item.discipline === category
+  );
 
-    onSelect
+  return (
 
-}){
+    <section className="portfolio-grid">
 
-    return(
+      <div className="portfolio-grid-container">
 
-        <section className="portfolio-grid">
+        {projects.map((project) => (
 
-            {items.map((item)=>(
+          <PortfolioCard
+            key={project.id}
+            project={project}
+          />
 
-                <PortfolioCard
+        ))}
 
-                    key={item.id}
+      </div>
 
-                    image={item.cover}
+    </section>
 
-                    title={item.title}
-
-                    category={item.location}
-
-                    featured={featured}
-
-                    onClick={()=>onSelect?.(item)}
-
-                />
-
-            ))}
-
-        </section>
-
-    );
+  );
 
 }

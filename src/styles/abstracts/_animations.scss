@@ -1,0 +1,173 @@
+/* ==========================================
+   FADE
+========================================== */
+
+@keyframes fadeIn {
+
+    from{
+        opacity:0;
+    }
+
+    to{
+        opacity:1;
+    }
+
+}
+
+/* ==========================================
+   FADE UP
+========================================== */
+
+@keyframes fadeUp {
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(50px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   FADE DOWN
+========================================== */
+
+@keyframes fadeDown {
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(-40px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   SCALE
+========================================== */
+
+@keyframes scaleIn {
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.92);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ==========================================
+   HERO ZOOM
+========================================== */
+
+@keyframes heroZoom {
+
+    from{
+
+        transform:scale(1.08);
+
+    }
+
+    to{
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ==========================================
+   SCROLL INDICATOR
+========================================== */
+
+@keyframes scrollLine {
+
+    from{
+
+        transform:translateY(-100%);
+
+    }
+
+    to{
+
+        transform:translateY(220%);
+
+    }
+
+}
+
+/* ==========================================
+   FLOAT
+========================================== */
+
+@keyframes floating {
+
+    0%{
+
+        transform:translateY(0);
+
+    }
+
+    50%{
+
+        transform:translateY(-8px);
+
+    }
+
+    100%{
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   ROTATE
+========================================== */
+
+@keyframes slowRotate {
+
+    from{
+
+        transform:rotate(0deg);
+
+    }
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
