@@ -1,0 +1,51 @@
+/* ==========================================
+   FORM SYSTEM
+========================================== */
+
+.contact-form{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea{
+
+    width:100%;
+
+    padding:18px 22px;
+
+    border:1px solid #e8e3d8;
+
+    background:#fff;
+
+    font-size:1rem;
+
+    font-family:"Inter",sans-serif;
+
+    transition:.3s;
+
+    outline:none;
+
+    border-radius:8px;
+
+}
+
+.contact-form input:focus,
+.contact-form select:focus,
+.contact-form textarea:focus{
+
+    border-color:#B58B43;
+
+    box-shadow:0 0 0 4px rgba(181,139,67,.12);
+
+}
+
+.contact-form textarea{
+
+    resize:vertical;
+
+    min-height:180px;
+
+}

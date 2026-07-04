@@ -12,8 +12,8 @@
 
 @use "./base/reset";
 
-/* Typography will be added next */
-// @use "./base/typography";
+/* Typography */
+@use "./base/typography";
 
 /* ==========================================
    COMPONENTS
@@ -23,6 +23,8 @@
 // @use "./components/navbar";
 // @use "./components/hero";
 // @use "./components/footer";
+@use "./components/buttons";
+@use "./components/forms";
 
 /* ==========================================
    PAGES

@@ -1,0 +1,54 @@
+/* ==========================================
+   BUTTON SYSTEM
+========================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px 42px;
+
+  border: 1px solid #b58b43;
+
+  background: transparent;
+
+  color: #151515;
+
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  letter-spacing: 2px;
+  text-transform: uppercase;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition: all 0.35s ease;
+}
+
+.btn:hover {
+  background: #b58b43;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.btn-dark {
+  background: #111;
+  color: #fff;
+}
+
+.btn-dark:hover {
+  background: #b58b43;
+}
+
+.btn-light {
+  background: #fff;
+  color: #111;
+}
+
+.btn-full {
+  width: 100%;
+}

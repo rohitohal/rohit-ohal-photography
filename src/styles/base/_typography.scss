@@ -1,0 +1,53 @@
+/* ==========================================
+   TYPOGRAPHY SYSTEM
+========================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 400;
+  color: #151515;
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 1;
+}
+
+h2 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.1;
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+p {
+  font-family: "Inter", sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: #666;
+}
+
+.section-tag {
+  display: inline-block;
+  color: #b58b43;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.section-title {
+  margin-bottom: 2rem;
+}
+
+.section {
+  padding: 120px 0;
+}
