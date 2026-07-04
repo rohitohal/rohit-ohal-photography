@@ -125,3 +125,31 @@
 }
 
 }
+/* ==========================================
+   WEDDING INTRO
+========================================== */
+
+.wedding-intro{
+    padding:120px 0;
+    background:#fff;
+}
+
+.wedding-intro .container{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:80px;
+    align-items:start;
+}
+
+.intro-right p{
+    margin-bottom:28px;
+}
+
+@media(max-width:900px){
+
+.wedding-intro .container{
+    grid-template-columns:1fr;
+    gap:40px;
+}
+
+}

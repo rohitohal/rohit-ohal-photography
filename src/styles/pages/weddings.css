@@ -1,0 +1,123 @@
+/* =====================================================
+   WEDDINGS PAGE
+===================================================== */
+
+.weddings-page{
+    width:100%;
+    background:#fff;
+}
+
+/* =====================================================
+   INTRO
+===================================================== */
+
+.wedding-intro{
+    padding:120px 0;
+    background:#fff;
+}
+
+.wedding-intro .container{
+    width:min(92%,1320px);
+    margin:auto;
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:90px;
+    align-items:start;
+}
+
+.intro-left span{
+    display:block;
+    margin-bottom:18px;
+
+    font-size:12px;
+    letter-spacing:4px;
+    text-transform:uppercase;
+
+    color:#b58b43;
+}
+
+.intro-left h2{
+    font-family:"Cormorant Garamond",serif;
+    font-size:64px;
+    font-weight:400;
+    line-height:1.08;
+
+    color:#151515;
+}
+
+.intro-right p{
+
+    font-size:18px;
+
+    line-height:2;
+
+    color:#666;
+
+    margin-bottom:32px;
+}
+
+/* =====================================================
+   PLACEHOLDERS
+===================================================== */
+
+.featured-stories,
+.wedding-gallery,
+.client-experience,
+.wedding-faq,
+.wedding-cta{
+
+    padding:120px 0;
+
+    text-align:center;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width:992px){
+
+.wedding-intro{
+
+    padding:90px 0;
+
+}
+
+.wedding-intro .container{
+
+    grid-template-columns:1fr;
+
+    gap:50px;
+
+}
+
+.intro-left h2{
+
+    font-size:48px;
+
+}
+
+}
+
+@media (max-width:768px){
+
+.wedding-intro{
+
+    padding:70px 20px;
+
+}
+
+.intro-left h2{
+
+    font-size:40px;
+
+}
+
+.intro-right p{
+
+    font-size:16px;
+
+}
+
+}
