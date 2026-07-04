@@ -1,29 +1,48 @@
-export const weddings = [
+const weddings = [
   {
     id: 1,
-    slug: "aditi-akshay",
-    title: "Aditi & Akshay",
-    location: "Pune, India",
+    slug: "royal-pune-wedding",
+    title: "Royal Pune Wedding",
+    subtitle: "Elegant Maharashtrian Wedding",
+    location: "Pune",
+    year: "2025",
+
     cover:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80",
+      "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1200&q=80",
+
     featured: true,
+
+    images: [
+      "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1623077283124-91a9f5b2d59b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&w=1200&q=80"
+    ]
   },
+
   {
     id: 2,
-    slug: "riya-rohan",
-    title: "Riya & Rohan",
-    location: "Goa, India",
+    slug: "destination-wedding",
+
+    title: "Destination Wedding",
+
+    subtitle: "Luxury Celebration",
+
+    location: "Jaipur",
+
+    year: "2025",
+
     cover:
-      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1200&q=80",
-    featured: true,
-  },
-  {
-    id: 3,
-    slug: "megha-karan",
-    title: "Megha & Karan",
-    location: "Jaipur, India",
-    cover:
-      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=1200&q=80",
-    featured: true,
-  },
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+
+    featured: false,
+
+    images: [
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80"
+    ]
+  }
 ];
+
+export default weddings;

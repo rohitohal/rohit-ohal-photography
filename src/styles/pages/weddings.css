@@ -121,3 +121,408 @@
 }
 
 }
+/* ==========================================
+   FEATURED STORY
+========================================== */
+
+.featured-story{
+
+    padding:140px 0;
+
+    background:#faf8f3;
+
+}
+
+.featured-story-content{
+
+    display:grid;
+
+    grid-template-columns:1fr 1.2fr;
+
+    gap:90px;
+
+    align-items:center;
+
+}
+
+.featured-story-text h2{
+
+    font-family:"Cormorant Garamond",serif;
+
+    font-size:64px;
+
+    line-height:1.08;
+
+    margin:25px 0;
+
+    color:#151515;
+
+}
+
+.featured-story-text p{
+
+    font-size:18px;
+
+    line-height:2;
+
+    color:#666;
+
+    margin-bottom:45px;
+
+}
+
+.featured-story-image{
+
+    overflow:hidden;
+
+    border-radius:14px;
+
+}
+
+.featured-story-image img{
+
+    width:100%;
+
+    display:block;
+
+    transition:.6s;
+
+}
+
+.featured-story-image:hover img{
+
+    transform:scale(1.05);
+
+}
+
+@media(max-width:992px){
+
+.featured-story-content{
+
+    grid-template-columns:1fr;
+
+}
+
+.featured-story-text{
+
+    order:2;
+
+}
+
+.featured-story-image{
+
+    order:1;
+
+}
+
+.featured-story-text h2{
+
+    font-size:48px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.featured-story{
+
+    padding:90px 0;
+
+}
+
+.featured-story-text h2{
+
+    font-size:40px;
+
+}
+
+.featured-story-text p{
+
+    font-size:16px;
+
+}
+
+}
+/* ==========================================
+   GALLERY
+========================================== */
+
+.gallery-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:40px;
+
+    margin-top:80px;
+
+}
+
+.gallery-card{
+
+    display:block;
+
+    text-decoration:none;
+
+    color:inherit;
+
+    overflow:hidden;
+
+    border-radius:18px;
+
+    background:#fff;
+
+    box-shadow:0 18px 45px rgba(0,0,0,.08);
+
+    transition:.35s;
+
+}
+
+.gallery-card:hover{
+
+    transform:translateY(-8px);
+
+}
+
+.gallery-image{
+
+    overflow:hidden;
+
+}
+
+.gallery-image img{
+
+    width:100%;
+
+    height:520px;
+
+    object-fit:cover;
+
+    display:block;
+
+    transition:.6s;
+
+}
+
+.gallery-card:hover img{
+
+    transform:scale(1.08);
+
+}
+
+.gallery-overlay{
+
+    padding:32px;
+
+}
+
+.gallery-overlay span{
+
+    display:block;
+
+    color:#b58b43;
+
+    font-size:12px;
+
+    letter-spacing:3px;
+
+    text-transform:uppercase;
+
+    margin-bottom:12px;
+
+}
+
+.gallery-overlay h3{
+
+    font-family:"Cormorant Garamond",serif;
+
+    font-size:38px;
+
+    font-weight:500;
+
+    margin-bottom:12px;
+
+    color:#151515;
+
+}
+
+.gallery-overlay p{
+
+    color:#666;
+
+    line-height:1.8;
+
+}
+
+@media(max-width:992px){
+
+.gallery-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.gallery-image img{
+
+    height:420px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.gallery-overlay{
+
+    padding:24px;
+
+}
+
+.gallery-overlay h3{
+
+    font-size:30px;
+
+}
+
+.gallery-image img{
+
+    height:340px;
+
+}
+
+}
+/* ==========================
+   Featured Stories
+========================== */
+
+.featured-stories{
+    padding:120px 0;
+}
+
+.featured-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:32px;
+    margin-top:60px;
+}
+
+.featured-card{
+    background:#fff;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 15px 40px rgba(0,0,0,.08);
+    transition:.35s ease;
+}
+
+.featured-card:hover{
+    transform:translateY(-8px);
+}
+
+.featured-image{
+    overflow:hidden;
+}
+
+.featured-image img{
+    width:100%;
+    height:420px;
+    object-fit:cover;
+    display:block;
+    transition:.5s;
+}
+
+.featured-card:hover img{
+    transform:scale(1.08);
+}
+
+.featured-content{
+    padding:28px;
+}
+
+.featured-content small{
+    color:#B58B43;
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:12px;
+}
+
+.featured-content h3{
+    margin:12px 0;
+    font-size:30px;
+    font-family:"Cormorant Garamond",serif;
+    color:#151515;
+}
+
+.featured-content p{
+    color:#666;
+    margin-bottom:24px;
+}
+
+.featured-btn{
+    color:#151515;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+}
+
+.featured-btn:hover{
+    color:#B58B43;
+}
+
+@media(max-width:992px){
+
+.featured-grid{
+    grid-template-columns:1fr;
+}
+
+.featured-image img{
+    height:360px;
+}
+
+}
+/*==================================
+Wedding Gallery
+==================================*/
+
+.wedding-gallery-section{
+    padding:120px 0;
+}
+
+.portfolio-gallery{
+    margin-top:60px;
+}
+
+.masonry-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(380px,1fr));
+
+    gap:32px;
+
+}
+
+.masonry-item{
+
+    display:flex;
+
+}
+
+.gallery-card{
+
+    width:100%;
+
+}
+
+@media(max-width:768px){
+
+.masonry-grid{
+
+    grid-template-columns:1fr;
+
+    gap:24px;
+
+}
+
+}
