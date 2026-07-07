@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
 import "./Navbar.css";
 import { disciplines } from "../../data/disciplines";
@@ -9,6 +9,9 @@ export default function Navbar() {
   const [megaMenu, setMegaMenu] = useState(false);
   const [active, setActive] = useState(disciplines[0]);
   const [scrolled, setScrolled] = useState(false);
+
+  const location = useLocation();
+  const isHome = location.pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,15 +26,19 @@ export default function Navbar() {
 
   return (
     <header
-      className={
-        scrolled ? "navbar navbar-scrolled" : "navbar"
-      }
+      className={`navbar ${
+        scrolled || !isHome ? "navbar-scrolled" : ""
+      }`}
     >
       <div className="navbar-container">
 
         <Link
           to="/"
           className="navbar-logo"
+          onClick={() => {
+            setMegaMenu(false);
+            setMobileMenu(false);
+          }}
         >
           ROHIT OHAL
         </Link>
@@ -44,17 +51,28 @@ export default function Navbar() {
           }
         >
 
+          {/* Portfolio */}
+
           <div
             className="portfolio-wrapper"
             onMouseEnter={() => setMegaMenu(true)}
             onMouseLeave={() => setMegaMenu(false)}
           >
 
-            <button className="portfolio-button">
-
+            <NavLink
+              to="/portfolio"
+              className={({ isActive }) =>
+                isActive
+                  ? "portfolio-button active"
+                  : "portfolio-button"
+              }
+              onClick={() => {
+                setMegaMenu(false);
+                setMobileMenu(false);
+              }}
+            >
               Portfolio
-
-            </button>
+            </NavLink>
 
             <div
               className={
@@ -72,11 +90,12 @@ export default function Navbar() {
                     key={item.id}
                     to={item.slug}
                     className="mega-item"
-                    onMouseEnter={() =>
-                      setActive(item)
-                    }
+                    onMouseEnter={() => setActive(item)}
+                    onClick={() => {
+                      setMegaMenu(false);
+                      setMobileMenu(false);
+                    }}
                   >
-
                     <h3>{item.title}</h3>
 
                     <p>{item.description}</p>
@@ -98,9 +117,7 @@ export default function Navbar() {
 
                   <h2>{active.title}</h2>
 
-                  <span>
-                    {active.description}
-                  </span>
+                  <span>{active.description}</span>
 
                 </div>
 
@@ -110,15 +127,24 @@ export default function Navbar() {
 
           </div>
 
-          <NavLink to="/journal">
+          <NavLink
+            to="/journal"
+            onClick={() => setMobileMenu(false)}
+          >
             Journal
           </NavLink>
 
-          <NavLink to="/about">
+          <NavLink
+            to="/about"
+            onClick={() => setMobileMenu(false)}
+          >
             About
           </NavLink>
 
-          <NavLink to="/contact">
+          <NavLink
+            to="/contact"
+            onClick={() => setMobileMenu(false)}
+          >
             Inquire
           </NavLink>
 
@@ -130,9 +156,7 @@ export default function Navbar() {
             setMobileMenu(!mobileMenu)
           }
         >
-
           ☰
-
         </button>
 
       </div>

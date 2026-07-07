@@ -6,7 +6,7 @@ export default function Contact() {
     <>
       <PageHero
         title="Let's Create Something Beautiful"
-        subtitle="Whether you're planning a wedding, portrait session, commercial project or destination wedding, I'd love to hear your story."
+        description="Whether you're planning a wedding, portrait session, commercial project or destination wedding, I'd love to hear your story."
         image={heroImage}
       />
 
@@ -155,7 +155,7 @@ export default function Contact() {
               <textarea
                 rows={7}
                 placeholder="Tell me about your wedding or project..."
-              ></textarea>
+              />
 
               <button
                 type="submit"

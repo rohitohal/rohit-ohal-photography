@@ -16,7 +16,7 @@ export default function Weddings() {
     <>
       <PageHero
         title="Wedding Stories"
-        subtitle="Elegant, emotional and timeless wedding photography captured with honesty and artistry."
+        description="Elegant, emotional and timeless wedding photography captured with honesty and artistry."
         image={heroImage}
       />
 

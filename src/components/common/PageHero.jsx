@@ -1,36 +1,37 @@
 import "./PageHero.css";
 
 export default function PageHero({
-  eyebrow,
   title,
+  subtitle,
   description,
-  image
+  image,
 }) {
   return (
     <section
-      className="page-hero-section"
+      className="page-hero"
       style={{
-        backgroundImage: `url(${image})`,
+        background: image
+          ? `linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url(${image}) center/cover no-repeat`
+          : "#222",
       }}
     >
-      <div className="page-hero-overlay"></div>
+      <div className="page-hero-content">
 
-      <div className="page-hero-container">
-
-        <span className="page-hero-eyebrow">
-          {eyebrow}
+        <span className="hero-label">
+          ROHIT OHAL PHOTOGRAPHY
         </span>
 
-        <h1 className="page-hero-title">
-          {title}
-        </h1>
+        <h1>{title}</h1>
 
-        <p className="page-hero-description">
-          {description}
-        </p>
+        {(subtitle || description) && (
+          <p>{subtitle || description}</p>
+        )}
+
+        <div className="hero-scroll">
+          <span></span>
+        </div>
 
       </div>
-
     </section>
   );
 }

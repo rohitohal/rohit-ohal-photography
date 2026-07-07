@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 
 import Home from "../pages/Home";
+import Portfolio from "../pages/Portfolio";
 import Weddings from "../pages/Weddings";
 import WeddingStory from "../pages/WeddingStory";
 import Journal from "../pages/Journal";
@@ -18,6 +19,15 @@ export default function AppRoutes() {
         element={
           <MainLayout>
             <Home />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/portfolio"
+        element={
+          <MainLayout>
+            <Portfolio />
           </MainLayout>
         }
       />

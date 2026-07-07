@@ -1,57 +1,100 @@
-.discipline-card{
-    position:relative;
-    display:block;
-    overflow:hidden;
-    aspect-ratio:3/4;
-    text-decoration:none;
-    color:#fff;
+.portfolio-card {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  text-decoration: none;
+  color: #fff;
+  background: #000;
 }
 
-.discipline-card img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    transition:transform .6s ease;
+.portfolio-image {
+  position: relative;
+  overflow: hidden;
 }
 
-.discipline-overlay{
-    position:absolute;
-    inset:0;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    padding:30px;
-    background:linear-gradient(
-        transparent,
-        rgba(0,0,0,.75)
+.portfolio-image img {
+  width: 100%;
+  display: block;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.8s ease;
+}
+
+.portfolio-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 30px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.32) 40%,
+    rgba(0, 0, 0, 0) 70%
+  );
+
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.portfolio-meta {
+  transform: translateY(16px);
+  transition: transform 0.35s ease;
+}
+
+.portfolio-category {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.portfolio-meta h2 {
+  margin: 0;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.portfolio-meta p {
+  margin: 10px 0 0;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.portfolio-card:hover .portfolio-image img {
+  transform: scale(1.05);
+}
+
+.portfolio-card:hover .portfolio-overlay {
+  opacity: 1;
+}
+
+.portfolio-card:hover .portfolio-meta {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .portfolio-overlay {
+    opacity: 1;
+    padding: 22px;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.68),
+      rgba(0, 0, 0, 0.1)
     );
-}
+  }
 
-.discipline-overlay span{
-    font-size:11px;
-    letter-spacing:3px;
-    text-transform:uppercase;
-    color:#d4af37;
-    margin-bottom:10px;
-}
+  .portfolio-meta {
+    transform: none;
+  }
 
-.discipline-overlay h3{
-    font-size:38px;
-    font-family:"Cormorant Garamond",serif;
-    margin-bottom:10px;
-}
-
-.discipline-overlay p{
-    opacity:0;
-    transform:translateY(15px);
-    transition:.4s;
-}
-
-.discipline-card:hover img{
-    transform:scale(1.08);
-}
-
-.discipline-card:hover .discipline-overlay p{
-    opacity:1;
-    transform:translateY(0);
+  .portfolio-meta h2 {
+    font-size: 28px;
+  }
 }

@@ -71,3 +71,37 @@
 }
 
 }
+.portfolio-image {
+  position: relative;
+}
+
+.portfolio-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #1a1a1a 0%,
+    #2a2a2a 50%,
+    #1a1a1a 100%
+  );
+  background-size: 300% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.portfolio-image img {
+  opacity: 0;
+  transition: opacity 0.45s ease, transform 0.8s ease;
+}
+
+.portfolio-image img.loaded {
+  opacity: 1;
+}
+
+@keyframes skeleton-loading {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}

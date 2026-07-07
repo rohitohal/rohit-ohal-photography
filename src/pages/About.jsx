@@ -15,7 +15,7 @@ export default function About() {
     <>
       <PageHero
         title="About"
-        subtitle="The story, philosophy and passion behind Rohit Ohal Photography."
+        description="The story, philosophy and passion behind Rohit Ohal Photography."
         image={heroImage}
       />
 
