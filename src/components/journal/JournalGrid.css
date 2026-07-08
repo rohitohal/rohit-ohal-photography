@@ -1,0 +1,47 @@
+.journal-grid {
+    width: min(92%, 1400px);
+
+    margin: 120px auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(420px,1fr)
+        );
+
+    gap: 40px;
+}
+
+.journal-empty {
+    padding: 200px 20px;
+
+    text-align: center;
+}
+
+.journal-empty h2 {
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 56px;
+
+    font-weight: 500;
+}
+
+.journal-empty p {
+    color: #666;
+
+    font-size: 18px;
+}
+
+@media (max-width:768px) {
+
+    .journal-grid {
+        grid-template-columns: 1fr;
+
+        margin: 80px auto;
+    }
+
+}

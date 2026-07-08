@@ -13,6 +13,7 @@ import WeddingStory from "../pages/WeddingStory";
 import Journal from "../pages/Journal";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
+import JournalPost from "../pages/JournalPost";
 
 export default function AppRoutes() {
   return (
@@ -114,7 +115,14 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
-
+      <Route
+        path="/journal/:slug"
+        element={
+          <MainLayout>
+      <JournalPost />
+          </MainLayout>
+        }
+/>
     </Routes>
   );
 }
