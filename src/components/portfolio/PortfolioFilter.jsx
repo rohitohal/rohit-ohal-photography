@@ -1,14 +1,40 @@
 import "./PortfolioFilter.css";
 
 const FILTERS = [
-  { label: "All", value: "all" },
-  { label: "Weddings", value: "wedding" },
-  { label: "Portraits", value: "portrait" },
-  { label: "Commercial", value: "commercial" },
-  { label: "Industrial", value: "industrial" },
-  { label: "Food", value: "food" },
-  { label: "Events", value: "event" },
-  { label: "Editorial", value: "editorial" },
+  {
+    label: "All",
+    value: "all",
+  },
+
+  {
+    label: "Weddings",
+    value: "weddings",
+  },
+
+  {
+    label: "Portraits",
+    value: "portraits",
+  },
+
+  {
+    label: "Industrial",
+    value: "industrial",
+  },
+
+  {
+    label: "Food & Beverage",
+    value: "food-beverage",
+  },
+
+  {
+    label: "Events",
+    value: "events",
+  },
+
+  {
+    label: "Editorial",
+    value: "editorial",
+  },
 ];
 
 export default function PortfolioFilter({
@@ -16,7 +42,10 @@ export default function PortfolioFilter({
   onChange,
 }) {
   return (
-    <nav className="portfolio-filter" aria-label="Portfolio Categories">
+    <nav
+      className="portfolio-filter"
+      aria-label="Portfolio Categories"
+    >
       {FILTERS.map((filter) => (
         <button
           key={filter.value}
@@ -26,7 +55,9 @@ export default function PortfolioFilter({
               ? "portfolio-filter-btn active"
               : "portfolio-filter-btn"
           }
-          onClick={() => onChange(filter.value)}
+          onClick={() =>
+            onChange(filter.value)
+          }
         >
           {filter.label}
         </button>

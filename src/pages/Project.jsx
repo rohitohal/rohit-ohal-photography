@@ -1,27 +1,65 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
 
 import portfolio from "../data/portfolio";
+
 import PageHero from "../components/common/PageHero";
+
+import "./Project.css";
 
 export default function Project() {
   const { projectSlug } = useParams();
 
-  const project = portfolio.find(
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+
+  const projectIndex = portfolio.findIndex(
     (item) => item.slug === projectSlug
   );
 
+  const project = portfolio[projectIndex];
+
+  const previousProject =
+    projectIndex > 0
+      ? portfolio[projectIndex - 1]
+      : null;
+
+  const nextProject =
+    projectIndex < portfolio.length - 1
+      ? portfolio[projectIndex + 1]
+      : null;
+
   if (!project) {
     return (
-      <div
-        style={{
-          padding: "200px 20px",
-          textAlign: "center",
-        }}
-      >
+      <div className="project-not-found">
         <h1>Project not found</h1>
       </div>
     );
   }
+
+  const openLightbox = (index) => {
+    setActiveImage(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
+  const nextImage = () => {
+    setActiveImage(
+      (prev) => (prev + 1) % project.gallery.length
+    );
+  };
+
+  const previousImage = () => {
+    setActiveImage(
+      (prev) =>
+        prev === 0
+          ? project.gallery.length - 1
+          : prev - 1
+    );
+  };
 
   return (
     <>
@@ -31,46 +69,130 @@ export default function Project() {
         image={project.cover}
       />
 
-      <section
-        style={{
-          maxWidth: "1200px",
-          margin: "100px auto",
-          padding: "0 20px",
-        }}
-      >
-        <h2>{project.title}</h2>
+      <section className="project-page">
 
-        <p>
-          {project.description ||
-            "Project description coming soon."}
-        </p>
+        <div className="project-container">
 
-        {project.gallery && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit,minmax(350px,1fr))",
-              gap: "24px",
-              marginTop: "50px",
+          <div className="project-meta">
+
+            <div>
+              <span>Location</span>
+              <h3>{project.location}</h3>
+            </div>
+
+            <div>
+              <span>Year</span>
+              <h3>{project.year}</h3>
+            </div>
+
+            <div>
+              <span>Discipline</span>
+              <h3>{project.discipline}</h3>
+            </div>
+
+          </div>
+
+          <div className="project-story">
+
+            <h2>Project Story</h2>
+
+            <p>
+              {project.description ||
+                "Project description coming soon."}
+            </p>
+
+          </div>
+
+          {project.gallery && (
+            <div className="project-gallery">
+
+              {project.gallery.map(
+                (image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={project.title}
+                    onClick={() => openLightbox(index)}
+                  />
+                )
+              )}
+
+            </div>
+          )}
+
+          <div className="project-navigation">
+
+            {previousProject ? (
+              <Link
+                to={`/portfolio/${previousProject.discipline}/${previousProject.slug}`}
+                className="project-nav-link"
+              >
+                ← {previousProject.title}
+              </Link>
+            ) : (
+              <div />
+            )}
+
+            {nextProject ? (
+              <Link
+                to={`/portfolio/${nextProject.discipline}/${nextProject.slug}`}
+                className="project-nav-link"
+              >
+                {nextProject.title} →
+              </Link>
+            ) : (
+              <div />
+            )}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {lightboxOpen && (
+        <div
+          className="lightbox"
+          onClick={closeLightbox}
+        >
+
+          <button
+            className="lightbox-close"
+            onClick={closeLightbox}
+          >
+            ×
+          </button>
+
+          <button
+            className="lightbox-prev"
+            onClick={(e) => {
+              e.stopPropagation();
+              previousImage();
             }}
           >
-            {project.gallery.map(
-              (image, index) => (
-                <img
-                  key={index}
-                  src={image}
-                  alt={project.title}
-                  style={{
-                    width: "100%",
-                    borderRadius: "20px",
-                  }}
-                />
-              )
-            )}
-          </div>
-        )}
-      </section>
+            ←
+          </button>
+
+          <img
+            src={project.gallery[activeImage]}
+            alt={project.title}
+            className="lightbox-image"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <button
+            className="lightbox-next"
+            onClick={(e) => {
+              e.stopPropagation();
+              nextImage();
+            }}
+          >
+            →
+          </button>
+
+        </div>
+      )}
+
     </>
   );
 }
