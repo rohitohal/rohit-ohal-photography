@@ -11,9 +11,12 @@ import Weddings from "../pages/Weddings";
 import WeddingStory from "../pages/WeddingStory";
 
 import Journal from "../pages/Journal";
+import JournalPost from "../pages/JournalPost";
+
 import About from "../pages/About";
 import Contact from "../pages/Contact";
-import JournalPost from "../pages/JournalPost";
+
+import NotFound from "../pages/NotFound";
 
 export default function AppRoutes() {
   return (
@@ -94,6 +97,15 @@ export default function AppRoutes() {
         }
       />
 
+      <Route
+        path="/journal/:slug"
+        element={
+          <MainLayout>
+            <JournalPost />
+          </MainLayout>
+        }
+      />
+
       {/* About */}
 
       <Route
@@ -115,14 +127,18 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
+
+      {/* 404 */}
+
       <Route
-        path="/journal/:slug"
+        path="*"
         element={
           <MainLayout>
-      <JournalPost />
+            <NotFound />
           </MainLayout>
         }
-/>
+      />
+
     </Routes>
   );
 }

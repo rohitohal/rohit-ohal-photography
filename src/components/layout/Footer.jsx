@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+
 import "./Footer.css";
 
 export default function Footer() {
@@ -12,8 +13,9 @@ export default function Footer() {
           <h2>ROHIT OHAL</h2>
 
           <p>
-            Fine Art Wedding, Portrait, Commercial &
-            Editorial Photography.
+            Fine Art Wedding, Portrait, Commercial,
+            Industrial and Editorial Photography
+            based in Pune, Maharashtra, India.
           </p>
 
         </div>
@@ -24,17 +26,29 @@ export default function Footer() {
 
             <h4>Portfolio</h4>
 
-            <Link to="/weddings">Wedding Stories</Link>
+            <Link to="/portfolio/weddings">
+              Wedding Stories
+            </Link>
 
-            <Link to="/portraits">Portraits</Link>
+            <Link to="/portfolio/portraits">
+              Portraits
+            </Link>
 
-            <Link to="/events">Events</Link>
+            <Link to="/portfolio/events">
+              Events
+            </Link>
 
-            <Link to="/industrial">Industrial</Link>
+            <Link to="/portfolio/industrial">
+              Industrial
+            </Link>
 
-            <Link to="/food">Food</Link>
+            <Link to="/portfolio/food-beverage">
+              Food & Beverage
+            </Link>
 
-            <Link to="/editorial">Editorial</Link>
+            <Link to="/portfolio/editorial">
+              Editorial
+            </Link>
 
           </div>
 
@@ -42,11 +56,17 @@ export default function Footer() {
 
             <h4>Company</h4>
 
-            <Link to="/about">About</Link>
+            <Link to="/about">
+              About
+            </Link>
 
-            <Link to="/journal">Journal</Link>
+            <Link to="/journal">
+              Journal
+            </Link>
 
-            <Link to="/contact">Contact</Link>
+            <Link to="/contact">
+              Contact
+            </Link>
 
           </div>
 
@@ -54,13 +74,35 @@ export default function Footer() {
 
             <h4>Connect</h4>
 
-            <a href="#">Instagram</a>
+            <a
+              href="https://instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Instagram
+            </a>
 
-            <a href="#">Facebook</a>
+            <a
+              href="https://facebook.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Facebook
+            </a>
 
-            <a href="#">WhatsApp</a>
+            <a
+              href="https://wa.me/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp
+            </a>
 
-            <a href="#">Email</a>
+            <a
+              href="mailto:hello@rohitohal.com"
+            >
+              Email
+            </a>
 
           </div>
 
@@ -71,9 +113,8 @@ export default function Footer() {
       <div className="footer-bottom">
 
         <p>
-
-          © 2026 Rohit Ohal Photography. All Rights Reserved.
-
+          © 2026 Rohit Ohal Photography.
+          All Rights Reserved.
         </p>
 
       </div>

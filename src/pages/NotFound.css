@@ -1,0 +1,132 @@
+.not-found {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 120px 20px;
+
+    text-align: center;
+
+    background: #faf8f4;
+}
+
+.not-found-content {
+    max-width: 900px;
+}
+
+.not-found span {
+    display: block;
+
+    margin-bottom: 20px;
+
+    color: #b58b43;
+
+    font-size: 18px;
+
+    letter-spacing: 8px;
+
+    text-transform: uppercase;
+}
+
+.not-found h1 {
+    margin-bottom: 30px;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 82px;
+
+    font-weight: 500;
+
+    line-height: 1;
+}
+
+.not-found p {
+    max-width: 600px;
+
+    margin: 0 auto 50px;
+
+    color: #666;
+
+    font-size: 20px;
+
+    line-height: 1.8;
+}
+
+.not-found-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+}
+
+.not-found-primary,
+.not-found-secondary {
+    height: 58px;
+
+    padding: 0 40px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+
+    text-transform: uppercase;
+
+    letter-spacing: 2px;
+
+    font-size: 12px;
+
+    transition: .35s ease;
+}
+
+.not-found-primary {
+    background: #b58b43;
+
+    color: white;
+}
+
+.not-found-primary:hover {
+    transform: translateY(-3px);
+}
+
+.not-found-secondary {
+    border: 1px solid #111;
+
+    color: #111;
+}
+
+.not-found-secondary:hover {
+    background: #111;
+
+    color: white;
+}
+
+@media (max-width:768px) {
+
+    .not-found h1 {
+        font-size: 52px;
+    }
+
+    .not-found p {
+        font-size: 16px;
+    }
+
+    .not-found-buttons {
+        flex-direction: column;
+    }
+
+    .not-found-primary,
+    .not-found-secondary {
+        width: 100%;
+    }
+
+}

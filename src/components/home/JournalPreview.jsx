@@ -1,31 +1,14 @@
 import { Link } from "react-router-dom";
+
+import journal from "../../data/journal";
+
 import "./JournalPreview.css";
 
-const posts = [
-  {
-    id: 1,
-    title: "How To Choose Your Wedding Photographer",
-    category: "Wedding",
-    image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80",
-  },
-  {
-    id: 2,
-    title: "Creating Timeless Portraits With Natural Light",
-    category: "Portrait",
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1200&q=80",
-  },
-  {
-    id: 3,
-    title: "Behind The Scenes Of A Commercial Shoot",
-    category: "Editorial",
-    image:
-      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200&q=80",
-  },
-];
-
 export default function JournalPreview() {
+  const featuredPosts = journal
+    .filter((post) => post.featured)
+    .slice(0, 3);
+
   return (
     <section className="journal-preview">
 
@@ -45,7 +28,7 @@ export default function JournalPreview() {
 
         <div className="journal-grid">
 
-          {posts.map((post) => (
+          {featuredPosts.map((post) => (
 
             <article
               className="journal-card"
@@ -53,7 +36,7 @@ export default function JournalPreview() {
             >
 
               <img
-                src={post.image}
+                src={post.cover}
                 alt={post.title}
               />
 
@@ -63,10 +46,10 @@ export default function JournalPreview() {
 
                 <h3>{post.title}</h3>
 
-                <Link to="/journal">
-
+                <Link
+                  to={`/journal/${post.slug}`}
+                >
                   Read Article →
-
                 </Link>
 
               </div>
@@ -74,6 +57,17 @@ export default function JournalPreview() {
             </article>
 
           ))}
+
+        </div>
+
+        <div className="journal-footer">
+
+          <Link
+            to="/journal"
+            className="journal-view-all"
+          >
+            View All Articles →
+          </Link>
 
         </div>
 
