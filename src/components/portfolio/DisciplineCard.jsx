@@ -1,37 +1,31 @@
 import { Link } from "react-router-dom";
-import "./PortfolioCard.css";
-import useReveal from "../../hooks/useReveal";
 
-export default function PortfolioCard({ project }) {
-  const revealRef = useReveal();
+import "./DisciplineCard.css";
 
-  if (!project) return null;
+export default function DisciplineCard({ discipline }) {
+  if (!discipline) return null;
 
   return (
     <Link
-      ref={revealRef}
-      to={`/${project.discipline}/${project.slug}`}
-      className="portfolio-card reveal"
-      aria-label={project.title}
+      to={`/portfolio/${discipline.slug}`}
+      className="discipline-card"
     >
-      <div className={`portfolio-image ${project.masonry || "portrait"}`}>
+      <div className="discipline-image">
         <img
-          src={project.cover}
-          alt={project.title}
+          src={discipline.image}
+          alt={discipline.title}
           loading="lazy"
         />
+      </div>
 
-        <div className="portfolio-overlay">
-          <div className="portfolio-content">
-            <span className="portfolio-category">
-              {project.category}
-            </span>
+      <div className="discipline-content">
+        <span className="discipline-label">
+          PORTFOLIO
+        </span>
 
-            <h3>{project.title}</h3>
+        <h3>{discipline.title}</h3>
 
-            <p>{project.location}</p>
-          </div>
-        </div>
+        <p>{discipline.description}</p>
       </div>
     </Link>
   );

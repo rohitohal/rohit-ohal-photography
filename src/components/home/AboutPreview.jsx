@@ -32,27 +32,18 @@ export default function AboutPreview() {
           <div className="about-info">
 
             <div>
-
               <h3>10+</h3>
-
               <span>Years Experience</span>
-
             </div>
 
             <div>
-
               <h3>500+</h3>
-
               <span>Projects Delivered</span>
-
             </div>
 
             <div>
-
               <h3>Fine Arts</h3>
-
               <span>Graduate</span>
-
             </div>
 
           </div>
@@ -69,7 +60,7 @@ export default function AboutPreview() {
         <div className="about-preview-image">
 
           <img
-            src="/images/about/rohit.jpg"
+            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1200&q=80"
             alt="Rohit Ohal"
           />
 

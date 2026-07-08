@@ -9,6 +9,7 @@ import WeddingStory from "../pages/WeddingStory";
 import Journal from "../pages/Journal";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
+import Discipline from "../pages/Discipline";
 
 export default function AppRoutes() {
   return (
@@ -28,6 +29,15 @@ export default function AppRoutes() {
         element={
           <MainLayout>
             <Portfolio />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/portfolio/:disciplineSlug"
+        element={
+          <MainLayout>
+            <Discipline />
           </MainLayout>
         }
       />

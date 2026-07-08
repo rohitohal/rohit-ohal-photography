@@ -88,7 +88,7 @@ export default function Navbar() {
 
                   <NavLink
                     key={item.id}
-                    to={item.slug}
+                    to={`/portfolio/${item.slug}`}
                     className="mega-item"
                     onMouseEnter={() => setActive(item)}
                     onClick={() => {

@@ -2,7 +2,7 @@ export const disciplines = [
   {
     id: "weddings",
     title: "Wedding Stories",
-    slug: "/weddings",
+    slug: "weddings",
     description: "Documentary wedding storytelling",
     image:
       "https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&q=80",
@@ -11,7 +11,7 @@ export const disciplines = [
   {
     id: "portraits",
     title: "Portraits",
-    slug: "/portraits",
+    slug: "portraits",
     description: "Personal & Commercial Portraits",
     image:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1400&q=80",
@@ -20,7 +20,7 @@ export const disciplines = [
   {
     id: "events",
     title: "Events",
-    slug: "/events",
+    slug: "events",
     description: "Corporate & Live Events",
     image:
       "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=1400&q=80",
@@ -29,16 +29,16 @@ export const disciplines = [
   {
     id: "industrial",
     title: "Industrial",
-    slug: "/industrial",
+    slug: "industrial",
     description: "Manufacturing & Corporate",
     image:
       "https://images.unsplash.com/photo-1513828583688-c52646db42da?w=1400&q=80",
   },
 
   {
-    id: "food",
+    id: "food-beverage",
     title: "Food & Beverage",
-    slug: "/food",
+    slug: "food-beverage",
     description: "Restaurants & Hospitality",
     image:
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=80",
@@ -47,7 +47,7 @@ export const disciplines = [
   {
     id: "editorial",
     title: "Editorial",
-    slug: "/editorial",
+    slug: "editorial",
     description: "Creative & Commercial Projects",
     image:
       "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1400&q=80",

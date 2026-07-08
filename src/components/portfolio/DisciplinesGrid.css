@@ -1,91 +1,29 @@
-.portfolio-grid {
-  width: 100%;
-  padding: 90px 0 120px;
-  background: #fff;
+.disciplines-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 32px;
+
+    margin-top: 70px;
 }
 
-.portfolio-grid-container {
-  width: min(92%, 1500px);
-  margin: 0 auto;
-
-  column-count: 3;
-  column-gap: 28px;
+@media (max-width: 1100px) {
+    .disciplines-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
 }
 
-/* Every portfolio card becomes a masonry item */
-.portfolio-grid-container > * {
-  display: inline-block;
-  width: 100%;
-  margin: 0 0 28px;
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-/* Large Desktop */
-@media (min-width: 1600px) {
-  .portfolio-grid-container {
-    column-count: 4;
-  }
-}
-
-/* Laptop */
-@media (max-width: 1200px) {
-  .portfolio-grid-container {
-    column-count: 3;
-    column-gap: 24px;
-  }
-
-  .portfolio-grid-container > * {
-    margin-bottom: 24px;
-  }
-}
-
-/* Tablet */
-@media (max-width: 992px) {
-  .portfolio-grid {
-    padding: 80px 0 100px;
-  }
-
-  .portfolio-grid-container {
-    column-count: 2;
-    column-gap: 22px;
-  }
-
-  .portfolio-grid-container > * {
-    margin-bottom: 22px;
-  }
-}
-
-/* Mobile */
 @media (max-width: 768px) {
-  .portfolio-grid {
-    padding: 60px 0 80px;
-  }
-
-  .portfolio-grid-container {
-    width: min(94%, 700px);
-    column-count: 1;
-    column-gap: 0;
-  }
-
-  .portfolio-grid-container > * {
-    margin-bottom: 20px;
-  }
-}
-.portfolio-empty{
-    width:100%;
-    text-align:center;
-    padding:100px 20px;
-}
-
-.portfolio-empty h3{
-    font-size:34px;
-    margin-bottom:12px;
-}
-
-.portfolio-empty p{
-    color:#777;
-    max-width:500px;
-    margin:auto;
+    .disciplines-grid {
+        grid-template-columns: 1fr;
+    }
 }

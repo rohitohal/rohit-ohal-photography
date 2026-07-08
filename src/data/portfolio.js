@@ -1,201 +1,147 @@
 const portfolio = [
-  // ===========================
-  // WEDDING STORIES
-  // ===========================
+  // Weddings
 
   {
     id: 1,
+    title: "Royal Maratha Wedding",
+    slug: "royal-maratha-wedding",
     discipline: "weddings",
-    slug: "aditi-akshay",
-    title: "Aditi & Akshay",
-    category: "Wedding Stories",
     location: "Pune, India",
-    date: "2026-02-18",
-    featured: true,
-
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=1800&q=80",
-
-    description:
-      "A timeless wedding celebration filled with emotion, tradition and elegant storytelling.",
-
-    images: [
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=1800&q=80",
-      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1800&q=80",
-      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1800&q=80",
-      "https://images.unsplash.com/photo-1525258946800-98cfd641d0de?w=1800&q=80",
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1800&q=80",
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1800&q=80"
-    ]
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&q=80",
   },
 
   {
     id: 2,
+    title: "Vineyard Wedding",
+    slug: "vineyard-wedding",
     discipline: "weddings",
-    slug: "riya-kunal",
-    title: "Riya & Kunal",
-    category: "Wedding Stories",
-    location: "Goa, India",
-    date: "2026-03-05",
-    featured: true,
-
+    location: "Nashik, India",
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=1800&q=80",
-
-    description:
-      "A destination wedding overlooking the Arabian Sea with intimate celebrations and unforgettable moments.",
-
-    images: [
-      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=1800&q=80",
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1800&q=80",
-      "https://images.unsplash.com/photo-1513278974582-3e1b4a4fa21d?w=1800&q=80",
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1800&q=80"
-    ]
+      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=1400&q=80",
   },
+
+  // Portraits
 
   {
     id: 3,
-    discipline: "weddings",
-    slug: "meera-arjun",
-    title: "Meera & Arjun",
-    category: "Wedding Stories",
-    location: "Udaipur, India",
-    date: "2026-04-22",
-    featured: true,
-
+    title: "Executive Portrait Session",
+    slug: "executive-portrait-session",
+    discipline: "portraits",
+    location: "Mumbai, India",
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1800&q=80",
-
-    description:
-      "A royal destination wedding blending heritage architecture, culture and timeless romance.",
-
-    images: [
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1800&q=80",
-      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1800&q=80",
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1800&q=80",
-      "https://images.unsplash.com/photo-1525258946800-98cfd641d0de?w=1800&q=80"
-    ]
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1400&q=80",
   },
-
-  // ===========================
-  // PORTRAITS
-  // ===========================
 
   {
     id: 4,
+    title: "Creative Portrait Series",
+    slug: "creative-portrait-series",
     discipline: "portraits",
-    slug: "rahul",
-    title: "Rahul",
-    category: "Portrait",
-    location: "Pune",
-    featured: true,
-
+    location: "Pune, India",
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1800&q=80",
-
-    description:
-      "Studio portrait session with cinematic lighting.",
-
-    images: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1800&q=80"
-    ]
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1400&q=80",
   },
 
-  // ===========================
-  // EVENTS
-  // ===========================
+  // Events
 
   {
     id: 5,
+    title: "Tech Conference Pune",
+    slug: "tech-conference-pune",
     discipline: "events",
-    slug: "tech-conference",
-    title: "Tech Conference",
-    category: "Corporate Event",
-    location: "Mumbai",
-    featured: true,
-
+    location: "Pune, India",
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1800&q=80",
-
-    description:
-      "Corporate conference and keynote coverage.",
-
-    images: [
-      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1800&q=80"
-    ]
+      "https://images.unsplash.com/photo-1511578314322-379afb476865?w=1400&q=80",
   },
-
-  // ===========================
-  // INDUSTRIAL
-  // ===========================
 
   {
     id: 6,
-    discipline: "industrial",
-    slug: "manufacturing-plant",
-    title: "Manufacturing Plant",
-    category: "Industrial",
-    location: "Pune",
-    featured: true,
-
+    title: "Corporate Annual Meet",
+    slug: "corporate-annual-meet",
+    discipline: "events",
+    location: "Mumbai, India",
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1513828583688-c52646db42da?w=1800&q=80",
-
-    description:
-      "Industrial storytelling for manufacturing and engineering brands.",
-
-    images: [
-      "https://images.unsplash.com/photo-1513828583688-c52646db42da?w=1800&q=80"
-    ]
+      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1400&q=80",
   },
 
-  // ===========================
-  // FOOD & BEVERAGE
-  // ===========================
+  // Industrial
 
   {
     id: 7,
-    discipline: "food",
-    slug: "chef-special",
-    title: "Chef Special",
-    category: "Food & Beverage",
-    location: "Pune",
-    featured: true,
-
+    title: "Tata Manufacturing Facility",
+    slug: "tata-manufacturing-facility",
+    discipline: "industrial",
+    location: "Pune, India",
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1800&q=80",
-
-    description:
-      "Luxury restaurant and hospitality photography.",
-
-    images: [
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1800&q=80"
-    ]
+      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1400&q=80",
   },
-
-  // ===========================
-  // EDITORIAL
-  // ===========================
 
   {
     id: 8,
-    discipline: "editorial",
-    slug: "creative-fashion",
-    title: "Creative Fashion",
-    category: "Editorial",
-    location: "Mumbai",
-    featured: true,
-
+    title: "Automotive Assembly Line",
+    slug: "automotive-assembly-line",
+    discipline: "industrial",
+    location: "Chakan, India",
+    year: "2025",
     cover:
-      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1800&q=80",
+      "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1400&q=80",
+  },
 
-    description:
-      "Editorial campaign with a modern fashion aesthetic.",
+  // Food & Beverage
 
-    images: [
-      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1800&q=80"
-    ]
-  }
+  {
+    id: 9,
+    title: "Marriott Signature Menu",
+    slug: "marriott-signature-menu",
+    discipline: "food-beverage",
+    location: "Pune, India",
+    year: "2025",
+    cover:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=80",
+  },
+
+  {
+    id: 10,
+    title: "Artisan Coffee Campaign",
+    slug: "artisan-coffee-campaign",
+    discipline: "food-beverage",
+    location: "Mumbai, India",
+    year: "2025",
+    cover:
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&q=80",
+  },
+
+  // Editorial
+
+  {
+    id: 11,
+    title: "Monsoon Editorial",
+    slug: "monsoon-editorial",
+    discipline: "editorial",
+    location: "Pune, India",
+    year: "2025",
+    cover:
+      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1400&q=80",
+  },
+
+  {
+    id: 12,
+    title: "Heritage Pune Story",
+    slug: "heritage-pune-story",
+    discipline: "editorial",
+    location: "Pune, India",
+    year: "2025",
+    cover:
+      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=1400&q=80",
+  },
 ];
 
 export default portfolio;
