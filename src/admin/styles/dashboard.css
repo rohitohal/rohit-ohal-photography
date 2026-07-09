@@ -1,0 +1,199 @@
+.dashboard-page{
+    display:flex;
+    flex-direction:column;
+    gap:40px;
+}
+
+.dashboard-header{
+    background:#fff;
+
+    border-radius:24px;
+
+    padding:40px;
+
+    border:1px solid #ece8df;
+}
+
+.dashboard-overline{
+    color:#B58B43;
+
+    letter-spacing:3px;
+
+    font-size:.75rem;
+
+    text-transform:uppercase;
+}
+
+.dashboard-header h1{
+    margin:15px 0;
+
+    font-size:3rem;
+
+    font-family:"Cormorant Garamond",serif;
+
+    font-weight:400;
+
+    color:#111;
+}
+
+.dashboard-header p{
+    color:#666;
+
+    max-width:650px;
+
+    line-height:1.8;
+}
+
+.stats-grid{
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:24px;
+}
+
+.stat-card{
+    background:#fff;
+
+    border-radius:24px;
+
+    padding:30px;
+
+    border:1px solid #ece8df;
+}
+
+.stat-card-top{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:30px;
+}
+
+.stat-icon{
+    width:52px;
+    height:52px;
+
+    border-radius:14px;
+
+    background:rgba(181,139,67,.12);
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    color:#B58B43;
+}
+
+.stat-change{
+    color:#7a7a7a;
+
+    font-size:.85rem;
+}
+
+.stat-card h3{
+    margin:0;
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    color:#111;
+}
+
+.stat-card p{
+    margin-top:8px;
+
+    color:#666;
+}
+
+.dashboard-grid{
+    display:grid;
+
+    grid-template-columns:2fr 1fr;
+
+    gap:24px;
+}
+
+.dashboard-panel{
+    background:#fff;
+
+    border-radius:24px;
+
+    padding:30px;
+
+    border:1px solid #ece8df;
+}
+
+.dashboard-panel h2{
+    margin-bottom:24px;
+
+    font-family:"Cormorant Garamond",serif;
+
+    font-size:2rem;
+
+    font-weight:400;
+}
+
+.empty-state{
+    color:#777;
+}
+
+.quick-actions{
+    display:flex;
+
+    flex-direction:column;
+
+    gap:16px;
+}
+
+.quick-actions button{
+    border:none;
+
+    background:#111;
+
+    color:#fff;
+
+    padding:16px;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.quick-actions button:hover{
+    background:#B58B43;
+}
+
+@media(max-width:1100px){
+
+    .stats-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:768px){
+
+    .stats-grid{
+        grid-template-columns:1fr;
+    }
+
+    .dashboard-header{
+        padding:28px;
+    }
+
+    .dashboard-header h1{
+        font-size:2.2rem;
+    }
+
+}

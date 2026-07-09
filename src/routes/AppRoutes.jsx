@@ -1,6 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
+import AdminLayout from "../admin/layouts/AdminLayout";
+
+/* Public Pages */
 
 import Home from "../pages/Home";
 import Portfolio from "../pages/Portfolio";
@@ -18,11 +21,23 @@ import Contact from "../pages/Contact";
 
 import NotFound from "../pages/NotFound";
 
+/* Admin Pages */
+
+import Dashboard from "../admin/pages/Dashboard";
+import Projects from "../admin/pages/Projects";
+import MediaLibrary from "../admin/pages/MediaLibrary";
+import JournalAdmin from "../admin/pages/Journal";
+import HomepageAdmin from "../admin/pages/Homepage";
+import SEOAdmin from "../admin/pages/SEO";
+import SettingsAdmin from "../admin/pages/Settings";
+
 export default function AppRoutes() {
   return (
     <Routes>
 
-      {/* Home */}
+      {/* =========================
+          PUBLIC WEBSITE
+      ========================= */}
 
       <Route
         path="/"
@@ -33,8 +48,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Portfolio Landing */}
-
       <Route
         path="/portfolio"
         element={
@@ -43,8 +56,6 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
-
-      {/* Discipline Pages */}
 
       <Route
         path="/portfolio/:disciplineSlug"
@@ -55,8 +66,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Project Pages */}
-
       <Route
         path="/portfolio/:disciplineSlug/:projectSlug"
         element={
@@ -65,8 +74,6 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
-
-      {/* Legacy Wedding Routes */}
 
       <Route
         path="/weddings"
@@ -86,8 +93,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Journal */}
-
       <Route
         path="/journal"
         element={
@@ -106,8 +111,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* About */}
-
       <Route
         path="/about"
         element={
@@ -116,8 +119,6 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
-
-      {/* Contact */}
 
       <Route
         path="/contact"
@@ -128,7 +129,76 @@ export default function AppRoutes() {
         }
       />
 
-      {/* 404 */}
+      {/* =========================
+          ADMIN PANEL
+      ========================= */}
+
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminLayout>
+            <Dashboard />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/projects"
+        element={
+          <AdminLayout>
+            <Projects />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/media"
+        element={
+          <AdminLayout>
+            <MediaLibrary />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/journal"
+        element={
+          <AdminLayout>
+            <JournalAdmin />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/homepage"
+        element={
+          <AdminLayout>
+            <HomepageAdmin />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/seo"
+        element={
+          <AdminLayout>
+            <SEOAdmin />
+          </AdminLayout>
+        }
+      />
+
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminLayout>
+            <SettingsAdmin />
+          </AdminLayout>
+        }
+      />
+
+      {/* =========================
+          404
+      ========================= */}
 
       <Route
         path="*"
