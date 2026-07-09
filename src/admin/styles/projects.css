@@ -1,0 +1,114 @@
+.projects-page{
+    display:flex;
+    flex-direction:column;
+    gap:32px;
+}
+
+.projects-header{
+    background:#fff;
+    padding:40px;
+    border-radius:24px;
+    border:1px solid #ece8df;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.projects-overline{
+    color:#B58B43;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    font-size:.75rem;
+}
+
+.projects-header h1{
+    margin:15px 0;
+    font-family:"Cormorant Garamond",serif;
+    font-size:3rem;
+    font-weight:400;
+}
+
+.projects-header p{
+    color:#666;
+    max-width:600px;
+    line-height:1.8;
+}
+
+.new-project-button{
+    background:#B58B43;
+    color:#fff;
+    border:none;
+    padding:16px 28px;
+    border-radius:14px;
+    cursor:pointer;
+}
+
+.projects-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:24px;
+}
+
+.project-card{
+    background:#fff;
+    border-radius:24px;
+    overflow:hidden;
+    border:1px solid #ece8df;
+}
+
+.project-card img{
+    width:100%;
+    height:240px;
+    object-fit:cover;
+}
+
+.project-content{
+    padding:24px;
+}
+
+.project-category{
+    color:#B58B43;
+    font-size:.8rem;
+    text-transform:uppercase;
+    letter-spacing:2px;
+}
+
+.project-content h3{
+    margin:12px 0;
+}
+
+.project-content p{
+    color:#666;
+}
+
+.project-footer{
+    margin-top:24px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:.75rem;
+}
+
+.status.published{
+    background:#dff5e1;
+}
+
+.status.draft{
+    background:#fff1d6;
+}
+
+.project-footer button{
+    border:none;
+    background:#111;
+    color:#fff;
+    padding:10px 18px;
+    border-radius:10px;
+    cursor:pointer;
+}

@@ -4,10 +4,56 @@ import "../styles/media-library.css";
 import "../styles/media-grid.css";
 
 export default function MediaLibrary() {
+
+  const openUploadWidget = () => {
+
+    if (!window.cloudinary) {
+      alert("Cloudinary widget not loaded.");
+      return;
+    }
+
+    const widget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: "dmwnh8ebd",
+        uploadPreset: "rohit_photography_uploads",
+
+        multiple: true,
+
+        folder: "rohit-ohal-photography",
+
+        sources: [
+          "local",
+          "url",
+          "camera"
+        ],
+
+        resourceType: "image",
+
+        clientAllowedFormats: [
+          "jpg",
+          "jpeg",
+          "png",
+          "webp"
+        ],
+
+        maxFiles: 200,
+      },
+
+      (error, result) => {
+        if (!error && result && result.event === "success") {
+          console.log(
+            "Upload Successful:",
+            result.info
+          );
+        }
+      }
+    );
+
+    widget.open();
+  };
+
   return (
     <div className="media-library-page">
-
-      {/* Header */}
 
       <div className="media-library-header">
 
@@ -34,15 +80,16 @@ export default function MediaLibrary() {
             Create Folder
           </button>
 
-          <button className="media-button primary">
+          <button
+            className="media-button primary"
+            onClick={openUploadWidget}
+          >
             Upload Images
           </button>
 
         </div>
 
       </div>
-
-      {/* Toolbar */}
 
       <div className="media-toolbar">
 
@@ -52,6 +99,7 @@ export default function MediaLibrary() {
         />
 
         <select defaultValue="newest">
+
           <option value="newest">
             Newest First
           </option>
@@ -67,11 +115,10 @@ export default function MediaLibrary() {
           <option value="za">
             Name Z-A
           </option>
+
         </select>
 
       </div>
-
-      {/* Media Grid */}
 
       <MediaGrid />
 
