@@ -1,10 +1,14 @@
+/* ==========================================
+   ADMIN SIDEBAR
+========================================== */
+
 .admin-sidebar{
     width:280px;
     height:100vh;
 
     position:fixed;
-    left:0;
     top:0;
+    left:0;
 
     background:#0b0b0b;
 
@@ -24,18 +28,22 @@
 }
 
 .admin-logo{
-    color:#fff;
+    margin:0 0 8px;
+
+    color:#ffffff;
 
     font-family:"Cormorant Garamond",serif;
 
-    font-size:2rem;
+    font-size:2.5rem;
 
     font-weight:400;
 
-    margin:0 0 8px;
+    line-height:1;
 }
 
 .admin-logo-subtitle{
+    display:block;
+
     color:#b58b43;
 
     font-size:.75rem;
@@ -52,36 +60,41 @@
     gap:8px;
 
     flex:1;
+
+    margin-top:30px;
 }
 
 .admin-nav-item{
     display:flex;
-
     align-items:center;
 
     gap:14px;
 
     padding:14px 18px;
 
-    border-radius:12px;
+    border-radius:14px;
+
+    color:#9a9a9a;
 
     text-decoration:none;
 
-    color:#9b9b9b;
-
     transition:.3s ease;
+}
+
+.admin-nav-item svg{
+    flex-shrink:0;
 }
 
 .admin-nav-item:hover{
     background:rgba(181,139,67,.12);
 
-    color:#fff;
+    color:#ffffff;
 }
 
 .admin-nav-item.active{
     background:#b58b43;
 
-    color:#fff;
+    color:#ffffff;
 }
 
 .admin-nav-item span{
@@ -91,7 +104,7 @@
 }
 
 .admin-sidebar-bottom{
-    padding-top:20px;
+    padding-top:25px;
 
     border-top:1px solid rgba(255,255,255,.05);
 }
@@ -100,7 +113,6 @@
     width:100%;
 
     display:flex;
-
     align-items:center;
 
     gap:14px;
@@ -109,11 +121,11 @@
 
     border:none;
 
-    border-radius:12px;
+    border-radius:14px;
 
     background:transparent;
 
-    color:#9b9b9b;
+    color:#9a9a9a;
 
     cursor:pointer;
 
@@ -123,10 +135,26 @@
 .admin-logout-button:hover{
     background:rgba(255,255,255,.05);
 
-    color:#fff;
+    color:#ffffff;
 }
 
+/* ==========================================
+   TABLET
+========================================== */
+
 @media(max-width:1024px){
+
+    .admin-sidebar{
+        width:250px;
+    }
+
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media(max-width:768px){
 
     .admin-sidebar{
         transform:translateX(-100%);

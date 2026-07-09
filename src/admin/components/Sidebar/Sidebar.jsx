@@ -1,3 +1,5 @@
+import "./../../styles/sidebar.css";
+
 import {
   LayoutDashboard,
   FolderKanban,
@@ -17,31 +19,37 @@ const menuItems = [
     icon: LayoutDashboard,
     path: "/admin/dashboard",
   },
+
   {
     title: "Projects",
     icon: FolderKanban,
     path: "/admin/projects",
   },
+
   {
     title: "Media Library",
     icon: Images,
     path: "/admin/media",
   },
+
   {
     title: "Journal",
     icon: BookOpen,
     path: "/admin/journal",
   },
+
   {
     title: "Homepage",
     icon: MonitorSmartphone,
     path: "/admin/homepage",
   },
+
   {
     title: "SEO",
     icon: Search,
     path: "/admin/seo",
   },
+
   {
     title: "Settings",
     icon: Settings,
