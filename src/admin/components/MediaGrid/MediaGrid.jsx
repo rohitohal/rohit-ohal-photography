@@ -1,43 +1,59 @@
 import MediaCard from "../MediaCard/MediaCard";
 
-const demoImages = [
-  {
-    id: 1,
-    name: "Wedding_Couple_01.jpg",
-    size: "5.2 MB",
-    category: "Wedding",
-    image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
-  },
-
-  {
-    id: 2,
-    name: "Portrait_Session_01.jpg",
-    size: "3.8 MB",
-    category: "Portrait",
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&q=80",
-  },
-
-  {
-    id: 3,
-    name: "Corporate_Event_01.jpg",
-    size: "6.1 MB",
-    category: "Event",
-    image:
-      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800&q=80",
-  },
-];
-
-export default function MediaGrid() {
+export default function MediaGrid({
+  mediaItems = [],
+}) {
   return (
     <div className="media-grid">
-      {demoImages.map((image) => (
+
+      {mediaItems.length === 0 && (
+        <div
+          style={{
+            width: "100%",
+            background: "#fff",
+            padding: "80px",
+            borderRadius: "24px",
+            textAlign: "center",
+            border: "1px solid #ece8df",
+          }}
+        >
+          <h2>No Images Uploaded Yet</h2>
+
+          <p>
+            Upload your first image using the
+            Upload Images button above.
+          </p>
+        </div>
+      )}
+
+      {mediaItems.map((image) => (
         <MediaCard
           key={image.id}
-          image={image}
+          image={{
+            id: image.id,
+            name:
+              image.filename ||
+              image.publicId ||
+              "Untitled Image",
+
+            size: image.bytes
+              ? `${(
+                  image.bytes /
+                  1024 /
+                  1024
+                ).toFixed(2)} MB`
+              : "Unknown",
+
+            category:
+              image.category ||
+              "Uncategorized",
+
+            image:
+              image.url,
+          }}
         />
       ))}
+
     </div>
   );
 }

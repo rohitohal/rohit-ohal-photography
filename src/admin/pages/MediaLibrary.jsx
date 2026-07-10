@@ -1,12 +1,29 @@
+import { useEffect, useState } from "react";
+
 import MediaGrid from "../components/MediaGrid/MediaGrid";
 
 import "../styles/media-library.css";
 import "../styles/media-grid.css";
 
 export default function MediaLibrary() {
+  const [mediaItems, setMediaItems] = useState(() => {
+    const savedMedia = localStorage.getItem(
+      "rohit-photography-media"
+    );
+
+    return savedMedia
+      ? JSON.parse(savedMedia)
+      : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(
+      "rohit-photography-media",
+      JSON.stringify(mediaItems)
+    );
+  }, [mediaItems]);
 
   const openUploadWidget = () => {
-
     if (!window.cloudinary) {
       alert("Cloudinary widget not loaded.");
       return;
@@ -15,16 +32,19 @@ export default function MediaLibrary() {
     const widget = window.cloudinary.createUploadWidget(
       {
         cloudName: "dmwnh8ebd",
-        uploadPreset: "rohit_photography_uploads",
+
+        uploadPreset:
+          "rohit_photography_uploads",
 
         multiple: true,
 
-        folder: "rohit-ohal-photography",
+        folder:
+          "rohit-ohal-photography",
 
         sources: [
           "local",
           "url",
-          "camera"
+          "camera",
         ],
 
         resourceType: "image",
@@ -33,18 +53,57 @@ export default function MediaLibrary() {
           "jpg",
           "jpeg",
           "png",
-          "webp"
+          "webp",
         ],
 
         maxFiles: 200,
       },
 
       (error, result) => {
-        if (!error && result && result.event === "success") {
+        if (
+          !error &&
+          result &&
+          result.event === "success"
+        ) {
           console.log(
             "Upload Successful:",
             result.info
           );
+
+          const newMedia = {
+            id: result.info.public_id,
+
+            publicId:
+              result.info.public_id,
+
+            url:
+              result.info.secure_url,
+
+            width:
+              result.info.width,
+
+            height:
+              result.info.height,
+
+            format:
+              result.info.format,
+
+            bytes:
+              result.info.bytes,
+
+            createdAt:
+              result.info.created_at,
+
+            filename:
+              result.info.original_filename,
+
+            category: "Uncategorized",
+          };
+
+          setMediaItems((prev) => [
+            newMedia,
+            ...prev,
+          ]);
         }
       }
     );
@@ -120,7 +179,9 @@ export default function MediaLibrary() {
 
       </div>
 
-      <MediaGrid />
+      <MediaGrid
+        mediaItems={mediaItems}
+      />
 
     </div>
   );

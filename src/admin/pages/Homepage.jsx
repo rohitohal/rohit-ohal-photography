@@ -1,3 +1,7 @@
+import HomepageSettings from "../components/HomepageSettings/HomepageSettings";
+
+import "../styles/homepage-settings.css";
+
 export default function Homepage() {
   return (
     <div className="admin-page">
@@ -19,34 +23,39 @@ export default function Homepage() {
 
       </div>
 
-      <div className="admin-section-grid">
+      {/* Hero CMS */}
+
+      <HomepageSettings />
+
+      <div
+        className="admin-section-grid"
+        style={{
+          marginTop: "40px",
+        }}
+      >
 
         <div className="admin-card">
-          <h2>Hero Slider</h2>
+
+          <h2>
+            Featured Disciplines
+          </h2>
 
           <p>
-            Manage homepage hero slides, titles, subtitles and CTA buttons.
-          </p>
-
-          <button>
-            Manage Hero Slides
-          </button>
-        </div>
-
-        <div className="admin-card">
-          <h2>Featured Disciplines</h2>
-
-          <p>
-            Select which disciplines appear on the homepage and their order.
+            Select which disciplines appear on the homepage
+            and their order.
           </p>
 
           <button>
             Manage Disciplines
           </button>
+
         </div>
 
         <div className="admin-card">
-          <h2>Featured Projects</h2>
+
+          <h2>
+            Featured Projects
+          </h2>
 
           <p>
             Choose featured galleries and portfolio projects.
@@ -55,10 +64,14 @@ export default function Homepage() {
           <button>
             Manage Projects
           </button>
+
         </div>
 
         <div className="admin-card">
-          <h2>Journal Highlights</h2>
+
+          <h2>
+            Journal Highlights
+          </h2>
 
           <p>
             Control featured articles and homepage journal content.
@@ -67,10 +80,14 @@ export default function Homepage() {
           <button>
             Manage Journal
           </button>
+
         </div>
 
         <div className="admin-card">
-          <h2>Call To Action</h2>
+
+          <h2>
+            Call To Action
+          </h2>
 
           <p>
             Edit homepage CTA titles, text and button labels.
@@ -79,10 +96,14 @@ export default function Homepage() {
           <button>
             Edit CTA
           </button>
+
         </div>
 
         <div className="admin-card">
-          <h2>SEO Overview</h2>
+
+          <h2>
+            SEO Overview
+          </h2>
 
           <p>
             Configure homepage metadata and social sharing information.
@@ -91,6 +112,7 @@ export default function Homepage() {
           <button>
             Open SEO Settings
           </button>
+
         </div>
 
       </div>

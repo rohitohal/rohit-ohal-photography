@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import portfolio from "../../data/portfolio";
+
 import PortfolioCard from "./PortfolioCard";
 import PortfolioFilter from "./PortfolioFilter";
 
@@ -14,21 +15,60 @@ export default function PortfolioGrid({
     category || "all"
   );
 
+  const cmsProjects = JSON.parse(
+    localStorage.getItem(
+      "rohit-photography-projects"
+    ) || "[]"
+  );
+
+  const mappedCmsProjects = cmsProjects.map(
+    (project) => ({
+      ...project,
+
+      discipline:
+        project.category
+          ?.toLowerCase()
+          .replace(/\s+/g, "-") || "other",
+
+      year:
+        project.date
+          ? new Date(project.date)
+              .getFullYear()
+              .toString()
+          : new Date()
+              .getFullYear()
+              .toString(),
+    })
+  );
+
+  const allProjects = [
+    ...mappedCmsProjects,
+    ...portfolio,
+  ];
+
   const projects = useMemo(() => {
     if (!enableFilter) {
-      return portfolio.filter(
-        (item) => item.discipline === category
+      return allProjects.filter(
+        (item) =>
+          item.discipline === category
       );
     }
 
     if (activeFilter === "all") {
-      return portfolio;
+      return allProjects;
     }
 
-    return portfolio.filter(
-      (item) => item.discipline === activeFilter
+    return allProjects.filter(
+      (item) =>
+        item.discipline ===
+        activeFilter
     );
-  }, [category, activeFilter, enableFilter]);
+  }, [
+    category,
+    activeFilter,
+    enableFilter,
+    allProjects,
+  ]);
 
   return (
     <section className="portfolio-grid">
@@ -43,20 +83,32 @@ export default function PortfolioGrid({
       <div className="portfolio-grid-container">
 
         {projects.length > 0 ? (
-          projects.map((project) => (
-            <PortfolioCard
-              key={project.id}
-              project={project}
-            />
-          ))
+          projects.map(
+            (project) => (
+              <PortfolioCard
+                key={
+                  project.id
+                }
+                project={
+                  project
+                }
+              />
+            )
+          )
         ) : (
           <div className="portfolio-empty">
-            <h3>No Projects Found</h3>
+
+            <h3>
+              No Projects Found
+            </h3>
 
             <p>
-              Portfolio images for this category
-              will be available soon.
+              Portfolio images
+              for this category
+              will be available
+              soon.
             </p>
+
           </div>
         )}
 

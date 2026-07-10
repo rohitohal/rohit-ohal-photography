@@ -13,31 +13,76 @@ export default function Project() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
 
-  const projectIndex = portfolio.findIndex(
-    (item) => item.slug === projectSlug
+  const cmsProjects = JSON.parse(
+    localStorage.getItem(
+      "rohit-photography-projects"
+    ) || "[]"
   );
 
-  const project = portfolio[projectIndex];
+  const mappedCmsProjects = cmsProjects.map(
+    (project) => ({
+      ...project,
+
+      discipline:
+        project.category
+          ?.toLowerCase()
+          .replace(/\s+/g, "-") || "other",
+
+      year: project.date
+        ? new Date(project.date)
+            .getFullYear()
+            .toString()
+        : new Date()
+            .getFullYear()
+            .toString(),
+
+      description:
+        project.description,
+    })
+  );
+
+  const allProjects = [
+    ...mappedCmsProjects,
+    ...portfolio,
+  ];
+
+  const projectIndex =
+    allProjects.findIndex(
+      (item) =>
+        item.slug === projectSlug
+    );
+
+  const project =
+    allProjects[projectIndex];
 
   const previousProject =
     projectIndex > 0
-      ? portfolio[projectIndex - 1]
+      ? allProjects[
+          projectIndex - 1
+        ]
       : null;
 
   const nextProject =
-    projectIndex < portfolio.length - 1
-      ? portfolio[projectIndex + 1]
+    projectIndex <
+    allProjects.length - 1
+      ? allProjects[
+          projectIndex + 1
+        ]
       : null;
 
   if (!project) {
     return (
       <div className="project-not-found">
-        <h1>Project not found</h1>
+        <h1>
+          Project not found
+        </h1>
       </div>
     );
   }
 
-  const openLightbox = (index) => {
+  const openLightbox = (
+    index
+  ) => {
     setActiveImage(index);
     setLightboxOpen(true);
   };
@@ -48,7 +93,9 @@ export default function Project() {
 
   const nextImage = () => {
     setActiveImage(
-      (prev) => (prev + 1) % project.gallery.length
+      (prev) =>
+        (prev + 1) %
+        project.gallery.length
     );
   };
 
@@ -56,7 +103,8 @@ export default function Project() {
     setActiveImage(
       (prev) =>
         prev === 0
-          ? project.gallery.length - 1
+          ? project.gallery
+              .length - 1
           : prev - 1
     );
   };
@@ -76,25 +124,45 @@ export default function Project() {
           <div className="project-meta">
 
             <div>
-              <span>Location</span>
-              <h3>{project.location}</h3>
+              <span>
+                Location
+              </span>
+              <h3>
+                {
+                  project.location
+                }
+              </h3>
             </div>
 
             <div>
-              <span>Year</span>
-              <h3>{project.year}</h3>
+              <span>
+                Year
+              </span>
+              <h3>
+                {
+                  project.year
+                }
+              </h3>
             </div>
 
             <div>
-              <span>Discipline</span>
-              <h3>{project.discipline}</h3>
+              <span>
+                Discipline
+              </span>
+              <h3>
+                {
+                  project.discipline
+                }
+              </h3>
             </div>
 
           </div>
 
           <div className="project-story">
 
-            <h2>Project Story</h2>
+            <h2>
+              Project Story
+            </h2>
 
             <p>
               {project.description ||
@@ -107,12 +175,25 @@ export default function Project() {
             <div className="project-gallery">
 
               {project.gallery.map(
-                (image, index) => (
+                (
+                  image,
+                  index
+                ) => (
                   <img
-                    key={index}
-                    src={image}
-                    alt={project.title}
-                    onClick={() => openLightbox(index)}
+                    key={
+                      index
+                    }
+                    src={
+                      image
+                    }
+                    alt={
+                      project.title
+                    }
+                    onClick={() =>
+                      openLightbox(
+                        index
+                      )
+                    }
                   />
                 )
               )}
@@ -127,7 +208,9 @@ export default function Project() {
                 to={`/portfolio/${previousProject.discipline}/${previousProject.slug}`}
                 className="project-nav-link"
               >
-                ← {previousProject.title}
+                ← {
+                  previousProject.title
+                }
               </Link>
             ) : (
               <div />
@@ -138,7 +221,9 @@ export default function Project() {
                 to={`/portfolio/${nextProject.discipline}/${nextProject.slug}`}
                 className="project-nav-link"
               >
-                {nextProject.title} →
+                {
+                  nextProject.title
+                } →
               </Link>
             ) : (
               <div />
@@ -158,14 +243,18 @@ export default function Project() {
 
           <button
             className="lightbox-close"
-            onClick={closeLightbox}
+            onClick={
+              closeLightbox
+            }
           >
             ×
           </button>
 
           <button
             className="lightbox-prev"
-            onClick={(e) => {
+            onClick={(
+              e
+            ) => {
               e.stopPropagation();
               previousImage();
             }}
@@ -174,15 +263,27 @@ export default function Project() {
           </button>
 
           <img
-            src={project.gallery[activeImage]}
-            alt={project.title}
+            src={
+              project.gallery[
+                activeImage
+              ]
+            }
+            alt={
+              project.title
+            }
             className="lightbox-image"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(
+              e
+            ) =>
+              e.stopPropagation()
+            }
           />
 
           <button
             className="lightbox-next"
-            onClick={(e) => {
+            onClick={(
+              e
+            ) => {
               e.stopPropagation();
               nextImage();
             }}

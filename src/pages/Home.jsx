@@ -1,5 +1,6 @@
 import Hero from "../components/home/Hero";
 import SelectedDisciplines from "../components/home/SelectedDisciplines";
+import FeaturedProjects from "../components/home/FeaturedProjects";
 import AboutPreview from "../components/home/AboutPreview";
 import WhyChooseMe from "../components/home/WhyChooseMe";
 import Testimonials from "../components/home/Testimonials";
@@ -13,6 +14,8 @@ export default function Home() {
       <Hero />
 
       <SelectedDisciplines />
+
+      <FeaturedProjects />
 
       <AboutPreview />
 

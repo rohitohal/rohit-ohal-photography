@@ -1,0 +1,62 @@
+.journal-modal-overlay{
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    z-index:99999;
+}
+
+.journal-modal{
+    width:900px;
+    max-width:95vw;
+    max-height:90vh;
+
+    overflow:auto;
+
+    background:#fff;
+
+    border-radius:24px;
+
+    padding:40px;
+}
+
+.journal-modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:30px;
+}
+
+.journal-form{
+    display:grid;
+    gap:20px;
+}
+
+.journal-cover-preview{
+    width:250px;
+    height:160px;
+
+    object-fit:cover;
+
+    border-radius:12px;
+
+    margin-top:20px;
+}
+
+.checkbox-label{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:20px;
+}

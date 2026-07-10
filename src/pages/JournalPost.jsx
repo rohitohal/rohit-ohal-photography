@@ -1,7 +1,5 @@
 import { useParams } from "react-router-dom";
 
-import journal from "../data/journal";
-
 import PageHero from "../components/common/PageHero";
 
 import "./Project.css";
@@ -9,7 +7,13 @@ import "./Project.css";
 export default function JournalPost() {
   const { slug } = useParams();
 
-  const post = journal.find(
+  const posts = JSON.parse(
+    localStorage.getItem(
+      "rohit-photography-journal"
+    ) || "[]"
+  );
+
+  const post = posts.find(
     (item) => item.slug === slug
   );
 
@@ -25,7 +29,11 @@ export default function JournalPost() {
     <>
       <PageHero
         title={post.title}
-        subtitle={`${post.category} • ${post.date}`}
+        subtitle={`${post.category}${
+          post.status
+            ? ` • ${post.status}`
+            : ""
+        }`}
         image={post.cover}
       />
 
@@ -36,6 +44,10 @@ export default function JournalPost() {
           <div className="project-story">
 
             <h2>{post.title}</h2>
+
+            <p>{post.excerpt}</p>
+
+            <br />
 
             <p>{post.content}</p>
 
