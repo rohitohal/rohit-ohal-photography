@@ -11,7 +11,12 @@ import {
   LogOut,
 } from "lucide-react";
 
-import { NavLink } from "react-router-dom";
+import {
+  NavLink,
+  useNavigate,
+} from "react-router-dom";
+
+import { supabase } from "../../../lib/supabase";
 
 const menuItems = [
   {
@@ -58,6 +63,14 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+
+    navigate("/login");
+  };
+
   return (
     <aside className="admin-sidebar">
 
@@ -99,7 +112,10 @@ export default function Sidebar() {
 
       <div className="admin-sidebar-bottom">
 
-        <button className="admin-logout-button">
+        <button
+          className="admin-logout-button"
+          onClick={handleLogout}
+        >
 
           <LogOut size={18} />
 

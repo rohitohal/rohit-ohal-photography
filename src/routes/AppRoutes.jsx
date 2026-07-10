@@ -1,3 +1,5 @@
+import ProtectedRoute from "../components/ProtectedRoute";
+import Login from "../pages/Login";
 import { Routes, Route } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
@@ -130,69 +132,92 @@ export default function AppRoutes() {
       />
 
       {/* =========================
+          LOGIN
+      ========================= */}
+
+      <Route
+        path="/login"
+        element={<Login />}
+      />
+
+      {/* =========================
           ADMIN PANEL
       ========================= */}
 
       <Route
         path="/admin/dashboard"
         element={
-          <AdminLayout>
-            <Dashboard />
-          </AdminLayout>
+          <ProtectedRoute>
+            <AdminLayout>
+              <Dashboard />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/projects"
         element={
-          <AdminLayout>
-            <Projects />
-          </AdminLayout>
+          <ProtectedRoute>
+            <AdminLayout>
+              <Projects />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/media"
         element={
-          <AdminLayout>
-            <MediaLibrary />
-          </AdminLayout>
+          <ProtectedRoute>
+            <AdminLayout>
+              <MediaLibrary />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/journal"
         element={
-          <AdminLayout>
-            <JournalAdmin />
-          </AdminLayout>
+          <ProtectedRoute>
+            <AdminLayout>
+              <JournalAdmin />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/homepage"
         element={
-          <AdminLayout>
-            <HomepageAdmin />
-          </AdminLayout>
+          <ProtectedRoute>
+            <AdminLayout>
+              <HomepageAdmin />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/seo"
         element={
-          <AdminLayout>
-            <SEOAdmin />
-          </AdminLayout>
+          <ProtectedRoute>
+            <AdminLayout>
+              <SEOAdmin />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/settings"
         element={
-          <AdminLayout>
-            <SettingsAdmin />
-          </AdminLayout>
+          <ProtectedRoute>
+            <AdminLayout>
+              <SettingsAdmin />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
