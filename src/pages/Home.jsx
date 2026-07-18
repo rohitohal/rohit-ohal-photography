@@ -1,3 +1,5 @@
+import SEOHead from "../components/common/SEOHead";
+
 import Hero from "../components/home/Hero";
 import SelectedDisciplines from "../components/home/SelectedDisciplines";
 import FeaturedProjects from "../components/home/FeaturedProjects";
@@ -9,24 +11,28 @@ import CallToAction from "../components/home/CallToAction";
 
 export default function Home() {
   return (
-    <main>
+    <>
+      <SEOHead />
 
-      <Hero />
+      <main>
 
-      <SelectedDisciplines />
+        <Hero />
 
-      <FeaturedProjects />
+        <SelectedDisciplines />
 
-      <AboutPreview />
+        <FeaturedProjects />
 
-      <WhyChooseMe />
+        <AboutPreview />
 
-      <Testimonials />
+        <WhyChooseMe />
 
-      <JournalPreview />
+        <Testimonials />
 
-      <CallToAction />
+        <JournalPreview />
 
-    </main>
+        <CallToAction />
+
+      </main>
+    </>
   );
 }
