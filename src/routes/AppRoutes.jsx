@@ -1,11 +1,18 @@
+import {
+  Routes,
+  Route,
+} from "react-router-dom";
+
 import ProtectedRoute from "../components/ProtectedRoute";
 import Login from "../pages/Login";
-import { Routes, Route } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
 import AdminLayout from "../admin/layouts/AdminLayout";
 
-/* Public Pages */
+
+/* =========================
+   PUBLIC PAGES
+========================= */
 
 import Home from "../pages/Home";
 import Portfolio from "../pages/Portfolio";
@@ -23,15 +30,29 @@ import Contact from "../pages/Contact";
 
 import NotFound from "../pages/NotFound";
 
-/* Admin Pages */
+
+/* =========================
+   ADMIN PAGES
+========================= */
 
 import Dashboard from "../admin/pages/Dashboard";
 import Projects from "../admin/pages/Projects";
 import MediaLibrary from "../admin/pages/MediaLibrary";
 import JournalAdmin from "../admin/pages/Journal";
 import HomepageAdmin from "../admin/pages/Homepage";
+
+/*
+ * Admin pages are renamed where
+ * the public page already uses
+ * the same component name.
+ */
+
+import AboutAdmin from "../admin/pages/About";
+import ContactAdmin from "../admin/pages/Contact";
+
 import SEOAdmin from "../admin/pages/SEO";
 import SettingsAdmin from "../admin/pages/Settings";
+
 
 export default function AppRoutes() {
   return (
@@ -49,6 +70,11 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
+
+
+      {/* =========================
+          PORTFOLIO
+      ========================= */}
 
       <Route
         path="/portfolio"
@@ -77,6 +103,11 @@ export default function AppRoutes() {
         }
       />
 
+
+      {/* =========================
+          WEDDINGS
+      ========================= */}
+
       <Route
         path="/weddings"
         element={
@@ -94,6 +125,11 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
+
+
+      {/* =========================
+          JOURNAL
+      ========================= */}
 
       <Route
         path="/journal"
@@ -113,6 +149,11 @@ export default function AppRoutes() {
         }
       />
 
+
+      {/* =========================
+          ABOUT
+      ========================= */}
+
       <Route
         path="/about"
         element={
@@ -121,6 +162,11 @@ export default function AppRoutes() {
           </MainLayout>
         }
       />
+
+
+      {/* =========================
+          CONTACT
+      ========================= */}
 
       <Route
         path="/contact"
@@ -131,17 +177,21 @@ export default function AppRoutes() {
         }
       />
 
+
       {/* =========================
           LOGIN
       ========================= */}
 
       <Route
         path="/login"
-        element={<Login />}
+        element={
+          <Login />
+        }
       />
 
+
       {/* =========================
-          ADMIN PANEL
+          ADMIN - DASHBOARD
       ========================= */}
 
       <Route
@@ -155,6 +205,11 @@ export default function AppRoutes() {
         }
       />
 
+
+      {/* =========================
+          ADMIN - PROJECTS
+      ========================= */}
+
       <Route
         path="/admin/projects"
         element={
@@ -165,6 +220,11 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+
+      {/* =========================
+          ADMIN - MEDIA LIBRARY
+      ========================= */}
 
       <Route
         path="/admin/media"
@@ -177,6 +237,11 @@ export default function AppRoutes() {
         }
       />
 
+
+      {/* =========================
+          ADMIN - JOURNAL
+      ========================= */}
+
       <Route
         path="/admin/journal"
         element={
@@ -187,6 +252,11 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+
+      {/* =========================
+          ADMIN - HOMEPAGE
+      ========================= */}
 
       <Route
         path="/admin/homepage"
@@ -199,6 +269,43 @@ export default function AppRoutes() {
         }
       />
 
+
+      {/* =========================
+          ADMIN - ABOUT PAGE
+      ========================= */}
+
+      <Route
+        path="/admin/about"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <AboutAdmin />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =========================
+          ADMIN - CONTACT PAGE
+      ========================= */}
+
+      <Route
+        path="/admin/contact"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <ContactAdmin />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =========================
+          ADMIN - SEO
+      ========================= */}
+
       <Route
         path="/admin/seo"
         element={
@@ -209,6 +316,11 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+
+      {/* =========================
+          ADMIN - SETTINGS
+      ========================= */}
 
       <Route
         path="/admin/settings"
@@ -221,8 +333,9 @@ export default function AppRoutes() {
         }
       />
 
+
       {/* =========================
-          404
+          404 - NOT FOUND
       ========================= */}
 
       <Route

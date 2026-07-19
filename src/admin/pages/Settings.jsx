@@ -24,11 +24,38 @@ const defaultSettings = {
 ========================= */
 
 const backupKeys = [
+  /* PROJECTS */
   "rohit-photography-projects",
+
+  /* JOURNAL */
   "rohit-photography-journal",
+
+  /* HOMEPAGE */
   "rohit-photography-homepage",
+  "rohit-photography-homepage-about",
+  "rohit-photography-homepage-cta",
+  "rohit-photography-homepage-disciplines",
+
+  /* ABOUT PAGE */
+  "rohit-photography-about-hero",
+  "rohit-photography-about-story",
+  "rohit-photography-about-philosophy",
+  "rohit-photography-about-experience",
+  "rohit-photography-about-process",
+  "rohit-photography-about-cta",
+
+  /* CONTACT PAGE */
+  "rohit-photography-contact-hero",
+  "rohit-photography-contact-content",
+  "rohit-photography-contact-form",
+
+  /* SEO */
   "rohit-photography-seo",
+
+  /* GLOBAL SETTINGS */
   "rohit-photography-settings",
+
+  /* MEDIA LIBRARY */
   "rohit-photography-media",
 ];
 

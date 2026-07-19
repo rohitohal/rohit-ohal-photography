@@ -5,6 +5,7 @@ import PageHero from "../components/common/PageHero";
 
 import heroImage from "../assets/images/hero.jpg";
 
+
 /* =========================
    DEFAULT WEBSITE SETTINGS
 ========================= */
@@ -22,46 +23,290 @@ const defaultSettings = {
   workingHours: "10:00 AM – 8:00 PM",
 };
 
+
+/* =========================
+   DEFAULT CONTACT HERO
+========================= */
+
+const defaultContactHero = {
+  title:
+    "Let's Create Something Beautiful",
+
+  description:
+    "Whether you're planning a wedding, portrait session, commercial project or destination wedding, I'd love to hear your story.",
+
+  image: "",
+};
+
+
+/* =========================
+   DEFAULT CONTACT CONTENT
+========================= */
+
+const defaultContactContent = {
+  label:
+    "GET IN TOUCH",
+
+  headingLine1:
+    "Let's Tell",
+
+  headingLine2:
+    "Your Story.",
+
+  description:
+    "Every great photograph begins with a conversation. Tell me about your vision, your celebration and the moments that matter most. Together we'll create photographs that you'll cherish for a lifetime.",
+};
+
+
+/* =========================
+   DEFAULT CONTACT FORM
+========================= */
+
+const defaultContactForm = {
+  services: [
+    "Wedding Photography",
+    "Pre Wedding",
+    "Engagement",
+    "Portrait Photography",
+    "Commercial Photography",
+    "Industrial Photography",
+    "Event Photography",
+    "Food Photography",
+  ],
+
+  budgets: [
+    "Below ₹50,000",
+    "₹50,000 – ₹1,00,000",
+    "₹1,00,000 – ₹2,00,000",
+    "₹2,00,000 – ₹5,00,000",
+    "Above ₹5,00,000",
+  ],
+
+  referralSources: [
+    "Google Search",
+    "Instagram",
+    "Facebook",
+    "Friend / Family",
+    "Previous Client",
+    "Wedding Planner",
+    "Other",
+  ],
+
+  messagePlaceholder:
+    "Tell me about your wedding or project...",
+
+  submitButtonText:
+    "Send Inquiry",
+};
+
+
 export default function Contact() {
+
   /* =========================
      LOAD WEBSITE SETTINGS
   ========================= */
 
   const [settings] = useState(() => {
-    const savedSettings =
-      localStorage.getItem(
-        "rohit-photography-settings"
-      );
 
-    if (savedSettings) {
-      try {
+    try {
+
+      const savedSettings =
+        localStorage.getItem(
+          "rohit-photography-settings"
+        );
+
+      if (savedSettings) {
+
         return {
           ...defaultSettings,
-          ...JSON.parse(savedSettings),
+          ...JSON.parse(
+            savedSettings
+          ),
         };
-      } catch (error) {
-        console.error(
-          "Failed to load website settings:",
-          error
-        );
+
       }
+
+    } catch (error) {
+
+      console.error(
+        "Failed to load website settings:",
+        error
+      );
+
     }
 
     return defaultSettings;
+
   });
+
+
+  /* =========================
+     LOAD CONTACT HERO
+  ========================= */
+
+  const [contactHero] =
+    useState(() => {
+
+      try {
+
+        const savedHero =
+          localStorage.getItem(
+            "rohit-photography-contact-hero"
+          );
+
+        if (savedHero) {
+
+          return {
+            ...defaultContactHero,
+            ...JSON.parse(
+              savedHero
+            ),
+          };
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Contact Hero settings:",
+          error
+        );
+
+      }
+
+      return defaultContactHero;
+
+    });
+
+
+  /* =========================
+     LOAD CONTACT CONTENT
+  ========================= */
+
+  const [contactContent] =
+    useState(() => {
+
+      try {
+
+        const savedContent =
+          localStorage.getItem(
+            "rohit-photography-contact-content"
+          );
+
+        if (savedContent) {
+
+          return {
+            ...defaultContactContent,
+            ...JSON.parse(
+              savedContent
+            ),
+          };
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Contact Content settings:",
+          error
+        );
+
+      }
+
+      return defaultContactContent;
+
+    });
+
+
+  /* =========================
+     LOAD CONTACT FORM
+  ========================= */
+
+  const [contactForm] =
+    useState(() => {
+
+      try {
+
+        const savedForm =
+          localStorage.getItem(
+            "rohit-photography-contact-form"
+          );
+
+        if (savedForm) {
+
+          const parsed =
+            JSON.parse(
+              savedForm
+            );
+
+          return {
+            ...defaultContactForm,
+            ...parsed,
+
+            services:
+              Array.isArray(
+                parsed.services
+              )
+                ? parsed.services
+                : defaultContactForm.services,
+
+            budgets:
+              Array.isArray(
+                parsed.budgets
+              )
+                ? parsed.budgets
+                : defaultContactForm.budgets,
+
+            referralSources:
+              Array.isArray(
+                parsed.referralSources
+              )
+                ? parsed.referralSources
+                : defaultContactForm.referralSources,
+          };
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Contact Form settings:",
+          error
+        );
+
+      }
+
+      return defaultContactForm;
+
+    });
+
+
+  /* =========================
+     HERO IMAGE FALLBACK
+  ========================= */
+
+  const contactHeroImage =
+    contactHero.image ||
+    heroImage;
+
 
   /* =========================
      FORM STATE
   ========================= */
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
+  const [
+    isSubmitting,
+    setIsSubmitting,
+  ] = useState(false);
 
-  const [status, setStatus] =
-    useState({
-      type: "",
-      message: "",
-    });
+  const [
+    status,
+    setStatus,
+  ] = useState({
+    type: "",
+    message: "",
+  });
+
 
   /* =========================
      CONTACT LINKS
@@ -81,87 +326,126 @@ export default function Contact() {
       settings.location
     )}`;
 
+
   /* =========================
      FORM SUBMISSION
   ========================= */
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit =
+    async (e) => {
 
-    setIsSubmitting(true);
+      e.preventDefault();
 
-    setStatus({
-      type: "",
-      message: "",
-    });
-
-    const form = e.target;
-
-    const formData =
-      new FormData(form);
-
-    formData.append(
-      "access_key",
-      import.meta.env
-        .VITE_WEB3FORMS_ACCESS_KEY
-    );
-
-    formData.append(
-      "subject",
-      `New Photography Inquiry - ${settings.businessName}`
-    );
-
-    formData.append(
-      "from_name",
-      `${settings.businessName} Website`
-    );
-
-    try {
-      const response = await fetch(
-        "https://api.web3forms.com/submit",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data =
-        await response.json();
-
-      if (data.success) {
-        setStatus({
-          type: "success",
-          message:
-            "Thank you for your inquiry. I'll get back to you as soon as possible.",
-        });
-
-        form.reset();
-      } else {
-        setStatus({
-          type: "error",
-          message:
-            data.message ||
-            "Something went wrong. Please try again.",
-        });
-      }
-    } catch (error) {
-      console.error(
-        "Contact form error:",
-        error
+      setIsSubmitting(
+        true
       );
 
       setStatus({
-        type: "error",
-        message:
-          "Unable to send your inquiry. Please try again later.",
+        type: "",
+        message: "",
       });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
+      const form =
+        e.target;
+
+      const formData =
+        new FormData(
+          form
+        );
+
+      formData.append(
+        "access_key",
+        import.meta.env
+          .VITE_WEB3FORMS_ACCESS_KEY
+      );
+
+      formData.append(
+        "subject",
+        `New Photography Inquiry - ${settings.businessName}`
+      );
+
+      formData.append(
+        "from_name",
+        `${settings.businessName} Website`
+      );
+
+      try {
+
+        const response =
+          await fetch(
+            "https://api.web3forms.com/submit",
+            {
+              method:
+                "POST",
+
+              body:
+                formData,
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          data.success
+        ) {
+
+          setStatus({
+            type:
+              "success",
+
+            message:
+              "Thank you for your inquiry. I'll get back to you as soon as possible.",
+          });
+
+          form.reset();
+
+        } else {
+
+          setStatus({
+            type:
+              "error",
+
+            message:
+              data.message ||
+              "Something went wrong. Please try again.",
+          });
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Contact form error:",
+          error
+        );
+
+        setStatus({
+          type:
+            "error",
+
+          message:
+            "Unable to send your inquiry. Please try again later.",
+        });
+
+      } finally {
+
+        setIsSubmitting(
+          false
+        );
+
+      }
+
+    };
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <>
+
       {/* =========================
           SEO
       ========================= */}
@@ -169,22 +453,37 @@ export default function Contact() {
       <SEOHead
         title={`Contact ${settings.businessName} | Photographer in Pune`}
         description={`Contact ${settings.businessName} for wedding, portrait, commercial, industrial, event and food photography services in ${settings.location} and across India.`}
-        image={heroImage}
+        image={
+          contactHeroImage
+        }
       />
+
 
       {/* =========================
           PAGE HERO
       ========================= */}
 
       <PageHero
-        title="Let's Create Something Beautiful"
-        description="Whether you're planning a wedding, portrait session, commercial project or destination wedding, I'd love to hear your story."
-        image={heroImage}
+        title={
+          contactHero.title
+        }
+        description={
+          contactHero.description
+        }
+        image={
+          contactHeroImage
+        }
       />
+
+
+      {/* =========================
+          CONTACT SECTION
+      ========================= */}
 
       <section className="contact-section">
 
         <div className="contact-container">
+
 
           {/* =========================
               CONTACT INFORMATION
@@ -192,25 +491,45 @@ export default function Contact() {
 
           <div className="contact-info">
 
+
+            {/* SECTION LABEL */}
+
             <span>
-              GET IN TOUCH
+              {
+                contactContent.label
+              }
             </span>
 
+
+            {/* HEADING */}
+
             <h2>
-              Let's Tell
-              <br />
-              Your Story.
+
+              {
+                contactContent.headingLine1
+              }
+
+              {contactContent.headingLine2 && (
+                <>
+                  <br />
+
+                  {
+                    contactContent.headingLine2
+                  }
+                </>
+              )}
+
             </h2>
 
+
+            {/* INTRODUCTION */}
+
             <p>
-              Every great photograph begins
-              with a conversation. Tell me
-              about your vision, your
-              celebration and the moments
-              that matter most. Together
-              we'll create photographs that
-              you'll cherish for a lifetime.
+              {
+                contactContent.description
+              }
             </p>
+
 
             {/* EMAIL */}
 
@@ -221,13 +540,18 @@ export default function Contact() {
               </h4>
 
               <a
-                href={emailLink}
+                href={
+                  emailLink
+                }
                 className="contact-link"
               >
-                {settings.email}
+                {
+                  settings.email
+                }
               </a>
 
             </div>
+
 
             {/* PHONE */}
 
@@ -238,13 +562,18 @@ export default function Contact() {
               </h4>
 
               <a
-                href={phoneLink}
+                href={
+                  phoneLink
+                }
                 className="contact-link"
               >
-                {settings.phone}
+                {
+                  settings.phone
+                }
               </a>
 
             </div>
+
 
             {/* LOCATION */}
 
@@ -255,15 +584,20 @@ export default function Contact() {
               </h4>
 
               <a
-                href={mapsLink}
+                href={
+                  mapsLink
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-link"
               >
-                {settings.location}
+                {
+                  settings.location
+                }
               </a>
 
             </div>
+
 
             {/* WORKING HOURS */}
 
@@ -274,16 +608,21 @@ export default function Contact() {
               </h4>
 
               <p>
-                {settings.workingDays}
+                {
+                  settings.workingDays
+                }
               </p>
 
               <p>
-                {settings.workingHours}
+                {
+                  settings.workingHours
+                }
               </p>
 
             </div>
 
           </div>
+
 
           {/* =========================
               CONTACT FORM
@@ -293,8 +632,13 @@ export default function Contact() {
 
             <form
               className="contact-form"
-              onSubmit={handleSubmit}
+              onSubmit={
+                handleSubmit
+              }
             >
+
+
+              {/* NAME */}
 
               <input
                 type="text"
@@ -303,12 +647,18 @@ export default function Contact() {
                 required
               />
 
+
+              {/* EMAIL */}
+
               <input
                 type="email"
                 name="email"
                 placeholder="Email Address"
                 required
               />
+
+
+              {/* PHONE */}
 
               <input
                 type="tel"
@@ -317,17 +667,28 @@ export default function Contact() {
                 required
               />
 
+
+              {/* EVENT DATE */}
+
               <input
                 type="date"
                 name="event_date"
                 required
               />
 
+
+              {/* EVENT LOCATION */}
+
               <input
                 type="text"
                 name="event_location"
                 placeholder="Event Location"
               />
+
+
+              {/* =========================
+                  PHOTOGRAPHY SERVICE
+              ========================= */}
 
               <select
                 name="photography_service"
@@ -342,39 +703,34 @@ export default function Contact() {
                   Select Photography Service
                 </option>
 
-                <option>
-                  Wedding Photography
-                </option>
+                {contactForm.services.map(
+                  (
+                    service,
+                    index
+                  ) => (
 
-                <option>
-                  Pre Wedding
-                </option>
+                    <option
+                      key={
+                        `${service}-${index}`
+                      }
+                      value={
+                        service
+                      }
+                    >
+                      {
+                        service
+                      }
+                    </option>
 
-                <option>
-                  Engagement
-                </option>
-
-                <option>
-                  Portrait Photography
-                </option>
-
-                <option>
-                  Commercial Photography
-                </option>
-
-                <option>
-                  Industrial Photography
-                </option>
-
-                <option>
-                  Event Photography
-                </option>
-
-                <option>
-                  Food Photography
-                </option>
+                  )
+                )}
 
               </select>
+
+
+              {/* =========================
+                  BUDGET
+              ========================= */}
 
               <select
                 name="budget"
@@ -388,27 +744,34 @@ export default function Contact() {
                   Approximate Budget
                 </option>
 
-                <option>
-                  Below ₹50,000
-                </option>
+                {contactForm.budgets.map(
+                  (
+                    budget,
+                    index
+                  ) => (
 
-                <option>
-                  ₹50,000 – ₹1,00,000
-                </option>
+                    <option
+                      key={
+                        `${budget}-${index}`
+                      }
+                      value={
+                        budget
+                      }
+                    >
+                      {
+                        budget
+                      }
+                    </option>
 
-                <option>
-                  ₹1,00,000 – ₹2,00,000
-                </option>
-
-                <option>
-                  ₹2,00,000 – ₹5,00,000
-                </option>
-
-                <option>
-                  Above ₹5,00,000
-                </option>
+                  )
+                )}
 
               </select>
+
+
+              {/* =========================
+                  REFERRAL SOURCE
+              ========================= */}
 
               <select
                 name="referral_source"
@@ -422,63 +785,78 @@ export default function Contact() {
                   How did you hear about me?
                 </option>
 
-                <option>
-                  Google Search
-                </option>
+                {contactForm.referralSources.map(
+                  (
+                    source,
+                    index
+                  ) => (
 
-                <option>
-                  Instagram
-                </option>
+                    <option
+                      key={
+                        `${source}-${index}`
+                      }
+                      value={
+                        source
+                      }
+                    >
+                      {
+                        source
+                      }
+                    </option>
 
-                <option>
-                  Facebook
-                </option>
-
-                <option>
-                  Friend / Family
-                </option>
-
-                <option>
-                  Previous Client
-                </option>
-
-                <option>
-                  Wedding Planner
-                </option>
-
-                <option>
-                  Other
-                </option>
+                  )
+                )}
 
               </select>
+
+
+              {/* =========================
+                  MESSAGE
+              ========================= */}
 
               <textarea
                 name="message"
                 rows={7}
-                placeholder="Tell me about your wedding or project..."
+                placeholder={
+                  contactForm.messagePlaceholder
+                }
                 required
               />
 
-              {/* FORM STATUS */}
+
+              {/* =========================
+                  FORM STATUS
+              ========================= */}
 
               {status.message && (
+
                 <div
                   className={`contact-form-message ${status.type}`}
                 >
-                  {status.message}
+                  {
+                    status.message
+                  }
                 </div>
+
               )}
 
-              {/* SUBMIT BUTTON */}
+
+              {/* =========================
+                  SUBMIT BUTTON
+              ========================= */}
 
               <button
                 type="submit"
                 className="btn btn-dark btn-full"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting
+                }
               >
+
                 {isSubmitting
                   ? "Sending..."
-                  : "Send Inquiry"}
+                  : contactForm.submitButtonText}
+
               </button>
 
             </form>
@@ -488,6 +866,7 @@ export default function Contact() {
         </div>
 
       </section>
+
     </>
   );
 }

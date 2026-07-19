@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+
 import {
   useEffect,
   useMemo,
@@ -7,9 +8,59 @@ import {
 
 import "./Hero.css";
 
+
+/* =========================
+   CONSTANTS
+========================= */
+
+const HOMEPAGE_KEY =
+  "rohit-photography-homepage";
+
+
+/*
+ * Fallback image shown if
+ * no Hero images have been
+ * selected from Admin.
+ */
+
+const fallbackHeroImage =
+  "https://images.unsplash.com/photo-1519741497674-611481863552?w=2000&q=85";
+
+
+/* =========================
+   DEFAULT HERO SETTINGS
+========================= */
+
+const defaultSettings = {
+  heroTitle:
+    "Capturing Timeless Stories",
+
+  heroSubtitle:
+    "Luxury Wedding Photographer based in Pune, India.",
+
+  heroDescription:
+    "Documentary storytelling through timeless imagery, capturing emotion, atmosphere and moments that deserve to be remembered.",
+
+  heroImages: [],
+
+  buttonText:
+    "View Portfolio",
+
+  buttonLink:
+    "/portfolio",
+};
+
+
 export default function Hero() {
-  const [currentImage, setCurrentImage] =
-    useState(0);
+  /* =========================
+     CURRENT SLIDE
+  ========================= */
+
+  const [
+    currentImage,
+    setCurrentImage,
+  ] = useState(0);
+
 
   /* =========================
      LOAD HOMEPAGE SETTINGS
@@ -20,83 +71,159 @@ export default function Hero() {
       try {
         const saved =
           localStorage.getItem(
-            "rohit-photography-homepage"
+            HOMEPAGE_KEY
           );
 
         if (!saved) {
-          return {};
+          return {
+            ...defaultSettings,
+          };
         }
 
-        return JSON.parse(
-          saved
-        );
+        const parsed =
+          JSON.parse(
+            saved
+          );
+
+
+        /*
+         * Support both the new
+         * heroImages array and
+         * the old heroImage field.
+         */
+
+        const migratedHeroImages =
+          Array.isArray(
+            parsed.heroImages
+          )
+            ? parsed.heroImages
+            : parsed.heroImage
+            ? [
+                parsed.heroImage,
+              ]
+            : [];
+
+
+        return {
+          ...defaultSettings,
+          ...parsed,
+
+          heroImages:
+            migratedHeroImages,
+        };
+
       } catch (error) {
         console.error(
           "Failed to load homepage settings:",
           error
         );
 
-        return {};
+        return {
+          ...defaultSettings,
+        };
       }
     }, []);
 
+
   /* =========================
-     LOAD ADMIN HERO IMAGES
+     HERO IMAGES
   ========================= */
 
   const heroImages =
     useMemo(() => {
-      if (
+
+      const savedImages =
         Array.isArray(
           homepageSettings.heroImages
         )
+          ? homepageSettings.heroImages.filter(
+              Boolean
+            )
+          : [];
+
+
+      /*
+       * If Admin has not selected
+       * any Hero images, use the
+       * fallback image.
+       */
+
+      if (
+        savedImages.length ===
+        0
       ) {
-        return homepageSettings.heroImages.filter(
-          Boolean
-        );
+        return [
+          fallbackHeroImage,
+        ];
       }
 
-      return [];
+      return savedImages;
+
     }, [
       homepageSettings,
     ]);
+
 
   /* =========================
      RESET CURRENT IMAGE
   ========================= */
 
   useEffect(() => {
-    setCurrentImage(0);
-  }, [heroImages]);
+    setCurrentImage(
+      0
+    );
+  }, [
+    heroImages,
+  ]);
+
 
   /* =========================
      AUTO SLIDESHOW
   ========================= */
 
   useEffect(() => {
+
+    /*
+     * No slideshow required
+     * when only one image exists.
+     */
+
     if (
-      heroImages.length <= 1
+      heroImages.length <=
+      1
     ) {
-      return;
+      return undefined;
     }
 
+
     const interval =
-      setInterval(() => {
-        setCurrentImage(
-          (prev) =>
-            (prev + 1) %
-            heroImages.length
-        );
-      }, 6000);
+      setInterval(
+        () => {
+
+          setCurrentImage(
+            (prev) =>
+              (
+                prev +
+                1
+              ) %
+              heroImages.length
+          );
+
+        },
+        6000
+      );
+
 
     return () => {
       clearInterval(
         interval
       );
     };
+
   }, [
     heroImages.length,
   ]);
+
 
   /* =========================
      RENDER
@@ -104,6 +231,7 @@ export default function Hero() {
 
   return (
     <section className="hero">
+
 
       {/* =========================
           HERO IMAGES
@@ -117,10 +245,18 @@ export default function Hero() {
 
           <img
             key={`${image}-${index}`}
-            src={image}
-            alt={`Rohit Ohal Photography ${
-              index + 1
-            }`}
+            src={
+              image
+            }
+            alt={
+              index === 0
+                ? "Rohit Ohal Photography"
+                : ""
+            }
+            aria-hidden={
+              index !==
+              currentImage
+            }
             className={
               index ===
               currentImage
@@ -132,11 +268,13 @@ export default function Hero() {
         )
       )}
 
+
       {/* =========================
           OVERLAY
       ========================= */}
 
       <div className="hero-overlay" />
+
 
       {/* =========================
           HERO CONTENT
@@ -144,38 +282,68 @@ export default function Hero() {
 
       <div className="hero-content">
 
+
+        {/* HERO TITLE */}
+
         <h1>
-          {homepageSettings.heroTitle ||
-            "ROHIT OHAL"}
+          {
+            homepageSettings
+              .heroTitle
+          }
         </h1>
 
+
+        {/* HERO SUBTITLE */}
+
         <h2>
-          {homepageSettings.heroSubtitle ||
-            "Fine Art Wedding & Commercial Photography"}
+          {
+            homepageSettings
+              .heroSubtitle
+          }
         </h2>
 
-        <p>
-          Documentary storytelling
-          through timeless imagery,
-          capturing emotion,
-          atmosphere and moments that
-          deserve to be remembered.
-        </p>
 
-        <div className="hero-buttons">
+        {/* HERO DESCRIPTION */}
 
-          <Link
-            to={
-              homepageSettings.buttonLink ||
-              "/portfolio"
+        {homepageSettings
+          .heroDescription && (
+
+          <p>
+            {
+              homepageSettings
+                .heroDescription
             }
-            className="hero-primary"
-          >
-            {homepageSettings.buttonText ||
-              "Explore Portfolio"}
-          </Link>
+          </p>
 
-        </div>
+        )}
+
+
+        {/* =========================
+            HERO BUTTON
+        ========================= */}
+
+        {homepageSettings
+          .buttonText && (
+
+          <div className="hero-buttons">
+
+            <Link
+              to={
+                homepageSettings
+                  .buttonLink ||
+                "/portfolio"
+              }
+              className="hero-primary"
+            >
+              {
+                homepageSettings
+                  .buttonText
+              }
+            </Link>
+
+          </div>
+
+        )}
 
       </div>
 

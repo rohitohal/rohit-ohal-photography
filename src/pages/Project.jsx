@@ -1,10 +1,18 @@
-import { Link, useParams } from "react-router-dom";
-import { useState } from "react";
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
+
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import SEOHead from "../components/common/SEOHead";
 import PageHero from "../components/common/PageHero";
 
 import "./Project.css";
+
 
 /* =========================
    CATEGORY → DISCIPLINE MAP
@@ -15,26 +23,51 @@ const categoryToDiscipline = {
   Portrait: "portraits",
   Events: "events",
   Industrial: "industrial",
-  "Food & Beverage": "food-beverage",
+  "Food & Beverage":
+    "food-beverage",
   Editorial: "editorial",
 };
+
 
 /* =========================
    DISCIPLINE DISPLAY NAMES
 ========================= */
 
 const disciplineLabels = {
-  weddings: "Wedding Stories",
-  portraits: "Portraits",
-  events: "Events",
-  industrial: "Industrial",
-  "food-beverage": "Food & Beverage",
-  editorial: "Editorial",
+  weddings:
+    "Wedding Stories",
+
+  portraits:
+    "Portraits",
+
+  events:
+    "Events",
+
+  industrial:
+    "Industrial",
+
+  "food-beverage":
+    "Food & Beverage",
+
+  editorial:
+    "Editorial",
 };
 
+
 export default function Project() {
-  const { projectSlug } =
-    useParams();
+  /* =========================
+     ROUTE PARAMETERS
+  ========================= */
+
+  const {
+    disciplineSlug,
+    projectSlug,
+  } = useParams();
+
+
+  /* =========================
+     LIGHTBOX STATE
+  ========================= */
 
   const [
     lightboxOpen,
@@ -45,6 +78,7 @@ export default function Project() {
     activeImage,
     setActiveImage,
   ] = useState(0);
+
 
   /* =========================
      LOAD CMS PROJECTS
@@ -60,7 +94,9 @@ export default function Project() {
 
     if (savedProjects) {
       const parsedProjects =
-        JSON.parse(savedProjects);
+        JSON.parse(
+          savedProjects
+        );
 
       if (
         Array.isArray(
@@ -71,6 +107,7 @@ export default function Project() {
           parsedProjects;
       }
     }
+
   } catch (error) {
     console.error(
       "Failed to load CMS projects:",
@@ -78,62 +115,448 @@ export default function Project() {
     );
   }
 
+
   /* =========================
      MAP PUBLISHED PROJECTS
   ========================= */
 
   const allProjects =
     cmsProjects
+
       .filter(
         (project) =>
+          project &&
           project.status ===
-          "Published"
+            "Published"
       )
-      .map((project) => ({
-        ...project,
 
-        discipline:
-          categoryToDiscipline[
-            project.category
-          ] || "other",
+      .map(
+        (
+          project,
+          index
+        ) => {
 
-        year: project.date
-          ? new Date(
-              project.date
-            )
-              .getFullYear()
-              .toString()
-          : new Date()
-              .getFullYear()
-              .toString(),
+          const discipline =
+            categoryToDiscipline[
+              project.category
+            ] ||
+            "other";
 
-        description:
-          project.description ||
-          "",
 
-        gallery:
-          Array.isArray(
-            project.gallery
-          )
-            ? project.gallery
-            : [],
-      }));
+          /* PROJECT YEAR */
+
+          let year = "";
+
+          if (
+            project.date
+          ) {
+            const parsedDate =
+              new Date(
+                project.date
+              );
+
+            if (
+              !Number.isNaN(
+                parsedDate.getTime()
+              )
+            ) {
+              year =
+                parsedDate
+                  .getFullYear()
+                  .toString();
+            }
+          }
+
+
+          return {
+            ...project,
+
+            discipline,
+
+            year,
+
+            description:
+              project.description ||
+              "",
+
+            gallery:
+              Array.isArray(
+                project.gallery
+              )
+                ? project.gallery.filter(
+                    Boolean
+                  )
+                : [],
+
+            order:
+              typeof
+                project.order ===
+              "number"
+                ? project.order
+                : index,
+          };
+
+        }
+      );
+
+
+  /* =========================
+     CURRENT DISCIPLINE
+     PROJECTS
+  ========================= */
+
+  const disciplineProjects =
+    allProjects
+
+      .filter(
+        (project) =>
+          project.discipline ===
+          disciplineSlug
+      )
+
+      .sort(
+        (a, b) => {
+
+          const aFeatured =
+            a.featuredPortfolio
+              ? 1
+              : 0;
+
+          const bFeatured =
+            b.featuredPortfolio
+              ? 1
+              : 0;
+
+
+          /* FEATURED FIRST */
+
+          if (
+            aFeatured !==
+            bFeatured
+          ) {
+            return (
+              bFeatured -
+              aFeatured
+            );
+          }
+
+
+          /* CUSTOM ORDER */
+
+          return (
+            a.order -
+            b.order
+          );
+
+        }
+      );
+
 
   /* =========================
      FIND CURRENT PROJECT
   ========================= */
 
   const projectIndex =
-    allProjects.findIndex(
+    disciplineProjects.findIndex(
       (item) =>
         item.slug ===
         projectSlug
     );
 
+
   const project =
-    allProjects[
+    disciplineProjects[
       projectIndex
     ];
+
+
+  /* =========================
+     PREVIOUS / NEXT PROJECT
+  ========================= */
+
+  const previousProject =
+    projectIndex > 0
+      ? disciplineProjects[
+          projectIndex - 1
+        ]
+      : null;
+
+
+  const nextProject =
+    projectIndex >= 0 &&
+    projectIndex <
+      disciplineProjects.length -
+        1
+      ? disciplineProjects[
+          projectIndex + 1
+        ]
+      : null;
+
+
+  /* =========================
+     LIGHTBOX FUNCTIONS
+  ========================= */
+
+  const openLightbox = (
+    index
+  ) => {
+
+    setActiveImage(
+      index
+    );
+
+    setLightboxOpen(
+      true
+    );
+
+  };
+
+
+  const closeLightbox =
+    () => {
+
+      setLightboxOpen(
+        false
+      );
+
+      setActiveImage(
+        0
+      );
+
+    };
+
+
+  /* =========================
+     NEXT IMAGE
+  ========================= */
+
+  const nextImage = () => {
+
+    if (
+      !project ||
+      project.gallery.length ===
+        0
+    ) {
+      return;
+    }
+
+    setActiveImage(
+      (prev) =>
+        (
+          prev +
+          1
+        ) %
+        project.gallery.length
+    );
+
+  };
+
+
+  /* =========================
+     PREVIOUS IMAGE
+  ========================= */
+
+  const previousImage =
+    () => {
+
+      if (
+        !project ||
+        project.gallery.length ===
+          0
+      ) {
+        return;
+      }
+
+      setActiveImage(
+        (prev) =>
+          prev === 0
+            ? project.gallery
+                .length - 1
+            : prev - 1
+      );
+
+    };
+
+
+  /* =========================
+     KEYBOARD NAVIGATION
+  ========================= */
+
+  useEffect(() => {
+
+    /*
+     * Keyboard controls should
+     * only work while the
+     * lightbox is open.
+     */
+
+    if (
+      !lightboxOpen
+    ) {
+      return undefined;
+    }
+
+
+    const handleKeyDown =
+      (event) => {
+
+        /* NEXT IMAGE */
+
+        if (
+          event.key ===
+          "ArrowRight"
+        ) {
+          event.preventDefault();
+
+          setActiveImage(
+            (prev) => {
+
+              if (
+                !project ||
+                project.gallery
+                  .length === 0
+              ) {
+                return prev;
+              }
+
+              return (
+                prev +
+                1
+              ) %
+                project.gallery
+                  .length;
+
+            }
+          );
+        }
+
+
+        /* PREVIOUS IMAGE */
+
+        if (
+          event.key ===
+          "ArrowLeft"
+        ) {
+          event.preventDefault();
+
+          setActiveImage(
+            (prev) => {
+
+              if (
+                !project ||
+                project.gallery
+                  .length === 0
+              ) {
+                return prev;
+              }
+
+              return prev ===
+                0
+                ? project
+                    .gallery
+                    .length -
+                    1
+                : prev -
+                    1;
+
+            }
+          );
+        }
+
+
+        /* CLOSE LIGHTBOX */
+
+        if (
+          event.key ===
+          "Escape"
+        ) {
+          event.preventDefault();
+
+          setLightboxOpen(
+            false
+          );
+
+          setActiveImage(
+            0
+          );
+        }
+
+      };
+
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+
+    return () => {
+
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+
+    };
+
+  }, [
+    lightboxOpen,
+    project,
+  ]);
+
+
+  /* =========================
+     PREVENT PAGE SCROLL
+     WHILE LIGHTBOX IS OPEN
+  ========================= */
+
+  useEffect(() => {
+
+    if (
+      !lightboxOpen
+    ) {
+      return undefined;
+    }
+
+    const previousOverflow =
+      document.body.style
+        .overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+
+    return () => {
+
+      document.body.style.overflow =
+        previousOverflow;
+
+    };
+
+  }, [
+    lightboxOpen,
+  ]);
+
+
+  /* =========================
+     IMAGE PROTECTION
+  ========================= */
+
+  const preventImageContextMenu =
+    (event) => {
+
+      event.preventDefault();
+
+    };
+
+
+  const preventImageDrag =
+    (event) => {
+
+      event.preventDefault();
+
+    };
+
 
   /* =========================
      PROJECT NOT FOUND
@@ -153,80 +576,18 @@ export default function Project() {
             Project not found
           </h1>
 
+          <Link
+            to="/portfolio"
+            className="project-nav-link"
+          >
+            ← Back to Portfolio
+          </Link>
+
         </div>
       </>
     );
   }
 
-  /* =========================
-     PREVIOUS / NEXT
-  ========================= */
-
-  const previousProject =
-    projectIndex > 0
-      ? allProjects[
-          projectIndex - 1
-        ]
-      : null;
-
-  const nextProject =
-    projectIndex <
-    allProjects.length - 1
-      ? allProjects[
-          projectIndex + 1
-        ]
-      : null;
-
-  /* =========================
-     LIGHTBOX
-  ========================= */
-
-  const openLightbox = (
-    index
-  ) => {
-    setActiveImage(index);
-    setLightboxOpen(true);
-  };
-
-  const closeLightbox =
-    () => {
-      setLightboxOpen(false);
-    };
-
-  const nextImage = () => {
-    if (
-      !project.gallery
-        ?.length
-    ) {
-      return;
-    }
-
-    setActiveImage(
-      (prev) =>
-        (prev + 1) %
-        project.gallery
-          .length
-    );
-  };
-
-  const previousImage =
-    () => {
-      if (
-        !project.gallery
-          ?.length
-      ) {
-        return;
-      }
-
-      setActiveImage(
-        (prev) =>
-          prev === 0
-            ? project
-                .gallery
-                .length - 1
-            : prev - 1
-      );
-    };
 
   /* =========================
      DISCIPLINE LABEL
@@ -239,6 +600,7 @@ export default function Project() {
     project.discipline ||
     "Photography";
 
+
   /* =========================
      SEO
   ========================= */
@@ -246,9 +608,28 @@ export default function Project() {
   const seoTitle =
     `${project.title} | Rohit Ohal Photography`;
 
+
   const seoDescription =
     project.description ||
     `${project.title}, a ${disciplineLabel} photography project by Rohit Ohal Photography.`;
+
+
+  /* =========================
+     HERO SUBTITLE
+  ========================= */
+
+  const heroSubtitle =
+    [
+      project.location,
+      project.year,
+    ]
+      .filter(
+        Boolean
+      )
+      .join(
+        " • "
+      );
+
 
   /* =========================
      RENDER
@@ -256,8 +637,15 @@ export default function Project() {
 
   return (
     <>
+
+      {/* =========================
+          SEO
+      ========================= */}
+
       <SEOHead
-        title={seoTitle}
+        title={
+          seoTitle
+        }
         description={
           seoDescription
         }
@@ -266,33 +654,41 @@ export default function Project() {
         }
       />
 
+
+      {/* =========================
+          HERO
+      ========================= */}
+
       <PageHero
         title={
           project.title
         }
-        subtitle={`${
-          project.location ||
-          ""
-        }${
-          project.location &&
-          project.year
-            ? " • "
-            : ""
-        }${
-          project.year || ""
-        }`}
+        subtitle={
+          heroSubtitle
+        }
         image={
           project.cover
         }
       />
 
+
+      {/* =========================
+          PROJECT PAGE
+      ========================= */}
+
       <section className="project-page">
 
         <div className="project-container">
 
-          {/* PROJECT META */}
+
+          {/* =========================
+              PROJECT META
+          ========================= */}
 
           <div className="project-meta">
+
+
+            {/* LOCATION */}
 
             <div>
 
@@ -301,11 +697,16 @@ export default function Project() {
               </span>
 
               <h3>
-                {project.location ||
-                  "—"}
+                {
+                  project.location ||
+                  "—"
+                }
               </h3>
 
             </div>
+
+
+            {/* YEAR */}
 
             <div>
 
@@ -314,11 +715,16 @@ export default function Project() {
               </span>
 
               <h3>
-                {project.year ||
-                  "—"}
+                {
+                  project.year ||
+                  "—"
+                }
               </h3>
 
             </div>
+
+
+            {/* DISCIPLINE */}
 
             <div>
 
@@ -336,7 +742,10 @@ export default function Project() {
 
           </div>
 
-          {/* PROJECT STORY */}
+
+          {/* =========================
+              PROJECT STORY
+          ========================= */}
 
           <div className="project-story">
 
@@ -345,16 +754,21 @@ export default function Project() {
             </h2>
 
             <p>
-              {project.description ||
-                "Project description coming soon."}
+              {
+                project.description ||
+                "Project description coming soon."
+              }
             </p>
 
           </div>
 
-          {/* PROJECT GALLERY */}
 
-          {project.gallery
-            ?.length > 0 && (
+          {/* =========================
+              PROJECT GALLERY
+          ========================= */}
+
+          {project.gallery.length >
+            0 && (
 
             <div className="project-gallery">
 
@@ -365,15 +779,28 @@ export default function Project() {
                 ) => (
 
                   <img
-                    key={
-                      `${image}-${index}`
-                    }
+                    key={`${image}-${index}`}
                     src={
                       image
                     }
                     alt={`${project.title} - Image ${
-                      index + 1
+                      index +
+                      1
                     }`}
+                    loading="lazy"
+
+                    draggable={
+                      false
+                    }
+
+                    onContextMenu={
+                      preventImageContextMenu
+                    }
+
+                    onDragStart={
+                      preventImageDrag
+                    }
+
                     onClick={() =>
                       openLightbox(
                         index
@@ -388,9 +815,15 @@ export default function Project() {
 
           )}
 
-          {/* PROJECT NAVIGATION */}
+
+          {/* =========================
+              PROJECT NAVIGATION
+          ========================= */}
 
           <div className="project-navigation">
+
+
+            {/* PREVIOUS PROJECT */}
 
             {previousProject ? (
 
@@ -400,7 +833,8 @@ export default function Project() {
               >
                 ←{" "}
                 {
-                  previousProject.title
+                  previousProject
+                    .title
                 }
               </Link>
 
@@ -410,6 +844,9 @@ export default function Project() {
 
             )}
 
+
+            {/* NEXT PROJECT */}
+
             {nextProject ? (
 
               <Link
@@ -417,7 +854,8 @@ export default function Project() {
                 className="project-nav-link"
               >
                 {
-                  nextProject.title
+                  nextProject
+                    .title
                 }{" "}
                 →
               </Link>
@@ -434,74 +872,140 @@ export default function Project() {
 
       </section>
 
-      {/* LIGHTBOX */}
+
+      {/* =========================
+          LIGHTBOX
+      ========================= */}
 
       {lightboxOpen &&
-        project.gallery
-          ?.length > 0 && (
+        project.gallery.length >
+          0 && (
 
-          <div
-            className="lightbox"
+        <div
+          className="lightbox"
+
+          onClick={
+            closeLightbox
+          }
+
+          onContextMenu={
+            preventImageContextMenu
+          }
+
+          role="dialog"
+
+          aria-modal="true"
+
+          aria-label={`${project.title} image gallery`}
+        >
+
+
+          {/* =========================
+              CLOSE
+          ========================= */}
+
+          <button
+            type="button"
+            className="lightbox-close"
             onClick={
               closeLightbox
             }
+            aria-label="Close lightbox"
           >
+            ×
+          </button>
 
-            <button
-              type="button"
-              className="lightbox-close"
-              onClick={
-                closeLightbox
-              }
-              aria-label="Close lightbox"
-            >
-              ×
-            </button>
 
-            <button
-              type="button"
-              className="lightbox-prev"
-              onClick={(e) => {
-                e.stopPropagation();
+          {/* =========================
+              PREVIOUS IMAGE
+          ========================= */}
 
-                previousImage();
-              }}
-              aria-label="Previous image"
-            >
-              ←
-            </button>
+          <button
+            type="button"
+            className="lightbox-prev"
 
-            <img
-              src={
-                project.gallery[
-                  activeImage
-                ]
-              }
-              alt={`${project.title} - Image ${
-                activeImage + 1
-              }`}
-              className="lightbox-image"
-              onClick={(e) =>
-                e.stopPropagation()
-              }
-            />
+            onClick={(
+              event
+            ) => {
 
-            <button
-              type="button"
-              className="lightbox-next"
-              onClick={(e) => {
-                e.stopPropagation();
+              event.stopPropagation();
 
-                nextImage();
-              }}
-              aria-label="Next image"
-            >
-              →
-            </button>
+              previousImage();
 
-          </div>
+            }}
 
-        )}
+            aria-label="Previous image"
+          >
+            ←
+          </button>
+
+
+          {/* =========================
+              ACTIVE IMAGE
+          ========================= */}
+
+          <img
+            src={
+              project.gallery[
+                activeImage
+              ]
+            }
+
+            alt={`${project.title} - Image ${
+              activeImage +
+              1
+            }`}
+
+            className="lightbox-image"
+
+            draggable={
+              false
+            }
+
+            onContextMenu={
+              preventImageContextMenu
+            }
+
+            onDragStart={
+              preventImageDrag
+            }
+
+            onClick={(
+              event
+            ) => {
+
+              event.stopPropagation();
+
+            }}
+          />
+
+
+          {/* =========================
+              NEXT IMAGE
+          ========================= */}
+
+          <button
+            type="button"
+            className="lightbox-next"
+
+            onClick={(
+              event
+            ) => {
+
+              event.stopPropagation();
+
+              nextImage();
+
+            }}
+
+            aria-label="Next image"
+          >
+            →
+          </button>
+
+        </div>
+
+      )}
 
     </>
   );

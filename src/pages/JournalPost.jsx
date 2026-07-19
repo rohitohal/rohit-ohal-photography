@@ -1,7 +1,4 @@
-import {
-  Link,
-  useParams,
-} from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import SEOHead from "../components/common/SEOHead";
 import PageHero from "../components/common/PageHero";
@@ -9,9 +6,7 @@ import PageHero from "../components/common/PageHero";
 import "./Project.css";
 
 export default function JournalPost() {
-  const { slug } =
-    useParams();
-
+  const { slug } = useParams();
 
   /* =========================
      LOAD JOURNAL POSTS
@@ -29,13 +24,8 @@ export default function JournalPost() {
       const parsedPosts =
         JSON.parse(savedPosts);
 
-      if (
-        Array.isArray(
-          parsedPosts
-        )
-      ) {
-        posts =
-          parsedPosts;
+      if (Array.isArray(parsedPosts)) {
+        posts = parsedPosts;
       }
     }
   } catch (error) {
@@ -45,20 +35,15 @@ export default function JournalPost() {
     );
   }
 
-
   /* =========================
      FIND PUBLISHED ARTICLE
   ========================= */
 
-  const post =
-    posts.find(
-      (item) =>
-        item.slug ===
-          slug &&
-        item.status ===
-          "Published"
-    );
-
+  const post = posts.find(
+    (item) =>
+      item.slug === slug &&
+      item.status === "Published"
+  );
 
   /* =========================
      ARTICLE NOT FOUND
@@ -67,74 +52,19 @@ export default function JournalPost() {
   if (!post) {
     return (
       <>
-
         <SEOHead
           title="Article Not Found | Rohit Ohal Photography"
           description="The journal article you are looking for could not be found."
         />
 
-
-        <section className="project-page">
-
-          <div className="project-container">
-
-            <div
-              className="project-story"
-              style={{
-                textAlign:
-                  "center",
-
-                paddingTop:
-                  "120px",
-
-                paddingBottom:
-                  "120px",
-              }}
-            >
-
-              <h1>
-                Article Not Found
-              </h1>
-
-              <p>
-                The article may have
-                been removed or is no
-                longer published.
-              </p>
-
-
-              <Link
-                to="/journal"
-                style={{
-                  display:
-                    "inline-block",
-
-                  marginTop:
-                    "30px",
-
-                  textDecoration:
-                    "none",
-
-                  color:
-                    "#b58b43",
-
-                  fontWeight:
-                    "500",
-                }}
-              >
-                ← Back to Journal
-              </Link>
-
-            </div>
-
-          </div>
-
-        </section>
-
+        <div className="project-not-found">
+          <h1>
+            Article not found
+          </h1>
+        </div>
       </>
     );
   }
-
 
   /* =========================
      DYNAMIC SEO
@@ -143,40 +73,107 @@ export default function JournalPost() {
   const seoTitle =
     `${post.title} | Rohit Ohal Photography`;
 
-
   const seoDescription =
     post.excerpt ||
     post.content
-      ?.replace(
-        /\s+/g,
-        " "
-      )
-      .slice(
-        0,
-        160
-      ) ||
-    "Read photography stories, insights and behind-the-scenes articles from Rohit Ohal Photography.";
-
+      ?.replace(/\n/g, " ")
+      .slice(0, 160) ||
+    "Read the latest photography stories, insights and behind-the-scenes articles from Rohit Ohal Photography.";
 
   /* =========================
      FORMAT ARTICLE CONTENT
   ========================= */
 
-  const contentParagraphs =
+  const contentBlocks =
     post.content
-      ? post.content
-          .split(
-            /\n\s*\n/
-          )
-          .map(
-            (paragraph) =>
-              paragraph.trim()
-          )
-          .filter(
-            Boolean
-          )
-      : [];
+      ?.split(/\n\s*\n/)
+      .map((block) =>
+        block.trim()
+      )
+      .filter(Boolean) || [];
 
+  /* =========================
+     RENDER CONTENT BLOCK
+  ========================= */
+
+  const renderContentBlock = (
+    block,
+    index
+  ) => {
+    /*
+     * Heading format:
+     *
+     * ## Heading
+     */
+
+    if (
+      block.startsWith(
+        "## "
+      )
+    ) {
+      return (
+        <h2
+          key={index}
+          style={{
+            marginTop:
+              "48px",
+            marginBottom:
+              "18px",
+          }}
+        >
+          {block.replace(
+            /^##\s+/,
+            ""
+          )}
+        </h2>
+      );
+    }
+
+    /*
+     * Subheading format:
+     *
+     * ### Subheading
+     */
+
+    if (
+      block.startsWith(
+        "### "
+      )
+    ) {
+      return (
+        <h3
+          key={index}
+          style={{
+            marginTop:
+              "36px",
+            marginBottom:
+              "14px",
+          }}
+        >
+          {block.replace(
+            /^###\s+/,
+            ""
+          )}
+        </h3>
+      );
+    }
+
+    /*
+     * Normal paragraph
+     */
+
+    return (
+      <p
+        key={index}
+        style={{
+          whiteSpace:
+            "pre-line",
+        }}
+      >
+        {block}
+      </p>
+    );
+  };
 
   /* =========================
      RENDER
@@ -184,7 +181,6 @@ export default function JournalPost() {
 
   return (
     <>
-
       {/* =========================
           SEO
       ========================= */}
@@ -201,7 +197,6 @@ export default function JournalPost() {
         }
       />
 
-
       {/* =========================
           HERO
       ========================= */}
@@ -211,14 +206,12 @@ export default function JournalPost() {
           post.title
         }
         subtitle={
-          post.category ||
-          "Journal"
+          post.category
         }
         image={
           post.cover
         }
       />
-
 
       {/* =========================
           ARTICLE
@@ -230,6 +223,19 @@ export default function JournalPost() {
 
           <article className="project-story">
 
+            {/* ARTICLE TITLE */}
+
+            <h1
+              style={{
+                marginBottom:
+                  "24px",
+              }}
+            >
+              {
+                post.title
+              }
+            </h1>
+
 
             {/* CATEGORY */}
 
@@ -238,10 +244,10 @@ export default function JournalPost() {
               <span
                 style={{
                   display:
-                    "block",
+                    "inline-block",
 
                   marginBottom:
-                    "16px",
+                    "24px",
 
                   color:
                     "#b58b43",
@@ -264,15 +270,6 @@ export default function JournalPost() {
             )}
 
 
-            {/* TITLE */}
-
-            <h2>
-              {
-                post.title
-              }
-            </h2>
-
-
             {/* EXCERPT */}
 
             {post.excerpt && (
@@ -285,11 +282,11 @@ export default function JournalPost() {
                   lineHeight:
                     "1.7",
 
-                  marginBottom:
-                    "40px",
-
                   color:
                     "#555",
+
+                  marginBottom:
+                    "40px",
                 }}
               >
                 {
@@ -302,35 +299,26 @@ export default function JournalPost() {
 
             {/* ARTICLE CONTENT */}
 
-            {contentParagraphs.length >
+            {contentBlocks.length >
             0 ? (
 
-              <div>
+              <div
+                className="journal-article-content"
+                style={{
+                  lineHeight:
+                    "1.9",
+                }}
+              >
 
-                {contentParagraphs.map(
+                {contentBlocks.map(
                   (
-                    paragraph,
+                    block,
                     index
-                  ) => (
-
-                    <p
-                      key={
-                        index
-                      }
-                      style={{
-                        marginBottom:
-                          "24px",
-
-                        lineHeight:
-                          "1.8",
-                      }}
-                    >
-                      {
-                        paragraph
-                      }
-                    </p>
-
-                  )
+                  ) =>
+                    renderContentBlock(
+                      block,
+                      index
+                    )
                 )}
 
               </div>
@@ -344,48 +332,11 @@ export default function JournalPost() {
 
             )}
 
-
-            {/* =========================
-                BACK TO JOURNAL
-            ========================= */}
-
-            <div
-              style={{
-                marginTop:
-                  "60px",
-
-                paddingTop:
-                  "30px",
-
-                borderTop:
-                  "1px solid #ece8df",
-              }}
-            >
-
-              <Link
-                to="/journal"
-                style={{
-                  textDecoration:
-                    "none",
-
-                  color:
-                    "#b58b43",
-
-                  fontWeight:
-                    "500",
-                }}
-              >
-                ← Back to Journal
-              </Link>
-
-            </div>
-
           </article>
 
         </div>
 
       </section>
-
     </>
   );
 }

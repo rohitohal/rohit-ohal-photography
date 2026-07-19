@@ -1,5 +1,16 @@
-export default function AboutExperience() {
-  const stats = [
+const STORAGE_KEY =
+  "rohit-photography-about-experience";
+
+const defaultSettings = {
+  label: "EXPERIENCE",
+
+  headingLine1:
+    "Built On Experience.",
+
+  headingLine2:
+    "Driven By Passion.",
+
+  stats: [
     {
       number: "10+",
       title: "Years of Experience",
@@ -24,36 +35,127 @@ export default function AboutExperience() {
       description:
         "Based in Pune, India and available for destination weddings and assignments around the world.",
     },
-  ];
+  ],
+};
+
+export default function AboutExperience() {
+  /* =========================
+     LOAD SETTINGS
+  ========================= */
+
+  let settings =
+    defaultSettings;
+
+  try {
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (saved) {
+      const parsed =
+        JSON.parse(saved);
+
+      settings = {
+        ...defaultSettings,
+        ...parsed,
+
+        stats:
+          Array.isArray(
+            parsed.stats
+          )
+            ? parsed.stats
+            : defaultSettings.stats,
+      };
+    }
+  } catch (error) {
+    console.error(
+      "Failed to load About Experience settings:",
+      error
+    );
+  }
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <section className="about-experience">
+
       <div className="about-container">
 
-        <span>EXPERIENCE</span>
+        {/* SECTION LABEL */}
+
+        <span>
+          {settings.label}
+        </span>
+
+
+        {/* HEADING */}
 
         <h2>
-          Built On Experience.
-          <br />
-          Driven By Passion.
+
+          {
+            settings.headingLine1
+          }
+
+          {settings.headingLine2 && (
+            <>
+              <br />
+
+              {
+                settings.headingLine2
+              }
+            </>
+          )}
+
         </h2>
 
+
+        {/* EXPERIENCE GRID */}
+
         <div className="experience-grid">
-          {stats.map((item) => (
-            <div
-              className="experience-card"
-              key={item.title}
-            >
-              <h3>{item.number}</h3>
 
-              <h4>{item.title}</h4>
+          {settings.stats.map(
+            (
+              item,
+              index
+            ) => (
 
-              <p>{item.description}</p>
-            </div>
-          ))}
+              <div
+                className="experience-card"
+                key={
+                  `${item.title}-${index}`
+                }
+              >
+
+                <h3>
+                  {
+                    item.number
+                  }
+                </h3>
+
+                <h4>
+                  {
+                    item.title
+                  }
+                </h4>
+
+                <p>
+                  {
+                    item.description
+                  }
+                </p>
+
+              </div>
+
+            )
+          )}
+
         </div>
 
       </div>
+
     </section>
   );
 }

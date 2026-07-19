@@ -2,6 +2,18 @@ import { Link } from "react-router-dom";
 
 import "./JournalPreview.css";
 
+
+/* =========================
+   CONSTANTS
+========================= */
+
+const JOURNAL_KEY =
+  "rohit-photography-journal";
+
+const fallbackImage =
+  "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200&q=80";
+
+
 export default function JournalPreview() {
   /* =========================
      LOAD CMS JOURNAL POSTS
@@ -12,15 +24,22 @@ export default function JournalPreview() {
   try {
     const savedPosts =
       localStorage.getItem(
-        "rohit-photography-journal"
+        JOURNAL_KEY
       );
 
     if (savedPosts) {
       const parsedPosts =
-        JSON.parse(savedPosts);
+        JSON.parse(
+          savedPosts
+        );
 
-      if (Array.isArray(parsedPosts)) {
-        journalPosts = parsedPosts;
+      if (
+        Array.isArray(
+          parsedPosts
+        )
+      ) {
+        journalPosts =
+          parsedPosts;
       }
     }
   } catch (error) {
@@ -38,8 +57,9 @@ export default function JournalPreview() {
   const publishedPosts =
     journalPosts.filter(
       (post) =>
+        post &&
         post.status ===
-        "Published"
+          "Published"
     );
 
 
@@ -50,57 +70,103 @@ export default function JournalPreview() {
   const featuredPosts =
     publishedPosts
 
-      /* Only homepage featured posts */
+      /* Only featured posts */
 
       .filter(
         (post) =>
-          post.featured === true
+          post.featured ===
+          true
       )
 
-      /* Sort by homepage order */
+      /* Homepage custom order */
 
-      .sort((a, b) => {
-        const orderA =
-          typeof a.homepageOrder ===
-          "number"
-            ? a.homepageOrder
-            : Number.MAX_SAFE_INTEGER;
+      .sort(
+        (a, b) => {
 
-        const orderB =
-          typeof b.homepageOrder ===
-          "number"
-            ? b.homepageOrder
-            : Number.MAX_SAFE_INTEGER;
+          const orderA =
+            typeof
+              a.homepageOrder ===
+            "number"
+              ? a.homepageOrder
+              : Number.MAX_SAFE_INTEGER;
 
-        return (
-          orderA -
-          orderB
-        );
-      })
+          const orderB =
+            typeof
+              b.homepageOrder ===
+            "number"
+              ? b.homepageOrder
+              : Number.MAX_SAFE_INTEGER;
 
-      /* Maximum 3 homepage posts */
+          return (
+            orderA -
+            orderB
+          );
+        }
+      )
 
-      .slice(0, 3);
+      /* Maximum 3 */
+
+      .slice(
+        0,
+        3
+      );
 
 
   /* =========================
-     FALLBACK LATEST POSTS
+     GET LATEST POSTS
+  ========================= */
+
+  const latestPosts =
+    [...publishedPosts]
+
+      .sort(
+        (a, b) => {
+
+          const dateA =
+            new Date(
+              a.createdAt ||
+              a.date ||
+              0
+            ).getTime();
+
+          const dateB =
+            new Date(
+              b.createdAt ||
+              b.date ||
+              0
+            ).getTime();
+
+          return (
+            dateB -
+            dateA
+          );
+        }
+      )
+
+      .slice(
+        0,
+        3
+      );
+
+
+  /* =========================
+     HOMEPAGE PREVIEW POSTS
   ========================= */
 
   /*
-   * If no journal posts are
-   * selected for the homepage,
-   * show the first 3 published
-   * posts instead.
+   * If featured posts exist,
+   * use the custom featured
+   * homepage order.
+   *
+   * Otherwise show the latest
+   * 3 published articles.
    */
 
   const previewPosts =
-    featuredPosts.length > 0
+    featuredPosts.length >
+    0
       ? featuredPosts
-      : publishedPosts.slice(
-          0,
-          3
-        );
+      : latestPosts;
 
 
   /* =========================
@@ -151,79 +217,94 @@ export default function JournalPreview() {
         <div className="journal-grid">
 
           {previewPosts.map(
-            (post) => (
+            (post) => {
 
-              <article
-                className="journal-card"
-                key={
-                  post.id ||
-                  post.slug
-                }
-              >
+              const coverImage =
+                post.cover ||
+                fallbackImage;
+
+              return (
+
+                <article
+                  className="journal-card"
+                  key={
+                    post.id ||
+                    post.slug
+                  }
+                >
 
 
-                {/* COVER IMAGE */}
-
-                {post.cover && (
+                  {/* =========================
+                      COVER IMAGE
+                  ========================= */}
 
                   <img
                     src={
-                      post.cover
+                      coverImage
                     }
                     alt={
                       post.title ||
-                      "Journal Article"
+                      "Photography Journal"
                     }
                     loading="lazy"
                   />
 
-                )}
+
+                  {/* =========================
+                      CONTENT
+                  ========================= */}
+
+                  <div className="journal-content">
 
 
-                {/* CONTENT */}
+                    {/* CATEGORY */}
 
-                <div className="journal-content">
+                    {post.category && (
 
-                  {post.category && (
+                      <span>
+                        {
+                          post.category
+                        }
+                      </span>
 
-                    <span>
+                    )}
+
+
+                    {/* TITLE */}
+
+                    <h3>
                       {
-                        post.category
+                        post.title ||
+                        "Untitled Article"
                       }
-                    </span>
-
-                  )}
+                    </h3>
 
 
-                  <h3>
-                    {
-                      post.title
-                    }
-                  </h3>
+                    {/* ARTICLE LINK */}
 
+                    {post.slug && (
 
-                  {post.slug && (
+                      <Link
+                        to={`/journal/${post.slug}`}
+                      >
+                        Read Article →
+                      </Link>
 
-                    <Link
-                      to={`/journal/${post.slug}`}
-                    >
-                      Read Article →
-                    </Link>
+                    )}
 
-                  )}
+                  </div>
 
-                </div>
+                </article>
 
-              </article>
-
-            )
+              );
+            }
           )}
 
         </div>
 
 
         {/* =========================
-            VIEW ALL
+            VIEW ALL ARTICLES
         ========================= */}
 
         <div className="journal-footer">

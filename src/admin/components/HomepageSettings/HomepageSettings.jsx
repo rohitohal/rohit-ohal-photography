@@ -7,12 +7,28 @@ import GalleryPicker from "../GalleryPicker/GalleryPicker";
 
 import "../../styles/homepage-settings.css";
 
+
+/* =========================
+   STORAGE KEY
+========================= */
+
+const HOMEPAGE_KEY =
+  "rohit-photography-homepage";
+
+
+/* =========================
+   DEFAULT SETTINGS
+========================= */
+
 const defaultSettings = {
   heroTitle:
     "Capturing Timeless Stories",
 
   heroSubtitle:
     "Luxury Wedding Photographer based in Pune, India.",
+
+  heroDescription:
+    "Documentary storytelling through timeless imagery, capturing emotion, atmosphere and moments that deserve to be remembered.",
 
   heroImages: [],
 
@@ -23,56 +39,76 @@ const defaultSettings = {
     "/portfolio",
 };
 
+
 export default function HomepageSettings() {
   /* =========================
      HOMEPAGE SETTINGS
   ========================= */
 
-  const [settings, setSettings] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            "rohit-photography-homepage"
-          );
-
-        if (!saved) {
-          return defaultSettings;
-        }
-
-        const parsed =
-          JSON.parse(saved);
-
-        /*
-         * MIGRATE OLD SINGLE
-         * HERO IMAGE
-         */
-
-        const migratedHeroImages =
-          Array.isArray(
-            parsed.heroImages
-          )
-            ? parsed.heroImages
-            : parsed.heroImage
-            ? [parsed.heroImage]
-            : [];
-
-        return {
-          ...defaultSettings,
-          ...parsed,
-
-          heroImages:
-            migratedHeroImages,
-        };
-      } catch (error) {
-        console.error(
-          "Failed to load homepage settings:",
-          error
+  const [
+    settings,
+    setSettings,
+  ] = useState(() => {
+    try {
+      const saved =
+        localStorage.getItem(
+          HOMEPAGE_KEY
         );
 
-        return defaultSettings;
+      if (!saved) {
+        return {
+          ...defaultSettings,
+        };
       }
-    });
+
+      const parsed =
+        JSON.parse(
+          saved
+        );
+
+
+      /* =========================
+         MIGRATE OLD SINGLE
+         HERO IMAGE
+      ========================= */
+
+      const migratedHeroImages =
+        Array.isArray(
+          parsed.heroImages
+        )
+          ? parsed.heroImages
+          : parsed.heroImage
+          ? [
+              parsed.heroImage,
+            ]
+          : [];
+
+
+      /* =========================
+         MERGE SAVED SETTINGS
+         WITH NEW DEFAULTS
+      ========================= */
+
+      return {
+        ...defaultSettings,
+        ...parsed,
+
+        heroImages:
+          migratedHeroImages,
+      };
+
+    } catch (error) {
+      console.error(
+        "Failed to load homepage settings:",
+        error
+      );
+
+      return {
+        ...defaultSettings,
+      };
+    }
+  });
+
 
   /* =========================
      GALLERY PICKER
@@ -83,16 +119,29 @@ export default function HomepageSettings() {
     setIsHeroPickerOpen,
   ] = useState(false);
 
+
   /* =========================
      SAVE SETTINGS
   ========================= */
 
   useEffect(() => {
-    localStorage.setItem(
-      "rohit-photography-homepage",
-      JSON.stringify(settings)
-    );
-  }, [settings]);
+    try {
+      localStorage.setItem(
+        HOMEPAGE_KEY,
+        JSON.stringify(
+          settings
+        )
+      );
+    } catch (error) {
+      console.error(
+        "Failed to save homepage settings:",
+        error
+      );
+    }
+  }, [
+    settings,
+  ]);
+
 
   /* =========================
      INPUT CHANGE
@@ -116,12 +165,22 @@ export default function HomepageSettings() {
     );
   };
 
+
   /* =========================
      HERO IMAGE SELECTION
   ========================= */
 
   const handleHeroImages =
     (images) => {
+
+      if (
+        !Array.isArray(
+          images
+        )
+      ) {
+        return;
+      }
+
       setSettings(
         (prev) => ({
           ...prev,
@@ -130,7 +189,12 @@ export default function HomepageSettings() {
             images,
         })
       );
+
+      setIsHeroPickerOpen(
+        false
+      );
     };
+
 
   /* =========================
      REMOVE HERO IMAGE
@@ -138,12 +202,16 @@ export default function HomepageSettings() {
 
   const removeHeroImage =
     (imageUrl) => {
+
       setSettings(
         (prev) => ({
           ...prev,
 
           heroImages:
-            prev.heroImages.filter(
+            (
+              prev.heroImages ||
+              []
+            ).filter(
               (image) =>
                 image !==
                 imageUrl
@@ -151,6 +219,7 @@ export default function HomepageSettings() {
         })
       );
     };
+
 
   /* =========================
      RENDER
@@ -161,7 +230,10 @@ export default function HomepageSettings() {
 
       <div className="homepage-settings-card">
 
-        {/* HEADER */}
+
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <div className="homepage-settings-header">
 
@@ -181,9 +253,13 @@ export default function HomepageSettings() {
 
         </div>
 
+
         <div className="homepage-form">
 
-          {/* HERO TITLE */}
+
+          {/* =========================
+              HERO TITLE
+          ========================= */}
 
           <div className="form-group">
 
@@ -200,11 +276,15 @@ export default function HomepageSettings() {
               onChange={
                 handleChange
               }
+              placeholder="Enter hero title"
             />
 
           </div>
 
-          {/* HERO SUBTITLE */}
+
+          {/* =========================
+              HERO SUBTITLE
+          ========================= */}
 
           <div className="form-group">
 
@@ -213,7 +293,7 @@ export default function HomepageSettings() {
             </label>
 
             <textarea
-              rows="4"
+              rows="3"
               name="heroSubtitle"
               value={
                 settings.heroSubtitle
@@ -221,11 +301,60 @@ export default function HomepageSettings() {
               onChange={
                 handleChange
               }
+              placeholder="Enter hero subtitle"
             />
 
           </div>
 
-          {/* HERO IMAGES */}
+
+          {/* =========================
+              HERO DESCRIPTION
+          ========================= */}
+
+          <div className="form-group">
+
+            <label>
+              Hero Description
+            </label>
+
+            <textarea
+              rows="4"
+              name="heroDescription"
+              value={
+                settings.heroDescription
+              }
+              onChange={
+                handleChange
+              }
+              placeholder="Enter a short introduction for the homepage hero..."
+            />
+
+            <p
+              style={{
+                margin:
+                  "8px 0 0",
+
+                color:
+                  "#777",
+
+                fontSize:
+                  "13px",
+
+                lineHeight:
+                  "1.5",
+              }}
+            >
+              This text appears below
+              the hero title and subtitle
+              on the public homepage.
+            </p>
+
+          </div>
+
+
+          {/* =========================
+              HERO IMAGES
+          ========================= */}
 
           <div className="form-group">
 
@@ -235,8 +364,12 @@ export default function HomepageSettings() {
 
             <p
               style={{
-                margin: 0,
-                color: "#777",
+                margin:
+                  "0 0 12px",
+
+                color:
+                  "#777",
+
                 fontSize:
                   "14px",
               }}
@@ -246,6 +379,9 @@ export default function HomepageSettings() {
               for the homepage
               slideshow.
             </p>
+
+
+            {/* SELECT IMAGES */}
 
             <button
               type="button"
@@ -259,6 +395,7 @@ export default function HomepageSettings() {
               Select Hero Images
             </button>
 
+
             {/* IMAGE COUNT */}
 
             {settings.heroImages
@@ -266,9 +403,12 @@ export default function HomepageSettings() {
 
               <p
                 style={{
-                  margin: 0,
+                  margin:
+                    "12px 0 0",
+
                   color:
                     "#777",
+
                   fontSize:
                     "14px",
                 }}
@@ -283,7 +423,10 @@ export default function HomepageSettings() {
 
             )}
 
-            {/* HERO IMAGE PREVIEWS */}
+
+            {/* =========================
+                HERO IMAGE PREVIEWS
+            ========================= */}
 
             {settings.heroImages
               .length > 0 && (
@@ -300,7 +443,7 @@ export default function HomepageSettings() {
                     "16px",
 
                   marginTop:
-                    "10px",
+                    "16px",
                 }}
               >
 
@@ -343,6 +486,7 @@ export default function HomepageSettings() {
                             "1px solid #ece8df",
                         }}
                       />
+
 
                       {/* REMOVE IMAGE */}
 
@@ -397,6 +541,7 @@ export default function HomepageSettings() {
                             "center",
                         }}
                         aria-label="Remove Hero Image"
+                        title="Remove Hero Image"
                       >
                         ×
                       </button>
@@ -412,7 +557,10 @@ export default function HomepageSettings() {
 
           </div>
 
-          {/* BUTTON TEXT */}
+
+          {/* =========================
+              BUTTON TEXT
+          ========================= */}
 
           <div className="form-group">
 
@@ -429,11 +577,15 @@ export default function HomepageSettings() {
               onChange={
                 handleChange
               }
+              placeholder="View Portfolio"
             />
 
           </div>
 
-          {/* BUTTON LINK */}
+
+          {/* =========================
+              BUTTON LINK
+          ========================= */}
 
           <div className="form-group">
 
@@ -450,13 +602,30 @@ export default function HomepageSettings() {
               onChange={
                 handleChange
               }
+              placeholder="/portfolio"
             />
+
+            <p
+              style={{
+                margin:
+                  "8px 0 0",
+
+                color:
+                  "#777",
+
+                fontSize:
+                  "13px",
+              }}
+            >
+              Example: /portfolio
+            </p>
 
           </div>
 
         </div>
 
       </div>
+
 
       {/* =========================
           HERO IMAGE PICKER

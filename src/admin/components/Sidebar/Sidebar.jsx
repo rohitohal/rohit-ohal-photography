@@ -6,6 +6,8 @@ import {
   Images,
   BookOpen,
   MonitorSmartphone,
+  UserRound,
+  Mail,
   Search,
   Settings,
   LogOut,
@@ -17,6 +19,11 @@ import {
 } from "react-router-dom";
 
 import { supabase } from "../../../lib/supabase";
+
+
+/* =========================
+   ADMIN MENU ITEMS
+========================= */
 
 const menuItems = [
   {
@@ -50,6 +57,18 @@ const menuItems = [
   },
 
   {
+    title: "About Page",
+    icon: UserRound,
+    path: "/admin/about",
+  },
+
+  {
+    title: "Contact Page",
+    icon: Mail,
+    path: "/admin/contact",
+  },
+
+  {
     title: "SEO",
     icon: Search,
     path: "/admin/seo",
@@ -62,17 +81,52 @@ const menuItems = [
   },
 ];
 
+
 export default function Sidebar() {
-  const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const navigate =
+    useNavigate();
 
-    navigate("/login");
-  };
+
+  /* =========================
+     LOGOUT
+  ========================= */
+
+  const handleLogout =
+    async () => {
+
+      try {
+
+        await supabase.auth.signOut();
+
+        navigate(
+          "/login"
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Logout failed:",
+          error
+        );
+
+      }
+
+    };
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
+
     <aside className="admin-sidebar">
+
+
+      {/* =========================
+          LOGO
+      ========================= */}
 
       <div className="admin-sidebar-top">
 
@@ -86,45 +140,82 @@ export default function Sidebar() {
 
       </div>
 
+
+      {/* =========================
+          NAVIGATION
+      ========================= */}
+
       <nav className="admin-nav">
 
-        {menuItems.map((item) => {
-          const Icon = item.icon;
+        {menuItems.map(
+          (item) => {
 
-          return (
-            <NavLink
-              key={item.title}
-              to={item.path}
-              className={({ isActive }) =>
-                isActive
-                  ? "admin-nav-item active"
-                  : "admin-nav-item"
-              }
-            >
-              <Icon size={18} />
+            const Icon =
+              item.icon;
 
-              <span>{item.title}</span>
-            </NavLink>
-          );
-        })}
+            return (
+
+              <NavLink
+                key={
+                  item.title
+                }
+                to={
+                  item.path
+                }
+                className={({
+                  isActive,
+                }) =>
+                  isActive
+                    ? "admin-nav-item active"
+                    : "admin-nav-item"
+                }
+              >
+
+                <Icon
+                  size={18}
+                />
+
+                <span>
+                  {item.title}
+                </span>
+
+              </NavLink>
+
+            );
+
+          }
+        )}
 
       </nav>
+
+
+      {/* =========================
+          LOGOUT
+      ========================= */}
 
       <div className="admin-sidebar-bottom">
 
         <button
+          type="button"
           className="admin-logout-button"
-          onClick={handleLogout}
+          onClick={
+            handleLogout
+          }
         >
 
-          <LogOut size={18} />
+          <LogOut
+            size={18}
+          />
 
-          <span>Logout</span>
+          <span>
+            Logout
+          </span>
 
         </button>
 
       </div>
 
     </aside>
+
   );
 }

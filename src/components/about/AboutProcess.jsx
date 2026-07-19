@@ -1,50 +1,159 @@
+const STORAGE_KEY =
+  "rohit-photography-about-process";
+
+const defaultSettings = {
+  label: "MY PROCESS",
+
+  headingLine1:
+    "A Seamless Experience",
+
+  headingLine2:
+    "From Start To Finish",
+
+  steps: [
+    {
+      number: "01",
+      title: "Consultation",
+      description:
+        "Understanding your vision, expectations and story.",
+    },
+    {
+      number: "02",
+      title: "Planning",
+      description:
+        "Creating a timeline and photography approach.",
+    },
+    {
+      number: "03",
+      title: "Photography",
+      description:
+        "Capturing authentic moments with minimal interruption.",
+    },
+    {
+      number: "04",
+      title: "Delivery",
+      description:
+        "Carefully edited photographs delivered in a premium gallery.",
+    },
+  ],
+};
+
 export default function AboutProcess() {
+  /* =========================
+     LOAD SETTINGS
+  ========================= */
+
+  let settings =
+    defaultSettings;
+
+  try {
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (saved) {
+      const parsed =
+        JSON.parse(saved);
+
+      settings = {
+        ...defaultSettings,
+        ...parsed,
+
+        steps:
+          Array.isArray(
+            parsed.steps
+          )
+            ? parsed.steps
+            : defaultSettings.steps,
+      };
+    }
+  } catch (error) {
+    console.error(
+      "Failed to load About Process settings:",
+      error
+    );
+  }
+
+  /* =========================
+     RENDER
+  ========================= */
+
   return (
     <section className="about-process">
 
       <div className="about-container">
 
-        <span>MY PROCESS</span>
+
+        {/* SECTION LABEL */}
+
+        <span>
+          {settings.label}
+        </span>
+
+
+        {/* HEADING */}
 
         <h2>
-          A Seamless Experience
-          <br />
-          From Start To Finish
+
+          {
+            settings.headingLine1
+          }
+
+          {settings.headingLine2 && (
+            <>
+              <br />
+
+              {
+                settings.headingLine2
+              }
+            </>
+          )}
+
         </h2>
+
+
+        {/* =========================
+            PROCESS GRID
+        ========================= */}
 
         <div className="process-grid">
 
-          <div className="process-card">
-            <h3>01</h3>
-            <h4>Consultation</h4>
-            <p>
-              Understanding your vision, expectations and story.
-            </p>
-          </div>
+          {settings.steps.map(
+            (
+              step,
+              index
+            ) => (
 
-          <div className="process-card">
-            <h3>02</h3>
-            <h4>Planning</h4>
-            <p>
-              Creating a timeline and photography approach.
-            </p>
-          </div>
+              <div
+                className="process-card"
+                key={
+                  `${step.number}-${index}`
+                }
+              >
 
-          <div className="process-card">
-            <h3>03</h3>
-            <h4>Photography</h4>
-            <p>
-              Capturing authentic moments with minimal interruption.
-            </p>
-          </div>
+                <h3>
+                  {
+                    step.number
+                  }
+                </h3>
 
-          <div className="process-card">
-            <h3>04</h3>
-            <h4>Delivery</h4>
-            <p>
-              Carefully edited photographs delivered in a premium gallery.
-            </p>
-          </div>
+                <h4>
+                  {
+                    step.title
+                  }
+                </h4>
+
+                <p>
+                  {
+                    step.description
+                  }
+                </p>
+
+              </div>
+
+            )
+          )}
 
         </div>
 
