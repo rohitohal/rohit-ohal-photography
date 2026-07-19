@@ -1,51 +1,250 @@
-.homepage-settings-card{
-    background:#fff;
-    border:1px solid #ece8df;
-    border-radius:24px;
-    padding:40px;
+/* =========================
+   HOMEPAGE SETTINGS CARD
+========================= */
+
+.homepage-settings-card {
+    background: #fff;
+    border: 1px solid #ece8df;
+    border-radius: 24px;
+    padding: 40px;
 }
 
-.homepage-settings-header{
-    margin-bottom:30px;
+.homepage-settings-header {
+    margin-bottom: 30px;
 }
 
-.homepage-overline{
-    display:block;
-    color:#b58b43;
-    font-size:12px;
-    letter-spacing:3px;
-    margin-bottom:10px;
+.homepage-overline {
+    display: block;
+    color: #b58b43;
+    font-size: 12px;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
-.homepage-settings-header h2{
-    margin:0;
-    font-size:42px;
+.homepage-settings-header h2 {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 400;
+    font-family: "Cormorant Garamond", serif;
+    color: #111;
 }
 
-.homepage-form{
-    display:grid;
-    gap:24px;
+.homepage-settings-header p {
+    margin-top: 10px;
+    color: #666;
+    line-height: 1.7;
 }
 
-.hero-preview-image{
-    margin-top:20px;
-    width:320px;
-    height:200px;
-    object-fit:cover;
-    border-radius:18px;
-    border:1px solid #ece8df;
+
+/* =========================
+   HOMEPAGE FORM
+========================= */
+
+.homepage-form {
+    display: grid;
+    gap: 24px;
 }
 
-.form-group{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #222;
 }
 
 .form-group input,
-.form-group textarea{
-    padding:16px;
-    border:1px solid #ddd;
-    border-radius:12px;
-    font-size:15px;
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fff;
+    color: #111;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #b58b43;
+}
+
+
+/* =========================
+   IMAGE PREVIEW
+========================= */
+
+.hero-preview-image {
+    margin-top: 20px;
+    width: 320px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 1px solid #ece8df;
+}
+
+
+/* =========================
+   MEDIA BUTTON
+========================= */
+
+.media-button {
+    border: none;
+    background: #111;
+    color: #fff;
+    padding: 15px 22px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.media-button:hover {
+    background: #b58b43;
+}
+
+.media-button.secondary {
+    background: #111;
+    color: #fff;
+}
+
+
+/* =========================
+   SAVE SUCCESS MESSAGE
+========================= */
+
+.settings-success-message {
+    padding: 14px 18px;
+    background: #f5f1e8;
+    border: 1px solid #e5d7bd;
+    border-radius: 12px;
+    color: #6f5528;
+    font-size: 14px;
+}
+
+
+/* =========================
+   HOMEPAGE MANAGEMENT GRID
+========================= */
+
+.admin-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+
+/* =========================
+   MANAGEMENT CARDS
+========================= */
+
+.admin-card {
+    background: #fff;
+    border: 1px solid #ece8df;
+    border-radius: 24px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 200px;
+}
+
+.admin-card h2 {
+    margin: 0 0 12px;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: #111;
+}
+
+.admin-card p {
+    margin: 0 0 24px;
+    color: #666;
+    line-height: 1.7;
+    max-width: 500px;
+}
+
+.admin-card button {
+    margin-top: auto;
+    border: none;
+    background: #111;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.admin-card button:hover {
+    background: #b58b43;
+}
+
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 1000px) {
+
+    .admin-section-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+
+    .homepage-settings-card {
+        padding: 24px;
+        border-radius: 18px;
+    }
+
+    .homepage-settings-header h2 {
+        font-size: 34px;
+    }
+
+    .hero-preview-image {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+    }
+
+    .admin-section-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .admin-card {
+        padding: 24px;
+        min-height: auto;
+    }
+
+    .admin-card h2 {
+        font-size: 28px;
+    }
+
+    .admin-card button {
+        margin-top: 10px;
+    }
+
 }

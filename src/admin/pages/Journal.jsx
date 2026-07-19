@@ -1,51 +1,151 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import CreateJournalModal from "../components/CreateJournalModal/CreateJournalModal";
 
 import "../styles/projects.css";
 
+const JOURNAL_KEY =
+  "rohit-photography-journal";
+
 export default function Journal() {
-  const [posts, setPosts] = useState(() => {
-    const saved = localStorage.getItem(
-      "rohit-photography-journal"
-    );
+  /* =========================
+     LOAD JOURNAL POSTS
+  ========================= */
 
-    return saved
-      ? JSON.parse(saved)
-      : [];
-  });
+  const [posts, setPosts] =
+    useState(() => {
+      try {
+        const saved =
+          localStorage.getItem(
+            JOURNAL_KEY
+          );
 
-  const [isModalOpen, setIsModalOpen] =
-    useState(false);
+        if (!saved) {
+          return [];
+        }
 
-  const [editingPost, setEditingPost] =
-    useState(null);
+        const parsed =
+          JSON.parse(saved);
+
+        return Array.isArray(parsed)
+          ? parsed
+          : [];
+      } catch (error) {
+        console.error(
+          "Failed to load journal posts:",
+          error
+        );
+
+        return [];
+      }
+    });
+
+
+  /* =========================
+     MODAL STATE
+  ========================= */
+
+  const [
+    isModalOpen,
+    setIsModalOpen,
+  ] = useState(false);
+
+  const [
+    editingPost,
+    setEditingPost,
+  ] = useState(null);
+
+
+  /* =========================
+     SAVE JOURNAL POSTS
+  ========================= */
 
   useEffect(() => {
     localStorage.setItem(
-      "rohit-photography-journal",
+      JOURNAL_KEY,
       JSON.stringify(posts)
     );
   }, [posts]);
 
-  const handleSavePost = (postData) => {
+
+  /* =========================
+     CREATE / UPDATE ARTICLE
+  ========================= */
+
+  const handleSavePost = (
+    postData
+  ) => {
+    /* =========================
+       EDIT EXISTING ARTICLE
+    ========================= */
+
     if (editingPost) {
       setPosts((prev) =>
         prev.map((post) =>
-          post.id === editingPost.id
+          post.id ===
+          editingPost.id
             ? {
+                /*
+                 * Keep existing fields.
+                 *
+                 * This preserves:
+                 * homepageOrder
+                 * createdAt
+                 * featured
+                 * future metadata
+                 */
+
+                ...post,
+
+                /*
+                 * Apply edited fields.
+                 */
+
                 ...postData,
-                id: editingPost.id,
+
+                /*
+                 * Never change ID.
+                 */
+
+                id:
+                  editingPost.id,
+
+                /*
+                 * Track update date.
+                 */
+
+                updatedAt:
+                  new Date()
+                    .toISOString(),
               }
             : post
         )
       );
-    } else {
+    }
+
+    /* =========================
+       CREATE NEW ARTICLE
+    ========================= */
+
+    else {
+      const now =
+        new Date()
+          .toISOString();
+
       const newPost = {
         ...postData,
-        id: Date.now(),
+
+        id:
+          Date.now(),
+
         createdAt:
-          new Date().toISOString(),
+          now,
+
+        updatedAt:
+          now,
       };
 
       setPosts((prev) => [
@@ -54,33 +154,89 @@ export default function Journal() {
       ]);
     }
 
+
+    /* =========================
+       CLOSE MODAL
+    ========================= */
+
     setEditingPost(null);
+
     setIsModalOpen(false);
   };
 
-  const handleEdit = (post) => {
-    setEditingPost(post);
+
+  /* =========================
+     OPEN NEW ARTICLE
+  ========================= */
+
+  const handleNewArticle = () => {
+    setEditingPost(null);
+
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (
-      window.confirm(
-        "Delete this article?"
-      )
-    ) {
-      setPosts((prev) =>
-        prev.filter(
-          (post) =>
-            post.id !== id
-        )
-      );
-    }
+
+  /* =========================
+     EDIT ARTICLE
+  ========================= */
+
+  const handleEdit = (
+    post
+  ) => {
+    setEditingPost(post);
+
+    setIsModalOpen(true);
   };
+
+
+  /* =========================
+     DELETE ARTICLE
+  ========================= */
+
+  const handleDelete = (
+    id
+  ) => {
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this article?"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setPosts((prev) =>
+      prev.filter(
+        (post) =>
+          post.id !== id
+      )
+    );
+  };
+
+
+  /* =========================
+     CLOSE MODAL
+  ========================= */
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+
+    setEditingPost(null);
+  };
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <>
+
       <div className="projects-page">
+
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <div className="projects-header">
 
@@ -103,133 +259,274 @@ export default function Journal() {
 
           </div>
 
+
           <button
+            type="button"
             className="new-project-button"
-            onClick={() => {
-              setEditingPost(
-                null
-              );
-              setIsModalOpen(
-                true
-              );
-            }}
+            onClick={
+              handleNewArticle
+            }
           >
             + New Article
           </button>
 
         </div>
 
+
+        {/* =========================
+            JOURNAL GRID
+        ========================= */}
+
         <div className="projects-grid">
 
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className="project-card"
-            >
+          {posts.map(
+            (post) => (
 
-              <img
-                src={
-                  post.cover ||
-                  "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200&q=80"
+              <div
+                key={
+                  post.id ||
+                  post.slug
                 }
-                alt={
-                  post.title
-                }
-              />
+                className="project-card"
+              >
 
-              <div className="project-content">
+                {/* =========================
+                    COVER IMAGE
+                ========================= */}
 
-                <span className="project-category">
-                  {
-                    post.category
-                  }
-                </span>
+                {post.cover ? (
 
-                <h3>
-                  {
-                    post.title
-                  }
-                </h3>
-
-                <p>
-                  {
-                    post.excerpt
-                  }
-                </p>
-
-                <div className="project-footer">
-
-                  <button
-                    onClick={() =>
-                      handleEdit(
-                        post
-                      )
+                  <img
+                    src={
+                      post.cover
                     }
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      handleDelete(
-                        post.id
-                      )
+                    alt={
+                      post.title ||
+                      "Journal Article"
                     }
+                  />
+
+                ) : (
+
+                  <div
+                    style={{
+                      width:
+                        "100%",
+
+                      height:
+                        "220px",
+
+                      display:
+                        "flex",
+
+                      alignItems:
+                        "center",
+
+                      justifyContent:
+                        "center",
+
+                      background:
+                        "#f3f1ec",
+
+                      color:
+                        "#999",
+                    }}
                   >
-                    Delete
-                  </button>
+                    No Cover Image
+                  </div>
+
+                )}
+
+
+                {/* =========================
+                    ARTICLE CONTENT
+                ========================= */}
+
+                <div className="project-content">
+
+                  <span className="project-category">
+                    {
+                      post.category ||
+                      "Journal"
+                    }
+                  </span>
+
+
+                  <h3>
+                    {
+                      post.title ||
+                      "Untitled Article"
+                    }
+                  </h3>
+
+
+                  {post.excerpt && (
+
+                    <p>
+                      {
+                        post.excerpt
+                      }
+                    </p>
+
+                  )}
+
+
+                  {/* =========================
+                      ARTICLE STATUS
+                  ========================= */}
+
+                  <div
+                    style={{
+                      marginTop:
+                        "12px",
+
+                      marginBottom:
+                        "15px",
+                    }}
+                  >
+
+                    <span
+                      className={`status ${
+                        (
+                          post.status ||
+                          "Draft"
+                        ).toLowerCase()
+                      }`}
+                    >
+                      {
+                        post.status ||
+                        "Draft"
+                      }
+                    </span>
+
+                  </div>
+
+
+                  {/* =========================
+                      HOMEPAGE FEATURED
+                  ========================= */}
+
+                  {post.featured ===
+                    true && (
+
+                    <div
+                      style={{
+                        marginBottom:
+                          "15px",
+
+                        color:
+                          "#b58b43",
+
+                        fontSize:
+                          "12px",
+
+                        fontWeight:
+                          "600",
+
+                        letterSpacing:
+                          "0.5px",
+                      }}
+                    >
+                      ★ HOMEPAGE FEATURED
+                    </div>
+
+                  )}
+
+
+                  {/* =========================
+                      FOOTER
+                  ========================= */}
+
+                  <div className="project-footer">
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleEdit(
+                          post
+                        )
+                      }
+                    >
+                      Edit
+                    </button>
+
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleDelete(
+                          post.id
+                        )
+                      }
+                    >
+                      Delete
+                    </button>
+
+                  </div>
 
                 </div>
 
               </div>
 
-            </div>
-          ))}
+            )
+          )}
+
+
+          {/* =========================
+              EMPTY STATE
+          ========================= */}
 
           {posts.length ===
             0 && (
+
             <div
               style={{
                 width:
                   "100%",
+
                 background:
                   "#fff",
+
                 padding:
                   "80px",
+
                 borderRadius:
                   "24px",
+
                 textAlign:
                   "center",
               }}
             >
+
               <h2>
                 No Articles Yet
               </h2>
 
               <p>
-                Create your
-                first journal
-                article.
+                Create your first
+                journal article.
               </p>
+
             </div>
+
           )}
 
         </div>
 
       </div>
 
+
+      {/* =========================
+          CREATE / EDIT MODAL
+      ========================= */}
+
       <CreateJournalModal
         isOpen={
           isModalOpen
         }
-        onClose={() => {
-          setIsModalOpen(
-            false
-          );
-          setEditingPost(
-            null
-          );
-        }}
+        onClose={
+          handleCloseModal
+        }
         onSave={
           handleSavePost
         }
@@ -237,6 +534,7 @@ export default function Journal() {
           editingPost
         }
       />
+
     </>
   );
 }

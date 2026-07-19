@@ -1,0 +1,359 @@
+.settings-page {
+  padding: 48px;
+  min-height: 100vh;
+  background: #f7f6f3;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.settings-overline {
+  display: block;
+  margin-bottom: 12px;
+
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+
+  color: #b28b4b;
+}
+
+.settings-header h1 {
+  margin: 0 0 12px;
+
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.2;
+
+  color: #181818;
+}
+
+.settings-header p {
+  max-width: 650px;
+  margin: 0;
+
+  font-size: 15px;
+  line-height: 1.7;
+
+  color: #777;
+}
+
+/* =========================
+   SAVE BUTTON
+========================= */
+
+.settings-save-button {
+  flex-shrink: 0;
+
+  padding: 14px 24px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #b28b4b;
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.settings-save-button:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+/* =========================
+   SUCCESS MESSAGE
+========================= */
+
+.settings-success-message {
+  margin-bottom: 28px;
+  padding: 14px 18px;
+
+  border: 1px solid #d7e8d7;
+  border-radius: 10px;
+
+  background: #f1f8f1;
+
+  font-size: 14px;
+
+  color: #3f7345;
+}
+
+/* =========================
+   CONTENT
+========================= */
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.settings-card {
+  padding: 36px;
+
+  border: 1px solid #ebe8e2;
+  border-radius: 18px;
+
+  background: #fff;
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.03);
+}
+
+.settings-card-header {
+  margin-bottom: 32px;
+}
+
+.settings-section-label {
+  display: block;
+  margin-bottom: 10px;
+
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+
+  color: #b28b4b;
+}
+
+.settings-card-header h2 {
+  margin: 0 0 8px;
+
+  font-size: 24px;
+  font-weight: 500;
+
+  color: #1d1d1d;
+}
+
+.settings-card-header p {
+  margin: 0;
+
+  font-size: 14px;
+  line-height: 1.6;
+
+  color: #888;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.settings-form {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.settings-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.settings-form-group label {
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #333;
+}
+
+.settings-form-group input {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  border: 1px solid #ddd9d2;
+  border-radius: 10px;
+
+  background: #fff;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  color: #222;
+
+  outline: none;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.settings-form-group input:focus {
+  border-color: #b28b4b;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(178, 139, 75, 0.1);
+}
+
+.settings-form-group input::placeholder {
+  color: #aaa;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+  .settings-page {
+    padding: 32px;
+  }
+
+  .settings-header {
+    flex-direction: column;
+  }
+
+  .settings-save-button {
+    width: 100%;
+  }
+
+  .settings-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-page {
+    padding: 24px 18px;
+  }
+
+  .settings-header h1 {
+    font-size: 30px;
+  }
+
+  .settings-card {
+    padding: 24px 20px;
+  }
+}
+/* =========================
+   BACKUP & RESTORE
+========================= */
+
+.settings-backup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.settings-backup-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+
+  padding: 24px;
+
+  border: 1px solid #ebe8e2;
+  border-radius: 12px;
+
+  background: #faf9f7;
+}
+
+.settings-backup-item h3 {
+  margin: 0 0 8px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  color: #222;
+}
+
+.settings-backup-item p {
+  max-width: 600px;
+  margin: 0;
+
+  font-size: 13px;
+  line-height: 1.6;
+
+  color: #888;
+}
+
+.settings-backup-button,
+.settings-restore-button {
+  flex-shrink: 0;
+
+  padding: 12px 20px;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.settings-backup-button {
+  border: none;
+
+  background: #b28b4b;
+  color: #fff;
+}
+
+.settings-restore-button {
+  border: 1px solid #b28b4b;
+
+  background: transparent;
+  color: #9a7338;
+}
+
+.settings-backup-button:hover,
+.settings-restore-button:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.settings-error-message {
+  margin-bottom: 24px;
+  padding: 14px 18px;
+
+  border: 1px solid #eccaca;
+  border-radius: 10px;
+
+  background: #fff4f4;
+
+  font-size: 14px;
+
+  color: #a33a3a;
+}
+
+@media (max-width: 700px) {
+  .settings-backup-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .settings-backup-button,
+  .settings-restore-button {
+    width: 100%;
+  }
+}

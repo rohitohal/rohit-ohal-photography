@@ -1,66 +1,146 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import "./Hero.css";
-
-const defaultHeroImages = [
-  "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=2200&q=80",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=2200&q=80",
-  "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=2200&q=80",
-  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=2200&q=80",
-  "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=2200&q=80",
-];
 
 export default function Hero() {
   const [currentImage, setCurrentImage] =
     useState(0);
 
-  const homepageSettings = JSON.parse(
-    localStorage.getItem(
-      "rohit-photography-homepage"
-    ) || "{}"
-  );
+  /* =========================
+     LOAD HOMEPAGE SETTINGS
+  ========================= */
+
+  const homepageSettings =
+    useMemo(() => {
+      try {
+        const saved =
+          localStorage.getItem(
+            "rohit-photography-homepage"
+          );
+
+        if (!saved) {
+          return {};
+        }
+
+        return JSON.parse(
+          saved
+        );
+      } catch (error) {
+        console.error(
+          "Failed to load homepage settings:",
+          error
+        );
+
+        return {};
+      }
+    }, []);
+
+  /* =========================
+     LOAD ADMIN HERO IMAGES
+  ========================= */
 
   const heroImages =
-    homepageSettings.heroImage
-      ? [
-          homepageSettings.heroImage,
-          ...defaultHeroImages,
-        ]
-      : defaultHeroImages;
+    useMemo(() => {
+      if (
+        Array.isArray(
+          homepageSettings.heroImages
+        )
+      ) {
+        return homepageSettings.heroImages.filter(
+          Boolean
+        );
+      }
+
+      return [];
+    }, [
+      homepageSettings,
+    ]);
+
+  /* =========================
+     RESET CURRENT IMAGE
+  ========================= */
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage(
-        (prev) =>
-          (prev + 1) %
-          heroImages.length
-      );
-    }, 6000);
+    setCurrentImage(0);
+  }, [heroImages]);
 
-    return () =>
-      clearInterval(interval);
-  }, [heroImages.length]);
+  /* =========================
+     AUTO SLIDESHOW
+  ========================= */
+
+  useEffect(() => {
+    if (
+      heroImages.length <= 1
+    ) {
+      return;
+    }
+
+    const interval =
+      setInterval(() => {
+        setCurrentImage(
+          (prev) =>
+            (prev + 1) %
+            heroImages.length
+        );
+      }, 6000);
+
+    return () => {
+      clearInterval(
+        interval
+      );
+    };
+  }, [
+    heroImages.length,
+  ]);
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <section className="hero">
 
+      {/* =========================
+          HERO IMAGES
+      ========================= */}
+
       {heroImages.map(
-        (image, index) => (
+        (
+          image,
+          index
+        ) => (
+
           <img
-            key={index}
+            key={`${image}-${index}`}
             src={image}
-            alt="Rohit Ohal Photography"
+            alt={`Rohit Ohal Photography ${
+              index + 1
+            }`}
             className={
-              index === currentImage
+              index ===
+              currentImage
                 ? "hero-image active"
                 : "hero-image"
             }
           />
+
         )
       )}
 
-      <div className="hero-overlay"></div>
+      {/* =========================
+          OVERLAY
+      ========================= */}
+
+      <div className="hero-overlay" />
+
+      {/* =========================
+          HERO CONTENT
+      ========================= */}
 
       <div className="hero-content">
 
@@ -75,9 +155,11 @@ export default function Hero() {
         </h2>
 
         <p>
-          Documentary storytelling through timeless
-          imagery, capturing emotion, atmosphere
-          and moments that deserve to be remembered.
+          Documentary storytelling
+          through timeless imagery,
+          capturing emotion,
+          atmosphere and moments that
+          deserve to be remembered.
         </p>
 
         <div className="hero-buttons">

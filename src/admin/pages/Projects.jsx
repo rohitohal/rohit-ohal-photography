@@ -1,151 +1,575 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import CreateProjectModal from "../components/CreateProjectModal/CreateProjectModal";
 
 import "../styles/projects.css";
 
-const initialProjects = [
-  {
-    id: 1,
-    title: "Aditi & Rahul Wedding",
-    category: "Wedding",
-    location: "Pune",
-    date: "2026-02-12",
-    status: "Published",
-    cover:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80",
-  },
 
-  {
-    id: 2,
-    title: "Corporate Portrait Series",
-    category: "Portrait",
-    location: "Mumbai",
-    date: "2026-01-05",
-    status: "Draft",
-    cover:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1200&q=80",
-  },
-];
+/* =========================
+   LOCAL STORAGE KEY
+========================= */
+
+const PROJECTS_KEY =
+  "rohit-photography-projects";
+
 
 export default function Projects() {
-  const [projects, setProjects] = useState(() => {
-    const savedProjects = localStorage.getItem(
-      "rohit-photography-projects"
-    );
 
-    return savedProjects
-      ? JSON.parse(savedProjects)
-      : initialProjects;
-  });
+  /* =========================
+     LOAD PROJECTS
+  ========================= */
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projects, setProjects] =
+    useState(() => {
 
-  const [editingProject, setEditingProject] = useState(null);
+      try {
 
-  const [searchQuery, setSearchQuery] = useState("");
+        const savedProjects =
+          localStorage.getItem(
+            PROJECTS_KEY
+          );
 
-  const [statusFilter, setStatusFilter] = useState("All");
+        if (!savedProjects) {
+          return [];
+        }
 
-  const [categoryFilter, setCategoryFilter] = useState("All");
+        const parsedProjects =
+          JSON.parse(
+            savedProjects
+          );
+
+        if (
+          !Array.isArray(
+            parsedProjects
+          )
+        ) {
+          return [];
+        }
+
+
+        /* =========================
+           NORMALIZE PROJECT ORDER
+        ========================= */
+
+        return parsedProjects.map(
+          (
+            project,
+            index
+          ) => ({
+            ...project,
+
+            order:
+              typeof project.order ===
+              "number"
+                ? project.order
+                : index,
+          })
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load projects:",
+          error
+        );
+
+        return [];
+
+      }
+
+    });
+
+
+  /* =========================
+     MODAL STATE
+  ========================= */
+
+  const [
+    isModalOpen,
+    setIsModalOpen,
+  ] = useState(false);
+
+  const [
+    editingProject,
+    setEditingProject,
+  ] = useState(null);
+
+
+  /* =========================
+     SEARCH + FILTERS
+  ========================= */
+
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState("");
+
+  const [
+    statusFilter,
+    setStatusFilter,
+  ] = useState("All");
+
+  const [
+    categoryFilter,
+    setCategoryFilter,
+  ] = useState("All");
+
+
+  /* =========================
+     SAVE PROJECTS
+  ========================= */
 
   useEffect(() => {
+
     localStorage.setItem(
-      "rohit-photography-projects",
-      JSON.stringify(projects)
-    );
-  }, [projects]);
-
-  const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
-      const matchesSearch =
-        project.title
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        project.location
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        project.category
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "All" ||
-        project.status === statusFilter;
-
-      const matchesCategory =
-        categoryFilter === "All" ||
-        project.category === categoryFilter;
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesCategory
-      );
-    });
-  }, [
-    projects,
-    searchQuery,
-    statusFilter,
-    categoryFilter,
-  ]);
-
-  const handleSaveProject = (projectData) => {
-    if (editingProject) {
-      setProjects((prevProjects) =>
-        prevProjects.map((project) =>
-          project.id === editingProject.id
-            ? {
-                ...project,
-                ...projectData,
-                id: editingProject.id,
-              }
-            : project
-        )
-      );
-    } else {
-      const newProject = {
-        ...projectData,
-        id: Date.now(),
-      };
-
-      setProjects((prevProjects) => [
-        newProject,
-        ...prevProjects,
-      ]);
-    }
-
-    setEditingProject(null);
-    setIsModalOpen(false);
-  };
-
-  const handleEditProject = (project) => {
-    setEditingProject(project);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteProject = (projectId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this project?"
-    );
-
-    if (!confirmed) return;
-
-    setProjects((prevProjects) =>
-      prevProjects.filter(
-        (project) => project.id !== projectId
+      PROJECTS_KEY,
+      JSON.stringify(
+        projects
       )
     );
+
+  }, [projects]);
+
+
+  /* =========================
+     SORT PROJECTS
+  ========================= */
+
+  const orderedProjects =
+    useMemo(() => {
+
+      return [...projects].sort(
+        (a, b) =>
+          (a.order ?? 0) -
+          (b.order ?? 0)
+      );
+
+    }, [projects]);
+
+
+  /* =========================
+     FILTER PROJECTS
+  ========================= */
+
+  const filteredProjects =
+    useMemo(() => {
+
+      const query =
+        searchQuery
+          .trim()
+          .toLowerCase();
+
+      return orderedProjects.filter(
+        (project) => {
+
+          const matchesSearch =
+
+            !query ||
+
+            project.title
+              ?.toLowerCase()
+              .includes(
+                query
+              ) ||
+
+            project.location
+              ?.toLowerCase()
+              .includes(
+                query
+              ) ||
+
+            project.category
+              ?.toLowerCase()
+              .includes(
+                query
+              );
+
+
+          const matchesStatus =
+
+            statusFilter ===
+              "All" ||
+
+            project.status ===
+              statusFilter;
+
+
+          const matchesCategory =
+
+            categoryFilter ===
+              "All" ||
+
+            project.category ===
+              categoryFilter;
+
+
+          return (
+            matchesSearch &&
+            matchesStatus &&
+            matchesCategory
+          );
+
+        }
+      );
+
+    }, [
+      orderedProjects,
+      searchQuery,
+      statusFilter,
+      categoryFilter,
+    ]);
+
+
+  /* =========================
+     FILTER ACTIVE
+  ========================= */
+
+  const filtersActive =
+
+    searchQuery.trim() !== "" ||
+
+    statusFilter !== "All" ||
+
+    categoryFilter !== "All";
+
+
+  /* =========================
+     NORMALIZE ORDER
+  ========================= */
+
+  const normalizeOrder = (
+    projectList
+  ) => {
+
+    return projectList.map(
+      (
+        project,
+        index
+      ) => ({
+        ...project,
+        order: index,
+      })
+    );
+
   };
 
-  const handleCloseModal = () => {
-    setEditingProject(null);
-    setIsModalOpen(false);
+
+  /* =========================
+     SAVE PROJECT
+  ========================= */
+
+  const handleSaveProject = (
+    projectData
+  ) => {
+
+    /* =========================
+       EDIT PROJECT
+    ========================= */
+
+    if (editingProject) {
+
+      setProjects(
+        (prevProjects) =>
+
+          prevProjects.map(
+            (project) =>
+
+              project.id ===
+              editingProject.id
+
+                ? {
+                    ...project,
+
+                    ...projectData,
+
+                    id:
+                      editingProject.id,
+
+                    /*
+                     * Preserve existing
+                     * project order.
+                     */
+
+                    order:
+                      project.order,
+                  }
+
+                : project
+          )
+      );
+
+    } else {
+
+      /* =========================
+         CREATE NEW PROJECT
+
+         New projects appear first.
+      ========================= */
+
+      const newProject = {
+
+        ...projectData,
+
+        id:
+          Date.now(),
+
+        order: 0,
+
+      };
+
+
+      setProjects(
+        (prevProjects) => {
+
+          const updatedProjects =
+            prevProjects.map(
+              (project) => ({
+                ...project,
+
+                order:
+                  (
+                    project.order ??
+                    0
+                  ) + 1,
+              })
+            );
+
+
+          return [
+            newProject,
+            ...updatedProjects,
+          ];
+
+        }
+      );
+
+    }
+
+
+    setEditingProject(
+      null
+    );
+
+    setIsModalOpen(
+      false
+    );
+
   };
+
+
+  /* =========================
+     EDIT PROJECT
+  ========================= */
+
+  const handleEditProject = (
+    project
+  ) => {
+
+    setEditingProject(
+      project
+    );
+
+    setIsModalOpen(
+      true
+    );
+
+  };
+
+
+  /* =========================
+     DELETE PROJECT
+  ========================= */
+
+  const handleDeleteProject = (
+    projectId
+  ) => {
+
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this project?"
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    setProjects(
+      (prevProjects) => {
+
+        const remainingProjects =
+          prevProjects.filter(
+            (project) =>
+              project.id !==
+              projectId
+          );
+
+
+        return normalizeOrder(
+          [...remainingProjects].sort(
+            (a, b) =>
+              (a.order ?? 0) -
+              (b.order ?? 0)
+          )
+        );
+
+      }
+    );
+
+  };
+
+
+  /* =========================
+     MOVE PROJECT UP
+  ========================= */
+
+  const handleMoveUp = (
+    projectId
+  ) => {
+
+    if (filtersActive) {
+      return;
+    }
+
+
+    setProjects(
+      (prevProjects) => {
+
+        const sorted =
+          [...prevProjects].sort(
+            (a, b) =>
+              (a.order ?? 0) -
+              (b.order ?? 0)
+          );
+
+
+        const index =
+          sorted.findIndex(
+            (project) =>
+              project.id ===
+              projectId
+          );
+
+
+        if (index <= 0) {
+          return prevProjects;
+        }
+
+
+        [
+          sorted[index - 1],
+          sorted[index],
+        ] = [
+          sorted[index],
+          sorted[index - 1],
+        ];
+
+
+        return normalizeOrder(
+          sorted
+        );
+
+      }
+    );
+
+  };
+
+
+  /* =========================
+     MOVE PROJECT DOWN
+  ========================= */
+
+  const handleMoveDown = (
+    projectId
+  ) => {
+
+    if (filtersActive) {
+      return;
+    }
+
+
+    setProjects(
+      (prevProjects) => {
+
+        const sorted =
+          [...prevProjects].sort(
+            (a, b) =>
+              (a.order ?? 0) -
+              (b.order ?? 0)
+          );
+
+
+        const index =
+          sorted.findIndex(
+            (project) =>
+              project.id ===
+              projectId
+          );
+
+
+        if (
+          index === -1 ||
+          index >=
+            sorted.length - 1
+        ) {
+          return prevProjects;
+        }
+
+
+        [
+          sorted[index],
+          sorted[index + 1],
+        ] = [
+          sorted[index + 1],
+          sorted[index],
+        ];
+
+
+        return normalizeOrder(
+          sorted
+        );
+
+      }
+    );
+
+  };
+
+
+  /* =========================
+     CLOSE MODAL
+  ========================= */
+
+  const handleCloseModal = () => {
+
+    setEditingProject(
+      null
+    );
+
+    setIsModalOpen(
+      false
+    );
+
+  };
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <>
+
       <div className="projects-page">
+
+
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <div className="projects-header">
 
@@ -160,18 +584,29 @@ export default function Projects() {
             </h1>
 
             <p>
-              Create and manage wedding stories,
-              commercial work, portraits and
-              editorial projects.
+              Create, organize and
+              manage wedding stories,
+              commercial work,
+              portraits and editorial
+              projects.
             </p>
 
           </div>
 
+
           <button
+            type="button"
             className="new-project-button"
             onClick={() => {
-              setEditingProject(null);
-              setIsModalOpen(true);
+
+              setEditingProject(
+                null
+              );
+
+              setIsModalOpen(
+                true
+              );
+
             }}
           >
             + New Project
@@ -179,174 +614,482 @@ export default function Projects() {
 
         </div>
 
-        {/* Search + Filters */}
+
+        {/* =========================
+            SEARCH + FILTERS
+        ========================= */}
 
         <div
           style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            background: "#fff",
-            padding: "25px",
-            borderRadius: "20px",
-            border: "1px solid #ece8df",
+            display:
+              "flex",
+
+            gap:
+              "20px",
+
+            flexWrap:
+              "wrap",
+
+            background:
+              "#fff",
+
+            padding:
+              "25px",
+
+            borderRadius:
+              "20px",
+
+            border:
+              "1px solid #ece8df",
           }}
         >
+
           <input
             type="text"
             placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) =>
-              setSearchQuery(e.target.value)
+            value={
+              searchQuery
+            }
+            onChange={(event) =>
+              setSearchQuery(
+                event.target.value
+              )
             }
             style={{
               flex: 1,
-              minWidth: "250px",
-              padding: "14px",
-              borderRadius: "12px",
-              border: "1px solid #ddd",
+
+              minWidth:
+                "250px",
+
+              padding:
+                "14px",
+
+              borderRadius:
+                "12px",
+
+              border:
+                "1px solid #ddd",
             }}
           />
 
-          <select
-            value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value)
-            }
-            style={{
-              padding: "14px",
-              borderRadius: "12px",
-              border: "1px solid #ddd",
-            }}
-          >
-            <option>All</option>
-            <option>Published</option>
-            <option>Draft</option>
-          </select>
 
           <select
-            value={categoryFilter}
-            onChange={(e) =>
-              setCategoryFilter(e.target.value)
+            value={
+              statusFilter
+            }
+            onChange={(event) =>
+              setStatusFilter(
+                event.target.value
+              )
             }
             style={{
-              padding: "14px",
-              borderRadius: "12px",
-              border: "1px solid #ddd",
+              padding:
+                "14px",
+
+              borderRadius:
+                "12px",
+
+              border:
+                "1px solid #ddd",
             }}
           >
-            <option>All</option>
-            <option>Wedding</option>
-            <option>Portrait</option>
-            <option>Events</option>
-            <option>Industrial</option>
-            <option>Food & Beverage</option>
-            <option>Editorial</option>
+
+            <option value="All">
+              All Statuses
+            </option>
+
+            <option value="Published">
+              Published
+            </option>
+
+            <option value="Draft">
+              Draft
+            </option>
+
           </select>
+
+
+          <select
+            value={
+              categoryFilter
+            }
+            onChange={(event) =>
+              setCategoryFilter(
+                event.target.value
+              )
+            }
+            style={{
+              padding:
+                "14px",
+
+              borderRadius:
+                "12px",
+
+              border:
+                "1px solid #ddd",
+            }}
+          >
+
+            <option value="All">
+              All Disciplines
+            </option>
+
+            <option value="Wedding">
+              Wedding
+            </option>
+
+            <option value="Portrait">
+              Portrait
+            </option>
+
+            <option value="Events">
+              Events
+            </option>
+
+            <option value="Industrial">
+              Industrial
+            </option>
+
+            <option value="Food & Beverage">
+              Food & Beverage
+            </option>
+
+            <option value="Editorial">
+              Editorial
+            </option>
+
+          </select>
+
         </div>
+
+
+        {/* =========================
+            ORDERING MESSAGE
+        ========================= */}
+
+        {filtersActive && (
+
+          <div
+            style={{
+              marginTop:
+                "16px",
+
+              padding:
+                "14px 18px",
+
+              background:
+                "#f8f3e9",
+
+              border:
+                "1px solid #ece0c8",
+
+              borderRadius:
+                "12px",
+
+              color:
+                "#7a6338",
+
+              fontSize:
+                "14px",
+            }}
+          >
+            Clear search and filters
+            to reorder projects.
+          </div>
+
+        )}
+
+
+        {/* =========================
+            PROJECT GRID
+        ========================= */}
 
         <div className="projects-grid">
 
-          {filteredProjects.length === 0 && (
+
+          {/* EMPTY STATE */}
+
+          {filteredProjects.length ===
+            0 && (
+
             <div
               style={{
-                background: "#fff",
-                padding: "60px",
-                borderRadius: "20px",
-                textAlign: "center",
-                width: "100%",
+                background:
+                  "#fff",
+
+                padding:
+                  "60px",
+
+                borderRadius:
+                  "20px",
+
+                textAlign:
+                  "center",
+
+                width:
+                  "100%",
               }}
             >
-              <h2>No projects found</h2>
+
+              <h2>
+                No projects found
+              </h2>
 
               <p>
-                Try changing your search or filters.
+                Try changing your
+                search or filters.
               </p>
+
             </div>
+
           )}
 
-          {filteredProjects.map((project) => (
-            <div
-              key={project.id}
-              className="project-card"
-            >
 
-              <img
-                src={
-                  project.cover ||
-                  "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80"
+          {/* PROJECT CARDS */}
+
+          {filteredProjects.map(
+            (
+              project,
+              index
+            ) => (
+
+              <div
+                key={
+                  project.id ||
+                  project.slug
                 }
-                alt={project.title}
-              />
+                className="project-card"
+              >
 
-              <div className="project-content">
 
-                <span className="project-category">
-                  {project.category}
-                </span>
+                {/* COVER */}
 
-                <h3>
-                  {project.title}
-                </h3>
+                {project.cover ? (
 
-                <p>
-                  {project.location}
-                </p>
+                  <img
+                    src={
+                      project.cover
+                    }
+                    alt={
+                      project.title
+                    }
+                  />
 
-                <small>
-                  {project.date}
-                </small>
-
-                <div className="project-footer">
-
-                  <span
-                    className={`status ${project.status.toLowerCase()}`}
-                  >
-                    {project.status}
-                  </span>
+                ) : (
 
                   <div
                     style={{
-                      display: "flex",
-                      gap: "10px",
+                      width:
+                        "100%",
+
+                      height:
+                        "220px",
+
+                      background:
+                        "#f3f1ec",
+
+                      display:
+                        "flex",
+
+                      alignItems:
+                        "center",
+
+                      justifyContent:
+                        "center",
+
+                      color:
+                        "#999",
                     }}
                   >
-                    <button
-                      onClick={() =>
-                        handleEditProject(project)
+                    No Cover Image
+                  </div>
+
+                )}
+
+
+                {/* CONTENT */}
+
+                <div className="project-content">
+
+                  <span className="project-category">
+                    {
+                      project.category
+                    }
+                  </span>
+
+
+                  <h3>
+                    {
+                      project.title
+                    }
+                  </h3>
+
+
+                  {project.location && (
+
+                    <p>
+                      {
+                        project.location
                       }
-                    >
-                      Edit
-                    </button>
+                    </p>
+
+                  )}
+
+
+                  {project.date && (
+
+                    <small>
+                      {
+                        project.date
+                      }
+                    </small>
+
+                  )}
+
+
+                  {/* =========================
+                      ORDER CONTROLS
+                  ========================= */}
+
+                  <div
+                    style={{
+                      display:
+                        "flex",
+
+                      gap:
+                        "8px",
+
+                      marginTop:
+                        "18px",
+                    }}
+                  >
 
                     <button
+                      type="button"
+                      disabled={
+                        filtersActive ||
+                        index === 0
+                      }
                       onClick={() =>
-                        handleDeleteProject(
+                        handleMoveUp(
                           project.id
                         )
                       }
+                      title="Move project up"
                     >
-                      Delete
+                      ↑ Move Up
                     </button>
+
+
+                    <button
+                      type="button"
+                      disabled={
+                        filtersActive ||
+                        index ===
+                          filteredProjects.length -
+                            1
+                      }
+                      onClick={() =>
+                        handleMoveDown(
+                          project.id
+                        )
+                      }
+                      title="Move project down"
+                    >
+                      ↓ Move Down
+                    </button>
+
+                  </div>
+
+
+                  {/* =========================
+                      PROJECT FOOTER
+                  ========================= */}
+
+                  <div className="project-footer">
+
+                    <span
+                      className={`status ${
+                        project.status
+                          ?.toLowerCase() ||
+                        "draft"
+                      }`}
+                    >
+                      {
+                        project.status ||
+                        "Draft"
+                      }
+                    </span>
+
+
+                    <div
+                      style={{
+                        display:
+                          "flex",
+
+                        gap:
+                          "10px",
+                      }}
+                    >
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleEditProject(
+                            project
+                          )
+                        }
+                      >
+                        Edit
+                      </button>
+
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteProject(
+                            project.id
+                          )
+                        }
+                      >
+                        Delete
+                      </button>
+
+                    </div>
+
                   </div>
 
                 </div>
 
               </div>
 
-            </div>
-          ))}
+            )
+          )}
 
         </div>
 
       </div>
 
+
+      {/* =========================
+          CREATE / EDIT MODAL
+      ========================= */}
+
       <CreateProjectModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveProject}
-        initialData={editingProject}
+        isOpen={
+          isModalOpen
+        }
+        onClose={
+          handleCloseModal
+        }
+        onSave={
+          handleSaveProject
+        }
+        initialData={
+          editingProject
+        }
       />
+
     </>
   );
 }

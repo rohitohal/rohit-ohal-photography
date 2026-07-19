@@ -1,22 +1,139 @@
 import { Link } from "react-router-dom";
 
-import journal from "../../data/journal";
-
 import "./JournalPreview.css";
 
 export default function JournalPreview() {
-  const featuredPosts = journal
-    .filter((post) => post.featured)
-    .slice(0, 3);
+  /* =========================
+     LOAD CMS JOURNAL POSTS
+  ========================= */
+
+  let journalPosts = [];
+
+  try {
+    const savedPosts =
+      localStorage.getItem(
+        "rohit-photography-journal"
+      );
+
+    if (savedPosts) {
+      const parsedPosts =
+        JSON.parse(savedPosts);
+
+      if (Array.isArray(parsedPosts)) {
+        journalPosts = parsedPosts;
+      }
+    }
+  } catch (error) {
+    console.error(
+      "Failed to load journal posts:",
+      error
+    );
+  }
+
+
+  /* =========================
+     GET PUBLISHED POSTS
+  ========================= */
+
+  const publishedPosts =
+    journalPosts.filter(
+      (post) =>
+        post.status ===
+        "Published"
+    );
+
+
+  /* =========================
+     GET FEATURED POSTS
+  ========================= */
+
+  const featuredPosts =
+    publishedPosts
+
+      /* Only homepage featured posts */
+
+      .filter(
+        (post) =>
+          post.featured === true
+      )
+
+      /* Sort by homepage order */
+
+      .sort((a, b) => {
+        const orderA =
+          typeof a.homepageOrder ===
+          "number"
+            ? a.homepageOrder
+            : Number.MAX_SAFE_INTEGER;
+
+        const orderB =
+          typeof b.homepageOrder ===
+          "number"
+            ? b.homepageOrder
+            : Number.MAX_SAFE_INTEGER;
+
+        return (
+          orderA -
+          orderB
+        );
+      })
+
+      /* Maximum 3 homepage posts */
+
+      .slice(0, 3);
+
+
+  /* =========================
+     FALLBACK LATEST POSTS
+  ========================= */
+
+  /*
+   * If no journal posts are
+   * selected for the homepage,
+   * show the first 3 published
+   * posts instead.
+   */
+
+  const previewPosts =
+    featuredPosts.length > 0
+      ? featuredPosts
+      : publishedPosts.slice(
+          0,
+          3
+        );
+
+
+  /* =========================
+     HIDE SECTION IF EMPTY
+  ========================= */
+
+  if (
+    previewPosts.length ===
+    0
+  ) {
+    return null;
+  }
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
     <section className="journal-preview">
 
       <div className="journal-container">
 
+
+        {/* =========================
+            HEADER
+        ========================= */}
+
         <div className="journal-header">
 
-          <span>FROM THE JOURNAL</span>
+          <span>
+            FROM THE JOURNAL
+          </span>
 
           <h2>
             Stories Beyond
@@ -26,39 +143,88 @@ export default function JournalPreview() {
 
         </div>
 
+
+        {/* =========================
+            JOURNAL POSTS
+        ========================= */}
+
         <div className="journal-grid">
 
-          {featuredPosts.map((post) => (
+          {previewPosts.map(
+            (post) => (
 
-            <article
-              className="journal-card"
-              key={post.id}
-            >
+              <article
+                className="journal-card"
+                key={
+                  post.id ||
+                  post.slug
+                }
+              >
 
-              <img
-                src={post.cover}
-                alt={post.title}
-              />
 
-              <div className="journal-content">
+                {/* COVER IMAGE */}
 
-                <span>{post.category}</span>
+                {post.cover && (
 
-                <h3>{post.title}</h3>
+                  <img
+                    src={
+                      post.cover
+                    }
+                    alt={
+                      post.title ||
+                      "Journal Article"
+                    }
+                    loading="lazy"
+                  />
 
-                <Link
-                  to={`/journal/${post.slug}`}
-                >
-                  Read Article →
-                </Link>
+                )}
 
-              </div>
 
-            </article>
+                {/* CONTENT */}
 
-          ))}
+                <div className="journal-content">
+
+                  {post.category && (
+
+                    <span>
+                      {
+                        post.category
+                      }
+                    </span>
+
+                  )}
+
+
+                  <h3>
+                    {
+                      post.title
+                    }
+                  </h3>
+
+
+                  {post.slug && (
+
+                    <Link
+                      to={`/journal/${post.slug}`}
+                    >
+                      Read Article →
+                    </Link>
+
+                  )}
+
+                </div>
+
+              </article>
+
+            )
+          )}
 
         </div>
+
+
+        {/* =========================
+            VIEW ALL
+        ========================= */}
 
         <div className="journal-footer">
 

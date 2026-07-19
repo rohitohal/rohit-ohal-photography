@@ -197,3 +197,119 @@
     }
 
 }
+/* =========================
+   RECENT ACTIVITY
+========================= */
+
+.dashboard-activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dashboard-activity-item {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px 20px;
+
+    background: #faf9f7;
+
+    border: 1px solid #ece8df;
+    border-radius: 14px;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.dashboard-activity-item:hover {
+    background: #fff;
+
+    border-color: #B58B43;
+
+    transform: translateY(-2px);
+}
+
+.dashboard-activity-type {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #B58B43;
+
+    font-size: 0.65rem;
+    font-weight: 600;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+}
+
+.dashboard-activity-item h3 {
+    margin: 0 0 5px;
+
+    color: #111;
+
+    font-family: "Cormorant Garamond", serif;
+
+    font-size: 1.35rem;
+    font-weight: 500;
+}
+
+.dashboard-activity-item p {
+    margin: 0;
+
+    color: #777;
+
+    font-size: 0.85rem;
+}
+
+.dashboard-activity-status {
+    flex-shrink: 0;
+
+    padding: 7px 12px;
+
+    background: rgba(181, 139, 67, 0.12);
+
+    border-radius: 20px;
+
+    color: #9a7338;
+
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* =========================
+   RECENT ACTIVITY RESPONSIVE
+========================= */
+
+@media(max-width:768px) {
+
+    .dashboard-activity-item {
+        align-items: flex-start;
+
+        padding: 16px;
+    }
+
+    .dashboard-activity-item h3 {
+        font-size: 1.2rem;
+    }
+
+    .dashboard-activity-status {
+        font-size: 0.7rem;
+
+        padding: 6px 10px;
+    }
+
+}

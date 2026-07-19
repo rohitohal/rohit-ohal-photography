@@ -7,6 +7,9 @@ const defaultSEO = {
   metaDescription:
     "Rohit Ohal Photography specializes in fine art wedding, commercial, portrait, industrial, food and editorial photography in Pune, India.",
 
+  keywords:
+    "Rohit Ohal Photography, Wedding Photographer Pune, Commercial Photographer Pune, Portrait Photographer Pune",
+
   ogTitle:
     "Rohit Ohal Photography",
 
@@ -22,28 +25,38 @@ export default function SEOHead({
   image,
 }) {
   useEffect(() => {
-    const savedSEO = localStorage.getItem(
-      "rohit-photography-seo"
-    );
+    /* =========================
+       LOAD GLOBAL SEO SETTINGS
+    ========================= */
 
     let globalSEO = defaultSEO;
 
-    if (savedSEO) {
-      try {
+    try {
+      const savedSEO =
+        localStorage.getItem(
+          "rohit-photography-seo"
+        );
+
+      if (savedSEO) {
         globalSEO = {
           ...defaultSEO,
           ...JSON.parse(savedSEO),
         };
-      } catch (error) {
-        console.error(
-          "Failed to load SEO settings:",
-          error
-        );
       }
+    } catch (error) {
+      console.error(
+        "Failed to load SEO settings:",
+        error
+      );
     }
 
+    /* =========================
+       PAGE SEO VALUES
+    ========================= */
+
     const pageTitle =
-      title || globalSEO.siteTitle;
+      title ||
+      globalSEO.siteTitle;
 
     const pageDescription =
       description ||
@@ -53,7 +66,16 @@ export default function SEOHead({
       image ||
       globalSEO.ogImage;
 
-    document.title = pageTitle;
+    /* =========================
+       DOCUMENT TITLE
+    ========================= */
+
+    document.title =
+      pageTitle;
+
+    /* =========================
+       STANDARD META TAGS
+    ========================= */
 
     updateMetaTag(
       "name",
@@ -62,9 +84,21 @@ export default function SEOHead({
     );
 
     updateMetaTag(
+      "name",
+      "keywords",
+      globalSEO.keywords
+    );
+
+    /* =========================
+       OPEN GRAPH
+    ========================= */
+
+    updateMetaTag(
       "property",
       "og:title",
-      title || globalSEO.ogTitle || pageTitle
+      title ||
+        globalSEO.ogTitle ||
+        pageTitle
     );
 
     updateMetaTag(
@@ -87,7 +121,16 @@ export default function SEOHead({
         "og:image",
         pageImage
       );
+    } else {
+      removeMetaTag(
+        "property",
+        "og:image"
+      );
     }
+
+    /* =========================
+       TWITTER / SOCIAL CARDS
+    ========================= */
 
     updateMetaTag(
       "name",
@@ -113,11 +156,24 @@ export default function SEOHead({
         "twitter:image",
         pageImage
       );
+    } else {
+      removeMetaTag(
+        "name",
+        "twitter:image"
+      );
     }
-  }, [title, description, image]);
+  }, [
+    title,
+    description,
+    image,
+  ]);
 
   return null;
 }
+
+/* =========================
+   CREATE / UPDATE META TAG
+========================= */
 
 function updateMetaTag(
   attribute,
@@ -126,24 +182,47 @@ function updateMetaTag(
 ) {
   if (!content) return;
 
-  let element = document.querySelector(
-    `meta[${attribute}="${attributeValue}"]`
-  );
+  let element =
+    document.querySelector(
+      `meta[${attribute}="${attributeValue}"]`
+    );
 
   if (!element) {
     element =
-      document.createElement("meta");
+      document.createElement(
+        "meta"
+      );
 
     element.setAttribute(
       attribute,
       attributeValue
     );
 
-    document.head.appendChild(element);
+    document.head.appendChild(
+      element
+    );
   }
 
   element.setAttribute(
     "content",
     content
   );
+}
+
+/* =========================
+   REMOVE META TAG
+========================= */
+
+function removeMetaTag(
+  attribute,
+  attributeValue
+) {
+  const element =
+    document.querySelector(
+      `meta[${attribute}="${attributeValue}"]`
+    );
+
+  if (element) {
+    element.remove();
+  }
 }

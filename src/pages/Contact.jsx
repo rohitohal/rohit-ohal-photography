@@ -5,7 +5,55 @@ import PageHero from "../components/common/PageHero";
 
 import heroImage from "../assets/images/hero.jpg";
 
+/* =========================
+   DEFAULT WEBSITE SETTINGS
+========================= */
+
+const defaultSettings = {
+  businessName: "Rohit Ohal Photography",
+  email: "hello@rohitohal.com",
+  phone: "+91 70209 98403",
+  location: "Pune, Maharashtra, India",
+
+  instagram: "",
+  facebook: "",
+
+  workingDays: "Monday – Sunday",
+  workingHours: "10:00 AM – 8:00 PM",
+};
+
 export default function Contact() {
+  /* =========================
+     LOAD WEBSITE SETTINGS
+  ========================= */
+
+  const [settings] = useState(() => {
+    const savedSettings =
+      localStorage.getItem(
+        "rohit-photography-settings"
+      );
+
+    if (savedSettings) {
+      try {
+        return {
+          ...defaultSettings,
+          ...JSON.parse(savedSettings),
+        };
+      } catch (error) {
+        console.error(
+          "Failed to load website settings:",
+          error
+        );
+      }
+    }
+
+    return defaultSettings;
+  });
+
+  /* =========================
+     FORM STATE
+  ========================= */
+
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
@@ -14,6 +62,28 @@ export default function Contact() {
       type: "",
       message: "",
     });
+
+  /* =========================
+     CONTACT LINKS
+  ========================= */
+
+  const emailLink =
+    `mailto:${settings.email}`;
+
+  const phoneLink =
+    `tel:${settings.phone.replace(
+      /[^+\d]/g,
+      ""
+    )}`;
+
+  const mapsLink =
+    `https://maps.google.com/?q=${encodeURIComponent(
+      settings.location
+    )}`;
+
+  /* =========================
+     FORM SUBMISSION
+  ========================= */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,12 +108,12 @@ export default function Contact() {
 
     formData.append(
       "subject",
-      "New Photography Inquiry - Rohit Ohal Photography"
+      `New Photography Inquiry - ${settings.businessName}`
     );
 
     formData.append(
       "from_name",
-      "Rohit Ohal Photography Website"
+      `${settings.businessName} Website`
     );
 
     try {
@@ -92,11 +162,19 @@ export default function Contact() {
 
   return (
     <>
+      {/* =========================
+          SEO
+      ========================= */}
+
       <SEOHead
-        title="Contact Rohit Ohal | Photographer in Pune"
-        description="Contact Rohit Ohal Photography for wedding, portrait, commercial, industrial, event and food photography services in Pune, Maharashtra and across India."
+        title={`Contact ${settings.businessName} | Photographer in Pune`}
+        description={`Contact ${settings.businessName} for wedding, portrait, commercial, industrial, event and food photography services in ${settings.location} and across India.`}
         image={heroImage}
       />
+
+      {/* =========================
+          PAGE HERO
+      ========================= */}
 
       <PageHero
         title="Let's Create Something Beautiful"
@@ -108,7 +186,9 @@ export default function Contact() {
 
         <div className="contact-container">
 
-          {/* Contact Information */}
+          {/* =========================
+              CONTACT INFORMATION
+          ========================= */}
 
           <div className="contact-info">
 
@@ -132,6 +212,8 @@ export default function Contact() {
               you'll cherish for a lifetime.
             </p>
 
+            {/* EMAIL */}
+
             <div className="contact-card">
 
               <h4>
@@ -139,13 +221,15 @@ export default function Contact() {
               </h4>
 
               <a
-                href="mailto:hello@rohitohal.com"
+                href={emailLink}
                 className="contact-link"
               >
-                hello@rohitohal.com
+                {settings.email}
               </a>
 
             </div>
+
+            {/* PHONE */}
 
             <div className="contact-card">
 
@@ -154,13 +238,15 @@ export default function Contact() {
               </h4>
 
               <a
-                href="tel:+917020998403"
+                href={phoneLink}
                 className="contact-link"
               >
-                +91 70209 98403
+                {settings.phone}
               </a>
 
             </div>
+
+            {/* LOCATION */}
 
             <div className="contact-card">
 
@@ -169,15 +255,17 @@ export default function Contact() {
               </h4>
 
               <a
-                href="https://maps.google.com/?q=Pune,Maharashtra,India"
+                href={mapsLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-link"
               >
-                Pune, Maharashtra, India
+                {settings.location}
               </a>
 
             </div>
+
+            {/* WORKING HOURS */}
 
             <div className="contact-card">
 
@@ -186,18 +274,20 @@ export default function Contact() {
               </h4>
 
               <p>
-                Monday – Sunday
+                {settings.workingDays}
               </p>
 
               <p>
-                10:00 AM – 8:00 PM
+                {settings.workingHours}
               </p>
 
             </div>
 
           </div>
 
-          {/* Contact Form */}
+          {/* =========================
+              CONTACT FORM
+          ========================= */}
 
           <div className="contact-form-wrapper">
 
@@ -369,6 +459,8 @@ export default function Contact() {
                 required
               />
 
+              {/* FORM STATUS */}
+
               {status.message && (
                 <div
                   className={`contact-form-message ${status.type}`}
@@ -376,6 +468,8 @@ export default function Contact() {
                   {status.message}
                 </div>
               )}
+
+              {/* SUBMIT BUTTON */}
 
               <button
                 type="submit"

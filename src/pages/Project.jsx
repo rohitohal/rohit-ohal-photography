@@ -1,67 +1,123 @@
 import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
 
-import portfolio from "../data/portfolio";
-
 import SEOHead from "../components/common/SEOHead";
 import PageHero from "../components/common/PageHero";
 
 import "./Project.css";
 
+/* =========================
+   CATEGORY → DISCIPLINE MAP
+========================= */
+
+const categoryToDiscipline = {
+  Wedding: "weddings",
+  Portrait: "portraits",
+  Events: "events",
+  Industrial: "industrial",
+  "Food & Beverage": "food-beverage",
+  Editorial: "editorial",
+};
+
+/* =========================
+   DISCIPLINE DISPLAY NAMES
+========================= */
+
+const disciplineLabels = {
+  weddings: "Wedding Stories",
+  portraits: "Portraits",
+  events: "Events",
+  industrial: "Industrial",
+  "food-beverage": "Food & Beverage",
+  editorial: "Editorial",
+};
+
 export default function Project() {
-  const { projectSlug } = useParams();
+  const { projectSlug } =
+    useParams();
 
-  const [lightboxOpen, setLightboxOpen] =
-    useState(false);
+  const [
+    lightboxOpen,
+    setLightboxOpen,
+  ] = useState(false);
 
-  const [activeImage, setActiveImage] =
-    useState(0);
+  const [
+    activeImage,
+    setActiveImage,
+  ] = useState(0);
 
   /* =========================
      LOAD CMS PROJECTS
   ========================= */
 
-  const cmsProjects = JSON.parse(
-    localStorage.getItem(
-      "rohit-photography-projects"
-    ) || "[]"
-  );
+  let cmsProjects = [];
+
+  try {
+    const savedProjects =
+      localStorage.getItem(
+        "rohit-photography-projects"
+      );
+
+    if (savedProjects) {
+      const parsedProjects =
+        JSON.parse(savedProjects);
+
+      if (
+        Array.isArray(
+          parsedProjects
+        )
+      ) {
+        cmsProjects =
+          parsedProjects;
+      }
+    }
+  } catch (error) {
+    console.error(
+      "Failed to load CMS projects:",
+      error
+    );
+  }
 
   /* =========================
-     MAP CMS PROJECTS
+     MAP PUBLISHED PROJECTS
   ========================= */
 
-  const mappedCmsProjects = cmsProjects.map(
-    (project) => ({
-      ...project,
+  const allProjects =
+    cmsProjects
+      .filter(
+        (project) =>
+          project.status ===
+          "Published"
+      )
+      .map((project) => ({
+        ...project,
 
-      discipline:
-        project.category
-          ?.toLowerCase()
-          .replace(/\s+/g, "-") ||
-        "other",
+        discipline:
+          categoryToDiscipline[
+            project.category
+          ] || "other",
 
-      year: project.date
-        ? new Date(project.date)
-            .getFullYear()
-            .toString()
-        : new Date()
-            .getFullYear()
-            .toString(),
+        year: project.date
+          ? new Date(
+              project.date
+            )
+              .getFullYear()
+              .toString()
+          : new Date()
+              .getFullYear()
+              .toString(),
 
-      description:
-        project.description,
-    })
-  );
+        description:
+          project.description ||
+          "",
 
-  /* =========================
-     COMBINE PROJECTS
-  ========================= */
-
-  const allProjects = [
-    ...mappedCmsProjects,
-    ...portfolio,
-  ];
+        gallery:
+          Array.isArray(
+            project.gallery
+          )
+            ? project.gallery
+            : [],
+      }));
 
   /* =========================
      FIND CURRENT PROJECT
@@ -70,11 +126,14 @@ export default function Project() {
   const projectIndex =
     allProjects.findIndex(
       (item) =>
-        item.slug === projectSlug
+        item.slug ===
+        projectSlug
     );
 
   const project =
-    allProjects[projectIndex];
+    allProjects[
+      projectIndex
+    ];
 
   /* =========================
      PROJECT NOT FOUND
@@ -89,16 +148,18 @@ export default function Project() {
         />
 
         <div className="project-not-found">
+
           <h1>
             Project not found
           </h1>
+
         </div>
       </>
     );
   }
 
   /* =========================
-     PREVIOUS / NEXT PROJECT
+     PREVIOUS / NEXT
   ========================= */
 
   const previousProject =
@@ -127,13 +188,15 @@ export default function Project() {
     setLightboxOpen(true);
   };
 
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-  };
+  const closeLightbox =
+    () => {
+      setLightboxOpen(false);
+    };
 
   const nextImage = () => {
     if (
-      !project.gallery?.length
+      !project.gallery
+        ?.length
     ) {
       return;
     }
@@ -141,28 +204,43 @@ export default function Project() {
     setActiveImage(
       (prev) =>
         (prev + 1) %
-        project.gallery.length
+        project.gallery
+          .length
     );
   };
 
-  const previousImage = () => {
-    if (
-      !project.gallery?.length
-    ) {
-      return;
-    }
+  const previousImage =
+    () => {
+      if (
+        !project.gallery
+          ?.length
+      ) {
+        return;
+      }
 
-    setActiveImage(
-      (prev) =>
-        prev === 0
-          ? project.gallery
-              .length - 1
-          : prev - 1
-    );
-  };
+      setActiveImage(
+        (prev) =>
+          prev === 0
+            ? project
+                .gallery
+                .length - 1
+            : prev - 1
+      );
+    };
 
   /* =========================
-     DYNAMIC SEO
+     DISCIPLINE LABEL
+  ========================= */
+
+  const disciplineLabel =
+    disciplineLabels[
+      project.discipline
+    ] ||
+    project.discipline ||
+    "Photography";
+
+  /* =========================
+     SEO
   ========================= */
 
   const seoTitle =
@@ -170,7 +248,7 @@ export default function Project() {
 
   const seoDescription =
     project.description ||
-    `${project.title}, a ${project.discipline} photography project by Rohit Ohal Photography.`;
+    `${project.title}, a ${disciplineLabel} photography project by Rohit Ohal Photography.`;
 
   /* =========================
      RENDER
@@ -180,53 +258,85 @@ export default function Project() {
     <>
       <SEOHead
         title={seoTitle}
-        description={seoDescription}
-        image={project.cover}
+        description={
+          seoDescription
+        }
+        image={
+          project.cover
+        }
       />
 
       <PageHero
-        title={project.title}
-        subtitle={`${project.location} • ${project.year}`}
-        image={project.cover}
+        title={
+          project.title
+        }
+        subtitle={`${
+          project.location ||
+          ""
+        }${
+          project.location &&
+          project.year
+            ? " • "
+            : ""
+        }${
+          project.year || ""
+        }`}
+        image={
+          project.cover
+        }
       />
 
       <section className="project-page">
 
         <div className="project-container">
 
+          {/* PROJECT META */}
+
           <div className="project-meta">
 
             <div>
+
               <span>
                 Location
               </span>
 
               <h3>
-                {project.location}
+                {project.location ||
+                  "—"}
               </h3>
+
             </div>
 
             <div>
+
               <span>
                 Year
               </span>
 
               <h3>
-                {project.year}
+                {project.year ||
+                  "—"}
               </h3>
+
             </div>
 
             <div>
+
               <span>
                 Discipline
               </span>
 
               <h3>
-                {project.discipline}
+                {
+                  disciplineLabel
+                }
               </h3>
+
             </div>
 
           </div>
+
+          {/* PROJECT STORY */}
 
           <div className="project-story">
 
@@ -241,37 +351,49 @@ export default function Project() {
 
           </div>
 
-          {project.gallery &&
-            project.gallery.length >
-              0 && (
-              <div className="project-gallery">
+          {/* PROJECT GALLERY */}
 
-                {project.gallery.map(
-                  (
-                    image,
-                    index
-                  ) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`${project.title} - Image ${
-                        index + 1
-                      }`}
-                      onClick={() =>
-                        openLightbox(
-                          index
-                        )
-                      }
-                    />
-                  )
-                )}
+          {project.gallery
+            ?.length > 0 && (
 
-              </div>
-            )}
+            <div className="project-gallery">
+
+              {project.gallery.map(
+                (
+                  image,
+                  index
+                ) => (
+
+                  <img
+                    key={
+                      `${image}-${index}`
+                    }
+                    src={
+                      image
+                    }
+                    alt={`${project.title} - Image ${
+                      index + 1
+                    }`}
+                    onClick={() =>
+                      openLightbox(
+                        index
+                      )
+                    }
+                  />
+
+                )
+              )}
+
+            </div>
+
+          )}
+
+          {/* PROJECT NAVIGATION */}
 
           <div className="project-navigation">
 
             {previousProject ? (
+
               <Link
                 to={`/portfolio/${previousProject.discipline}/${previousProject.slug}`}
                 className="project-nav-link"
@@ -281,11 +403,15 @@ export default function Project() {
                   previousProject.title
                 }
               </Link>
+
             ) : (
+
               <div />
+
             )}
 
             {nextProject ? (
+
               <Link
                 to={`/portfolio/${nextProject.discipline}/${nextProject.slug}`}
                 className="project-nav-link"
@@ -295,8 +421,11 @@ export default function Project() {
                 }{" "}
                 →
               </Link>
+
             ) : (
+
               <div />
+
             )}
 
           </div>
@@ -305,9 +434,12 @@ export default function Project() {
 
       </section>
 
+      {/* LIGHTBOX */}
+
       {lightboxOpen &&
-        project.gallery?.length >
-          0 && (
+        project.gallery
+          ?.length > 0 && (
+
           <div
             className="lightbox"
             onClick={
@@ -316,20 +448,25 @@ export default function Project() {
           >
 
             <button
+              type="button"
               className="lightbox-close"
               onClick={
                 closeLightbox
               }
+              aria-label="Close lightbox"
             >
               ×
             </button>
 
             <button
+              type="button"
               className="lightbox-prev"
               onClick={(e) => {
                 e.stopPropagation();
+
                 previousImage();
               }}
+              aria-label="Previous image"
             >
               ←
             </button>
@@ -350,16 +487,20 @@ export default function Project() {
             />
 
             <button
+              type="button"
               className="lightbox-next"
               onClick={(e) => {
                 e.stopPropagation();
+
                 nextImage();
               }}
+              aria-label="Next image"
             >
               →
             </button>
 
           </div>
+
         )}
 
     </>

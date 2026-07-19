@@ -1,4 +1,15 @@
+import {
+  useMemo,
+  useState,
+} from "react";
+
 import "../../styles/gallery-picker.css";
+
+const MEDIA_KEY =
+  "rohit-photography-media";
+
+const FOLDERS_KEY =
+  "rohit-photography-media-folders";
 
 export default function GalleryPicker({
   isOpen,
@@ -6,95 +17,532 @@ export default function GalleryPicker({
   selectedImages = [],
   onSelect,
 }) {
-  if (!isOpen) return null;
+  /* =========================
+     SEARCH
+  ========================= */
 
-  const mediaItems = JSON.parse(
-    localStorage.getItem(
-      "rohit-photography-media"
-    ) || "[]"
-  );
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState("");
 
-  const toggleImage = (imageUrl) => {
-    if (selectedImages.includes(imageUrl)) {
+  /* =========================
+     ACTIVE FOLDER
+  ========================= */
+
+  const [
+    activeFolder,
+    setActiveFolder,
+  ] = useState("all");
+
+  /* =========================
+     LOAD MEDIA LIBRARY
+  ========================= */
+
+  const mediaItems =
+    useMemo(() => {
+      if (!isOpen) {
+        return [];
+      }
+
+      try {
+        const saved =
+          localStorage.getItem(
+            MEDIA_KEY
+          );
+
+        if (!saved) {
+          return [];
+        }
+
+        const parsed =
+          JSON.parse(saved);
+
+        return Array.isArray(
+          parsed
+        )
+          ? parsed
+          : [];
+      } catch (error) {
+        console.error(
+          "Failed to load Media Library:",
+          error
+        );
+
+        return [];
+      }
+    }, [isOpen]);
+
+  /* =========================
+     LOAD MEDIA FOLDERS
+  ========================= */
+
+  const folders =
+    useMemo(() => {
+      if (!isOpen) {
+        return [];
+      }
+
+      try {
+        const saved =
+          localStorage.getItem(
+            FOLDERS_KEY
+          );
+
+        if (!saved) {
+          return [];
+        }
+
+        const parsed =
+          JSON.parse(saved);
+
+        return Array.isArray(
+          parsed
+        )
+          ? parsed
+          : [];
+      } catch (error) {
+        console.error(
+          "Failed to load Media folders:",
+          error
+        );
+
+        return [];
+      }
+    }, [isOpen]);
+
+  /* =========================
+     FILTER MEDIA
+  ========================= */
+
+  const filteredMedia =
+    useMemo(() => {
+      const query =
+        searchQuery
+          .trim()
+          .toLowerCase();
+
+      return mediaItems.filter(
+        (image) => {
+          /* FOLDER FILTER */
+
+          const imageFolder =
+            image.folder ||
+            image.category ||
+            "Uncategorized";
+
+          const matchesFolder =
+            activeFolder ===
+              "all" ||
+            imageFolder ===
+              activeFolder;
+
+          if (!matchesFolder) {
+            return false;
+          }
+
+          /* SEARCH FILTER */
+
+          if (!query) {
+            return true;
+          }
+
+          const filename =
+            image.filename ||
+            "";
+
+          const publicId =
+            image.publicId ||
+            "";
+
+          const category =
+            image.category ||
+            "";
+
+          const folder =
+            image.folder ||
+            "";
+
+          return (
+            filename
+              .toLowerCase()
+              .includes(query) ||
+            publicId
+              .toLowerCase()
+              .includes(query) ||
+            category
+              .toLowerCase()
+              .includes(query) ||
+            folder
+              .toLowerCase()
+              .includes(query)
+          );
+        }
+      );
+    }, [
+      mediaItems,
+      activeFolder,
+      searchQuery,
+    ]);
+
+  /* =========================
+     TOGGLE IMAGE
+  ========================= */
+
+  const toggleImage = (
+    imageUrl
+  ) => {
+    if (!imageUrl) {
+      return;
+    }
+
+    if (
+      selectedImages.includes(
+        imageUrl
+      )
+    ) {
       onSelect(
         selectedImages.filter(
-          (item) => item !== imageUrl
+          (item) =>
+            item !== imageUrl
         )
       );
-    } else {
-      onSelect([
-        ...selectedImages,
-        imageUrl,
-      ]);
+
+      return;
     }
+
+    onSelect([
+      ...selectedImages,
+      imageUrl,
+    ]);
   };
 
-  return (
-    <div className="gallery-picker-overlay">
+  /* =========================
+     CLEAR SELECTION
+  ========================= */
 
-      <div className="gallery-picker-modal">
+  const clearSelection =
+    () => {
+      const confirmed =
+        window.confirm(
+          "Clear all selected images?"
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      onSelect([]);
+    };
+
+  /* =========================
+     CHANGE FOLDER
+  ========================= */
+
+  const handleFolderChange = (
+    folder
+  ) => {
+    setActiveFolder(
+      folder
+    );
+
+    setSearchQuery("");
+  };
+
+  /* =========================
+     CLOSE PICKER
+  ========================= */
+
+  const handleClose = () => {
+    setSearchQuery("");
+
+    setActiveFolder(
+      "all"
+    );
+
+    onClose();
+  };
+
+  /* =========================
+     DO NOT RENDER
+  ========================= */
+
+  if (!isOpen) {
+    return null;
+  }
+
+  /* =========================
+     RENDER
+  ========================= */
+
+  return (
+    <div
+      className="gallery-picker-overlay"
+      onClick={
+        handleClose
+      }
+    >
+
+      <div
+        className="gallery-picker-modal"
+        onClick={(event) =>
+          event.stopPropagation()
+        }
+      >
+
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <div className="gallery-picker-header">
 
-          <h2>Select Gallery Images</h2>
+          <div>
+
+            <h2>
+              Select Images
+            </h2>
+
+            <p>
+              {
+                selectedImages.length
+              }{" "}
+              images selected
+            </p>
+
+          </div>
 
           <button
+            type="button"
             className="gallery-picker-close"
-            onClick={onClose}
+            onClick={
+              handleClose
+            }
+            aria-label="Close Gallery Picker"
           >
             ×
           </button>
 
         </div>
 
-        <div className="gallery-picker-grid">
+        {/* =========================
+            FOLDER NAVIGATION
+        ========================= */}
 
-          {mediaItems.map((image) => (
-            <div
-              key={image.id}
-              className={`gallery-picker-card ${
-                selectedImages.includes(image.url)
-                  ? "selected"
-                  : ""
-              }`}
-              onClick={() =>
-                toggleImage(image.url)
-              }
-            >
-              <img
-                src={image.url}
-                alt={image.filename}
-              />
+        <div className="gallery-picker-folders">
 
-              <span>
-                {image.filename}
-              </span>
+          {/* ALL IMAGES */}
 
-              {selectedImages.includes(
-                image.url
-              ) && (
-                <div className="gallery-selected-badge">
-                  ✓
-                </div>
-              )}
+          <button
+            type="button"
+            className={
+              activeFolder ===
+              "all"
+                ? "gallery-folder-button active"
+                : "gallery-folder-button"
+            }
+            onClick={() =>
+              handleFolderChange(
+                "all"
+              )
+            }
+          >
+            All Images
+          </button>
 
-            </div>
-          ))}
+          {/* FOLDERS */}
 
-          {mediaItems.length === 0 && (
-            <div className="gallery-picker-empty">
-              No images available.
-              Upload images first from Media Library.
-            </div>
+          {folders.map(
+            (folder) => (
+
+              <button
+                type="button"
+                key={
+                  folder
+                }
+                className={
+                  activeFolder ===
+                  folder
+                    ? "gallery-folder-button active"
+                    : "gallery-folder-button"
+                }
+                onClick={() =>
+                  handleFolderChange(
+                    folder
+                  )
+                }
+              >
+                📁{" "}
+                {folder}
+              </button>
+
+            )
           )}
 
         </div>
 
+        {/* =========================
+            SEARCH + CLEAR
+        ========================= */}
+
+        <div className="gallery-picker-toolbar">
+
+          <input
+            type="text"
+            placeholder={`Search ${
+              activeFolder ===
+              "all"
+                ? "all images"
+                : activeFolder
+            }...`}
+            value={
+              searchQuery
+            }
+            onChange={(event) =>
+              setSearchQuery(
+                event.target.value
+              )
+            }
+          />
+
+          {selectedImages.length >
+            0 && (
+
+            <button
+              type="button"
+              className="gallery-clear-button"
+              onClick={
+                clearSelection
+              }
+            >
+              Clear All
+            </button>
+
+          )}
+
+        </div>
+
+        {/* =========================
+            IMAGE GRID
+        ========================= */}
+
+        <div className="gallery-picker-grid">
+
+          {filteredMedia.map(
+            (image) => {
+              const imageUrl =
+                image.url;
+
+              const isSelected =
+                selectedImages.includes(
+                  imageUrl
+                );
+
+              return (
+                <button
+                  type="button"
+                  key={
+                    image.id ||
+                    image.publicId ||
+                    imageUrl
+                  }
+                  className={`gallery-picker-card ${
+                    isSelected
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    toggleImage(
+                      imageUrl
+                    )
+                  }
+                >
+
+                  <img
+                    src={
+                      imageUrl
+                    }
+                    alt={
+                      image.filename ||
+                      "Media Library Image"
+                    }
+                    loading="lazy"
+                  />
+
+                  <span>
+                    {image.filename ||
+                      image.publicId ||
+                      "Untitled Image"}
+                  </span>
+
+                  {isSelected && (
+
+                    <div className="gallery-selected-badge">
+                      ✓
+                    </div>
+
+                  )}
+
+                </button>
+              );
+            }
+          )}
+
+          {/* EMPTY MEDIA LIBRARY */}
+
+          {mediaItems.length ===
+            0 && (
+
+            <div className="gallery-picker-empty">
+
+              No images available.
+
+              <br />
+
+              Upload images first
+              from the Media Library.
+
+            </div>
+
+          )}
+
+          {/* EMPTY FOLDER / SEARCH */}
+
+          {mediaItems.length >
+            0 &&
+            filteredMedia.length ===
+              0 && (
+
+              <div className="gallery-picker-empty">
+
+                {searchQuery
+                  ? "No images match your search."
+                  : "No images are available in this folder."}
+
+              </div>
+
+            )}
+
+        </div>
+
+        {/* =========================
+            FOOTER
+        ========================= */}
+
         <div className="gallery-picker-footer">
 
+          <span>
+            {
+              selectedImages.length
+            }{" "}
+            selected
+          </span>
+
           <button
+            type="button"
             className="cancel-btn"
-            onClick={onClose}
+            onClick={
+              handleClose
+            }
           >
             Done
           </button>

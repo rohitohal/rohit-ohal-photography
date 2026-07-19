@@ -1,10 +1,23 @@
+import { useNavigate } from "react-router-dom";
+
 import HomepageSettings from "../components/HomepageSettings/HomepageSettings";
+import AboutSettings from "../components/AboutSettings/AboutSettings";
+import CTASettings from "../components/CTASettings/CTASettings";
+import DisciplineSettings from "../components/DisciplineSettings/DisciplineSettings";
+import FeaturedProjectSettings from "../components/FeaturedProjectSettings/FeaturedProjectSettings";
+import JournalHighlightSettings from "../components/JournalHighlightSettings/JournalHighlightSettings";
 
 import "../styles/homepage-settings.css";
 
 export default function Homepage() {
+  const navigate = useNavigate();
+
   return (
     <div className="admin-page">
+
+      {/* =========================
+          PAGE HEADER
+      ========================= */}
 
       <div className="admin-page-header">
 
@@ -17,15 +30,89 @@ export default function Homepage() {
         </h1>
 
         <p>
-          Control everything that appears on the public homepage
-          from one central place.
+          Control everything that appears
+          on the public homepage from one
+          central place.
         </p>
 
       </div>
 
-      {/* Hero CMS */}
+
+      {/* =========================
+          HERO SETTINGS
+      ========================= */}
 
       <HomepageSettings />
+
+
+      {/* =========================
+          ABOUT SETTINGS
+      ========================= */}
+
+      <div
+        style={{
+          marginTop: "40px",
+        }}
+      >
+        <AboutSettings />
+      </div>
+
+
+      {/* =========================
+          CTA SETTINGS
+      ========================= */}
+
+      <div
+        style={{
+          marginTop: "40px",
+        }}
+      >
+        <CTASettings />
+      </div>
+
+
+      {/* =========================
+          DISCIPLINE SETTINGS
+      ========================= */}
+
+      <div
+        style={{
+          marginTop: "40px",
+        }}
+      >
+        <DisciplineSettings />
+      </div>
+
+
+      {/* =========================
+          FEATURED PROJECTS
+      ========================= */}
+
+      <div
+        style={{
+          marginTop: "40px",
+        }}
+      >
+        <FeaturedProjectSettings />
+      </div>
+
+
+      {/* =========================
+          JOURNAL HIGHLIGHTS
+      ========================= */}
+
+      <div
+        style={{
+          marginTop: "40px",
+        }}
+      >
+        <JournalHighlightSettings />
+      </div>
+
+
+      {/* =========================
+          OTHER HOMEPAGE SETTINGS
+      ========================= */}
 
       <div
         className="admin-section-grid"
@@ -34,70 +121,9 @@ export default function Homepage() {
         }}
       >
 
-        <div className="admin-card">
-
-          <h2>
-            Featured Disciplines
-          </h2>
-
-          <p>
-            Select which disciplines appear on the homepage
-            and their order.
-          </p>
-
-          <button>
-            Manage Disciplines
-          </button>
-
-        </div>
-
-        <div className="admin-card">
-
-          <h2>
-            Featured Projects
-          </h2>
-
-          <p>
-            Choose featured galleries and portfolio projects.
-          </p>
-
-          <button>
-            Manage Projects
-          </button>
-
-        </div>
-
-        <div className="admin-card">
-
-          <h2>
-            Journal Highlights
-          </h2>
-
-          <p>
-            Control featured articles and homepage journal content.
-          </p>
-
-          <button>
-            Manage Journal
-          </button>
-
-        </div>
-
-        <div className="admin-card">
-
-          <h2>
-            Call To Action
-          </h2>
-
-          <p>
-            Edit homepage CTA titles, text and button labels.
-          </p>
-
-          <button>
-            Edit CTA
-          </button>
-
-        </div>
+        {/* =========================
+            SEO
+        ========================= */}
 
         <div className="admin-card">
 
@@ -106,10 +132,17 @@ export default function Homepage() {
           </h2>
 
           <p>
-            Configure homepage metadata and social sharing information.
+            Configure homepage metadata
+            and social sharing
+            information.
           </p>
 
-          <button>
+          <button
+            type="button"
+            onClick={() =>
+              navigate("/admin/seo")
+            }
+          >
             Open SEO Settings
           </button>
 
