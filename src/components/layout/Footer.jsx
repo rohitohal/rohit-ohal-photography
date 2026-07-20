@@ -1,62 +1,201 @@
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import {
+  supabase,
+} from "../../lib/supabase";
 
 import "./Footer.css";
+
 
 /* =========================
    DEFAULT WEBSITE SETTINGS
 ========================= */
 
 const defaultSettings = {
-  businessName: "Rohit Ohal Photography",
-  email: "hello@rohitohal.com",
-  phone: "+91 70209 98403",
-  location: "Pune, Maharashtra, India",
+  businessName:
+    "Rohit Ohal Photography",
 
-  instagram: "",
-  facebook: "",
+  email:
+    "hello@rohitohal.com",
 
-  workingDays: "Monday – Sunday",
-  workingHours: "10:00 AM – 8:00 PM",
+  phone:
+    "+91 70209 98403",
+
+  location:
+    "Pune, Maharashtra, India",
+
+  instagram:
+    "",
+
+  facebook:
+    "",
+
+  workingDays:
+    "Monday – Sunday",
+
+  workingHours:
+    "10:00 AM – 8:00 PM",
 };
 
+
+/* =========================
+   FOOTER
+========================= */
+
 export default function Footer() {
+
+  const [
+    settings,
+    setSettings,
+  ] =
+    useState(
+      defaultSettings
+    );
+
+
   /* =========================
      LOAD WEBSITE SETTINGS
   ========================= */
 
-  let settings = defaultSettings;
+  useEffect(() => {
 
-  const savedSettings =
-    localStorage.getItem(
-      "rohit-photography-settings"
-    );
+    const loadSettings =
+      async () => {
 
-  if (savedSettings) {
-    try {
-      settings = {
-        ...defaultSettings,
-        ...JSON.parse(savedSettings),
+        try {
+
+          const {
+            data,
+            error,
+          } =
+            await supabase
+              .from(
+                "site_settings"
+              )
+              .select(
+                "setting_value"
+              )
+              .eq(
+                "setting_key",
+                "global"
+              )
+              .single();
+
+
+          if (error) {
+            throw error;
+          }
+
+
+          if (
+            data?.setting_value
+          ) {
+
+            const loadedSettings = {
+              ...defaultSettings,
+              ...data.setting_value,
+            };
+
+
+            setSettings(
+              loadedSettings
+            );
+
+
+            /*
+             * Keep localStorage
+             * synchronized as a
+             * temporary fallback.
+             */
+
+            localStorage.setItem(
+              "rohit-photography-settings",
+              JSON.stringify(
+                loadedSettings
+              )
+            );
+
+
+            return;
+
+          }
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load footer settings from Supabase:",
+            error
+          );
+
+
+          /*
+           * FALLBACK:
+           * Load settings from
+           * localStorage.
+           */
+
+          const savedSettings =
+            localStorage.getItem(
+              "rohit-photography-settings"
+            );
+
+
+          if (savedSettings) {
+
+            try {
+
+              setSettings({
+                ...defaultSettings,
+                ...JSON.parse(
+                  savedSettings
+                ),
+              });
+
+            } catch (
+              localError
+            ) {
+
+              console.error(
+                "Failed to load local footer settings:",
+                localError
+              );
+
+            }
+
+          }
+
+        }
+
       };
-    } catch (error) {
-      console.error(
-        "Failed to load footer settings:",
-        error
-      );
-    }
-  }
+
+
+    loadSettings();
+
+  }, []);
+
 
   /* =========================
      WHATSAPP LINK
   ========================= */
 
   const whatsappNumber =
-    settings.phone.replace(
-      /\D/g,
-      ""
-    );
+    settings.phone
+      ?.replace(
+        /\D/g,
+        ""
+      ) || "";
+
 
   const whatsappLink =
     `https://wa.me/${whatsappNumber}`;
+
 
   /* =========================
      EMAIL LINK
@@ -65,17 +204,26 @@ export default function Footer() {
   const emailLink =
     `mailto:${settings.email}`;
 
+
   /* =========================
      COPYRIGHT YEAR
   ========================= */
 
   const currentYear =
-    new Date().getFullYear();
+    new Date()
+      .getFullYear();
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
+
     <footer className="footer">
 
       <div className="footer-container">
+
 
         {/* =========================
             BRAND
@@ -88,19 +236,22 @@ export default function Footer() {
           </h2>
 
           <p>
-            Fine Art Wedding, Portrait,
-            Commercial, Industrial and
-            Editorial Photography based in{" "}
+            Fine Art Wedding,
+            Portrait, Commercial,
+            Industrial and Editorial
+            Photography based in{" "}
             {settings.location}.
           </p>
 
         </div>
+
 
         {/* =========================
             FOOTER LINKS
         ========================= */}
 
         <div className="footer-links">
+
 
           {/* PORTFOLIO */}
 
@@ -136,6 +287,7 @@ export default function Footer() {
 
           </div>
 
+
           {/* COMPANY */}
 
           <div>
@@ -158,6 +310,7 @@ export default function Footer() {
 
           </div>
 
+
           {/* CONNECT */}
 
           <div>
@@ -166,42 +319,62 @@ export default function Footer() {
               Connect
             </h4>
 
+
             {settings.instagram && (
+
               <a
-                href={settings.instagram}
+                href={
+                  settings.instagram
+                }
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Instagram
               </a>
+
             )}
 
+
             {settings.facebook && (
+
               <a
-                href={settings.facebook}
+                href={
+                  settings.facebook
+                }
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Facebook
               </a>
+
             )}
 
+
             {whatsappNumber && (
+
               <a
-                href={whatsappLink}
+                href={
+                  whatsappLink
+                }
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 WhatsApp
               </a>
+
             )}
 
+
             {settings.email && (
+
               <a
-                href={emailLink}
+                href={
+                  emailLink
+                }
               >
                 Email
               </a>
+
             )}
 
           </div>
@@ -209,6 +382,7 @@ export default function Footer() {
         </div>
 
       </div>
+
 
       {/* =========================
           FOOTER BOTTOM
@@ -225,5 +399,6 @@ export default function Footer() {
       </div>
 
     </footer>
+
   );
 }

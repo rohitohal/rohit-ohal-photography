@@ -1,4 +1,11 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  supabase,
+} from "../lib/supabase";
 
 import SEOHead from "../components/common/SEOHead";
 import PageHero from "../components/common/PageHero";
@@ -106,38 +113,133 @@ export default function Contact() {
      LOAD WEBSITE SETTINGS
   ========================= */
 
-  const [settings] = useState(() => {
+  const [
+  settings,
+  setSettings,
+] = useState(
+  defaultSettings
+);
 
-    try {
 
-      const savedSettings =
-        localStorage.getItem(
-          "rohit-photography-settings"
+/* =========================
+   LOAD WEBSITE SETTINGS
+========================= */
+
+useEffect(() => {
+
+  const loadSettings =
+    async () => {
+
+      try {
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              "global"
+            )
+            .single();
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (
+          data?.setting_value
+        ) {
+
+          const loadedSettings = {
+            ...defaultSettings,
+            ...data.setting_value,
+          };
+
+
+          setSettings(
+            loadedSettings
+          );
+
+
+          /*
+           * Keep localStorage
+           * synchronized as a
+           * temporary fallback.
+           */
+
+          localStorage.setItem(
+            "rohit-photography-settings",
+            JSON.stringify(
+              loadedSettings
+            )
+          );
+
+
+          return;
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load website settings from Supabase:",
+          error
         );
 
-      if (savedSettings) {
 
-        return {
-          ...defaultSettings,
-          ...JSON.parse(
-            savedSettings
-          ),
-        };
+        /*
+         * FALLBACK:
+         * Load existing settings
+         * from localStorage.
+         */
+
+        const savedSettings =
+          localStorage.getItem(
+            "rohit-photography-settings"
+          );
+
+
+        if (savedSettings) {
+
+          try {
+
+            setSettings({
+              ...defaultSettings,
+              ...JSON.parse(
+                savedSettings
+              ),
+            });
+
+          } catch (
+            localError
+          ) {
+
+            console.error(
+              "Failed to load local website settings:",
+              localError
+            );
+
+          }
+
+        }
 
       }
 
-    } catch (error) {
+    };
 
-      console.error(
-        "Failed to load website settings:",
-        error
-      );
 
-    }
+  loadSettings();
 
-    return defaultSettings;
-
-  });
+}, []);
 
 
   /* =========================

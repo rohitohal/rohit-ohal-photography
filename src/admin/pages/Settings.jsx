@@ -6,6 +6,7 @@ import {
 
 import "../styles/settings.css";
 
+import { supabase } from "../../lib/supabase";
 const defaultSettings = {
   businessName: "Rohit Ohal Photography",
   email: "hello@rohitohal.com",
@@ -57,6 +58,7 @@ const backupKeys = [
 
   /* MEDIA LIBRARY */
   "rohit-photography-media",
+  "rohit-photography-media-folders",
 ];
 
 export default function Settings() {
@@ -81,26 +83,125 @@ export default function Settings() {
      LOAD SETTINGS
   ========================= */
 
-  useEffect(() => {
-    const savedSettings =
-      localStorage.getItem(
-        "rohit-photography-settings"
-      );
+  /* =========================
+   LOAD SETTINGS
+========================= */
 
-    if (savedSettings) {
+useEffect(() => {
+
+  const loadSettings =
+    async () => {
+
       try {
-        setSettings({
-          ...defaultSettings,
-          ...JSON.parse(savedSettings),
-        });
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              "global"
+            )
+            .single();
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (
+          data?.setting_value
+        ) {
+
+          const loadedSettings = {
+            ...defaultSettings,
+            ...data.setting_value,
+          };
+
+
+          setSettings(
+            loadedSettings
+          );
+
+
+          /*
+           * Keep localStorage
+           * synchronized as a
+           * temporary fallback.
+           */
+
+          localStorage.setItem(
+            "rohit-photography-settings",
+            JSON.stringify(
+              loadedSettings
+            )
+          );
+
+
+          return;
+
+        }
+
       } catch (error) {
+
         console.error(
-          "Failed to load settings:",
+          "Failed to load settings from Supabase:",
           error
         );
+
+
+        /*
+         * FALLBACK:
+         * Load existing localStorage
+         * settings if Supabase fails.
+         */
+
+        const savedSettings =
+          localStorage.getItem(
+            "rohit-photography-settings"
+          );
+
+
+        if (savedSettings) {
+
+          try {
+
+            setSettings({
+              ...defaultSettings,
+              ...JSON.parse(
+                savedSettings
+              ),
+            });
+
+          } catch (
+            localError
+          ) {
+
+            console.error(
+              "Failed to load local settings:",
+              localError
+            );
+
+          }
+
+        }
+
       }
-    }
-  }, []);
+
+    };
+
+
+  loadSettings();
+
+}, []);
 
   /* =========================
      HANDLE CHANGE
@@ -124,18 +225,76 @@ export default function Settings() {
      SAVE SETTINGS
   ========================= */
 
-  const handleSave = () => {
+  const handleSave = async () => {
+
+  try {
+
+    const {
+      error,
+    } =
+      await supabase
+        .from(
+          "site_settings"
+        )
+        .update({
+          setting_value:
+            settings,
+
+          updated_at:
+            new Date()
+              .toISOString(),
+        })
+        .eq(
+          "setting_key",
+          "global"
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    /*
+     * Keep localStorage
+     * synchronized as a
+     * temporary fallback.
+     */
+
     localStorage.setItem(
       "rohit-photography-settings",
-      JSON.stringify(settings)
+      JSON.stringify(
+        settings
+      )
     );
 
+
     setSaved(true);
+
 
     setTimeout(() => {
       setSaved(false);
     }, 3000);
-  };
+
+
+  } catch (error) {
+
+    console.error(
+      "Failed to save settings to Supabase:",
+      error
+    );
+
+
+    /*
+     * Do NOT show a success
+     * message if Supabase failed.
+     */
+
+    setSaved(false);
+
+  }
+
+};
 
   /* =========================
      EXPORT BACKUP
