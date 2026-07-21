@@ -1,13 +1,85 @@
+import { useMemo } from "react";
+
 import Container from "../common/Container";
 import SectionTitle from "../common/SectionTitle";
 
 import DisciplinesGrid from "../portfolio/DisciplinesGrid";
 
-import { disciplines } from "../../data/disciplines";
+import {
+  disciplines as defaultDisciplines,
+} from "../../data/disciplines";
+
+
+const DISCIPLINES_KEY =
+  "rohit-photography-disciplines";
+
+const HOMEPAGE_KEY =
+  "rohit-photography-homepage-disciplines";
+
 
 export default function SelectedDisciplines() {
+
   /* =========================
-     LOAD SELECTED DISCIPLINES
+     LOAD DISCIPLINES
+  ========================= */
+
+  const disciplines =
+    useMemo(() => {
+
+      try {
+
+        const saved =
+          localStorage.getItem(
+            DISCIPLINES_KEY
+          );
+
+        if (!saved) {
+          return defaultDisciplines;
+        }
+
+        const parsed =
+          JSON.parse(saved);
+
+        if (
+          !Array.isArray(parsed)
+        ) {
+          return defaultDisciplines;
+        }
+
+        return defaultDisciplines.map(
+          (discipline) => {
+
+            const savedDiscipline =
+              parsed.find(
+                (item) =>
+                  item.id ===
+                  discipline.id
+              );
+
+            return {
+              ...discipline,
+              ...savedDiscipline,
+            };
+
+          }
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load saved disciplines:",
+          error
+        );
+
+        return defaultDisciplines;
+
+      }
+
+    }, []);
+
+
+  /* =========================
+     LOAD SELECTED IDS
   ========================= */
 
   let selectedIds =
@@ -17,33 +89,40 @@ export default function SelectedDisciplines() {
     );
 
   try {
+
     const saved =
       localStorage.getItem(
-        "rohit-photography-homepage-disciplines"
+        HOMEPAGE_KEY
       );
 
     if (saved) {
+
       const parsed =
         JSON.parse(saved);
 
       if (
-        Array.isArray(
-          parsed
-        )
+        Array.isArray(parsed)
       ) {
+
         selectedIds =
           parsed;
+
       }
+
     }
+
   } catch (error) {
+
     console.error(
       "Failed to load homepage disciplines:",
       error
     );
+
   }
 
+
   /* =========================
-     FILTER DISCIPLINES
+     FILTER
   ========================= */
 
   const selectedDisciplines =
@@ -54,8 +133,9 @@ export default function SelectedDisciplines() {
         )
     );
 
+
   /* =========================
-     HIDE SECTION IF EMPTY
+     EMPTY
   ========================= */
 
   if (
@@ -65,7 +145,9 @@ export default function SelectedDisciplines() {
     return null;
   }
 
+
   return (
+
     <section className="selected-disciplines">
 
       <Container>
@@ -85,5 +167,7 @@ export default function SelectedDisciplines() {
       </Container>
 
     </section>
+
   );
+
 }

@@ -53,7 +53,7 @@ export default function JournalCard({
           "en-IN",
           {
             day:
-              "numeric",
+              "2-digit",
 
             month:
               "long",
@@ -89,35 +89,62 @@ export default function JournalCard({
   ========================= */
 
   return (
-    <Link
-      to={
-        articleUrl
-      }
-      className="journal-card"
-    >
+    <article className="journal-card">
 
       {/* =========================
-          IMAGE
+          IMAGE COLUMN
       ========================= */}
 
-      <div className="journal-image">
+      <div className="journal-card-media">
 
-        <img
-          src={
-            coverImage
+        <Link
+          to={
+            articleUrl
           }
-          alt={
-            post.title ||
-            "Photography Journal"
+          className="journal-image"
+          aria-label={
+            `Read ${
+              post.title ||
+              "journal article"
+            }`
           }
-          loading="lazy"
-        />
+        >
+
+          <img
+            src={
+              coverImage
+            }
+            alt={
+              post.title ||
+              "Photography Journal"
+            }
+            loading="lazy"
+          />
+
+        </Link>
+
+
+        {/* =========================
+            READ LINK
+        ========================= */}
+
+        <Link
+          to={
+            articleUrl
+          }
+          className="journal-read"
+        >
+          READ
+          <span aria-hidden="true">
+            ↗
+          </span>
+        </Link>
 
       </div>
 
 
       {/* =========================
-          CONTENT
+          ARTICLE CONTENT
       ========================= */}
 
       <div className="journal-content">
@@ -140,14 +167,23 @@ export default function JournalCard({
 
         {/* TITLE */}
 
-        <h3>
-
-          {
-            post.title ||
-            "Untitled Article"
+        <Link
+          to={
+            articleUrl
           }
+          className="journal-title-link"
+        >
 
-        </h3>
+          <h3>
+
+            {
+              post.title ||
+              "Untitled Article"
+            }
+
+          </h3>
+
+        </Link>
 
 
         {/* EXCERPT */}
@@ -181,6 +217,6 @@ export default function JournalCard({
 
       </div>
 
-    </Link>
+    </article>
   );
 }

@@ -1,0 +1,805 @@
+/* ==========================================
+   DISCIPLINES ADMIN PAGE
+========================================== */
+
+.disciplines-admin-page {
+    width: 100%;
+    padding: 10px 0 60px;
+}
+
+
+/* ==========================================
+   PAGE HEADER
+========================================== */
+
+.disciplines-admin-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 40px;
+
+    margin-bottom: 50px;
+}
+
+.disciplines-admin-overline {
+    display: block;
+
+    margin-bottom: 12px;
+
+    color: #b58b43;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    letter-spacing: 4px;
+
+    text-transform: uppercase;
+}
+
+.disciplines-admin-header h1 {
+    margin: 0 0 12px;
+
+    color: #111;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 48px;
+
+    font-weight: 500;
+
+    line-height: 1.1;
+}
+
+.disciplines-admin-header p {
+    max-width: 650px;
+
+    margin: 0;
+
+    color: #777;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+}
+
+
+/* ==========================================
+   HEADER ACTIONS
+========================================== */
+
+.disciplines-admin-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    flex-shrink: 0;
+}
+
+.disciplines-save-message {
+    color: #567a5b;
+
+    font-size: 13px;
+}
+
+.disciplines-save-button {
+    min-height: 48px;
+
+    padding: 0 28px;
+
+    border: none;
+
+    background: #111;
+
+    color: #fff;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+
+    cursor: pointer;
+
+    transition:
+        background .3s ease,
+        color .3s ease,
+        transform .3s ease;
+}
+
+.disciplines-save-button:hover {
+    background: #b58b43;
+
+    color: #fff;
+
+    transform: translateY(-2px);
+}
+
+
+/* ==========================================
+   DISCIPLINES GRID
+========================================== */
+
+.disciplines-admin-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap: 28px;
+}
+
+
+/* ==========================================
+   DISCIPLINE CARD
+========================================== */
+
+.discipline-admin-card {
+    overflow: hidden;
+
+    background: #fff;
+
+    border:
+        1px solid
+        #e8e8e8;
+
+    box-shadow:
+        0 10px 35px
+        rgba(
+            0,
+            0,
+            0,
+            .04
+        );
+
+    transition:
+        transform .35s ease,
+        box-shadow .35s ease;
+}
+
+.discipline-admin-card:hover {
+    transform:
+        translateY(-5px);
+
+    box-shadow:
+        0 20px 50px
+        rgba(
+            0,
+            0,
+            0,
+            .08
+        );
+}
+
+
+/* ==========================================
+   CARD IMAGE
+========================================== */
+
+.discipline-admin-image {
+    position: relative;
+
+    width: 100%;
+
+    aspect-ratio: 16 / 10;
+
+    overflow: hidden;
+
+    background: #eee;
+}
+
+.discipline-admin-image img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition:
+        transform .6s ease;
+}
+
+.discipline-admin-card:hover
+.discipline-admin-image img {
+    transform:
+        scale(1.03);
+}
+
+
+/* ==========================================
+   CARD CONTENT
+========================================== */
+
+.discipline-admin-content {
+    padding: 26px;
+}
+
+.discipline-admin-slug {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #b58b43;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+}
+
+.discipline-admin-content h2 {
+    margin: 0 0 10px;
+
+    color: #111;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 30px;
+
+    font-weight: 500;
+
+    line-height: 1.15;
+}
+
+.discipline-admin-content p {
+    min-height: 44px;
+
+    margin: 0;
+
+    color: #777;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+
+/* ==========================================
+   CARD BUTTONS
+========================================== */
+
+.discipline-admin-buttons {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 24px;
+}
+
+.discipline-image-button {
+    min-height: 42px;
+
+    padding:
+        0
+        18px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    letter-spacing: 1.5px;
+
+    text-transform: uppercase;
+
+    cursor: pointer;
+
+    transition:
+        background .3s ease,
+        border-color .3s ease,
+        color .3s ease;
+}
+
+.discipline-image-button.primary {
+    border:
+        1px solid
+        #111;
+
+    background: #111;
+
+    color: #fff;
+}
+
+.discipline-image-button.primary:hover {
+    border-color: #b58b43;
+
+    background: #b58b43;
+}
+
+.discipline-image-button.secondary {
+    border:
+        1px solid
+        #ddd;
+
+    background: transparent;
+
+    color: #777;
+}
+
+.discipline-image-button.secondary:hover {
+    border-color: #111;
+
+    color: #111;
+}
+
+
+/* ==========================================
+   IMAGE PICKER BACKDROP
+========================================== */
+
+.discipline-picker-backdrop {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 5000;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 30px;
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            .72
+        );
+
+    backdrop-filter:
+        blur(6px);
+
+    -webkit-backdrop-filter:
+        blur(6px);
+}
+
+
+/* ==========================================
+   IMAGE PICKER MODAL
+========================================== */
+
+.discipline-picker-modal {
+    width:
+        min(
+            1100px,
+            100%
+        );
+
+    max-height:
+        88vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: #fff;
+
+    box-shadow:
+        0 40px 120px
+        rgba(
+            0,
+            0,
+            0,
+            .35
+        );
+}
+
+
+/* ==========================================
+   PICKER HEADER
+========================================== */
+
+.discipline-picker-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 30px;
+
+    padding:
+        28px
+        32px;
+
+    border-bottom:
+        1px solid
+        #eee;
+}
+
+.discipline-picker-header span {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #b58b43;
+
+    font-size: 9px;
+
+    font-weight: 600;
+
+    letter-spacing: 4px;
+
+    text-transform: uppercase;
+}
+
+.discipline-picker-header h2 {
+    margin: 0;
+
+    color: #111;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 34px;
+
+    font-weight: 500;
+}
+
+.discipline-picker-close {
+    width: 44px;
+    height: 44px;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid
+        #ddd;
+
+    background: transparent;
+
+    color: #111;
+
+    font-size: 28px;
+
+    font-weight: 300;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background .3s ease,
+        color .3s ease;
+}
+
+.discipline-picker-close:hover {
+    background: #111;
+
+    color: #fff;
+}
+
+
+/* ==========================================
+   PICKER SEARCH
+========================================== */
+
+.discipline-picker-search {
+    padding:
+        20px
+        32px;
+
+    border-bottom:
+        1px solid
+        #eee;
+}
+
+.discipline-picker-search input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding:
+        14px
+        16px;
+
+    border:
+        1px solid
+        #ddd;
+
+    outline: none;
+
+    background: #fafafa;
+
+    color: #111;
+
+    font-size: 14px;
+
+    transition:
+        border-color .3s ease,
+        background .3s ease;
+}
+
+.discipline-picker-search input:focus {
+    border-color: #b58b43;
+
+    background: #fff;
+}
+
+
+/* ==========================================
+   PICKER IMAGE GRID
+========================================== */
+
+.discipline-picker-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap: 16px;
+
+    padding: 30px 32px;
+
+    overflow-y: auto;
+}
+
+
+/* ==========================================
+   PICKER IMAGE ITEM
+========================================== */
+
+.discipline-picker-item {
+    position: relative;
+
+    padding: 0;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        #e5e5e5;
+
+    background: #fff;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        border-color .3s ease,
+        transform .3s ease,
+        box-shadow .3s ease;
+}
+
+.discipline-picker-item:hover {
+    border-color: #b58b43;
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 12px 30px
+        rgba(
+            0,
+            0,
+            0,
+            .10
+        );
+}
+
+.discipline-picker-item img {
+    display: block;
+
+    width: 100%;
+
+    aspect-ratio: 4 / 3;
+
+    object-fit: cover;
+
+    background: #eee;
+}
+
+.discipline-picker-item span {
+    display: block;
+
+    padding:
+        11px
+        12px;
+
+    overflow: hidden;
+
+    color: #555;
+
+    font-size: 11px;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+}
+
+
+/* ==========================================
+   EMPTY MEDIA STATE
+========================================== */
+
+.discipline-picker-empty {
+    padding:
+        100px
+        30px;
+
+    text-align: center;
+}
+
+.discipline-picker-empty h3 {
+    margin:
+        0
+        0
+        10px;
+
+    color: #111;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 34px;
+
+    font-weight: 500;
+}
+
+.discipline-picker-empty p {
+    margin: 0;
+
+    color: #777;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+}
+
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 1200px) {
+
+    .disciplines-admin-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+    }
+
+    .discipline-picker-grid {
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .disciplines-admin-header {
+        align-items:
+            flex-start;
+
+        flex-direction:
+            column;
+    }
+
+    .disciplines-admin-header h1 {
+        font-size: 40px;
+    }
+
+    .disciplines-admin-actions {
+        width: 100%;
+
+        justify-content:
+            space-between;
+    }
+
+    .disciplines-admin-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+    .discipline-picker-backdrop {
+        padding: 15px;
+    }
+
+    .discipline-picker-header {
+        padding:
+            22px
+            20px;
+    }
+
+    .discipline-picker-search {
+        padding:
+            16px
+            20px;
+    }
+
+    .discipline-picker-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
+        padding:
+            20px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .disciplines-admin-actions {
+        align-items:
+            stretch;
+
+        flex-direction:
+            column;
+    }
+
+    .disciplines-save-button {
+        width: 100%;
+    }
+
+    .discipline-admin-buttons {
+        align-items:
+            stretch;
+
+        flex-direction:
+            column;
+    }
+
+    .discipline-image-button {
+        width: 100%;
+    }
+
+    .discipline-picker-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+}

@@ -2,6 +2,7 @@ import JournalCard from "./JournalCard";
 
 import "./JournalGrid.css";
 
+
 export default function JournalGrid({
   posts = [],
 }) {
@@ -11,44 +12,52 @@ export default function JournalGrid({
 
   if (posts.length === 0) {
     return (
-      <div className="journal-empty">
+      <section className="journal-list-section">
 
-        <h2>
-          No Articles Found
-        </h2>
+        <div className="journal-empty">
 
-        <p>
-          New journal stories will be
-          published soon.
-        </p>
+          <h2>
+            No Articles Found
+          </h2>
 
-      </div>
+          <p>
+            New journal stories will be
+            published soon.
+          </p>
+
+        </div>
+
+      </section>
     );
   }
 
 
   /* =========================
-     JOURNAL GRID
+     JOURNAL LIST
   ========================= */
 
   return (
-    <section className="journal-grid">
+    <section className="journal-list-section">
 
-      {posts.map(
-        (post) => (
+      <div className="journal-grid">
 
-          <JournalCard
-            key={
-              post.id ||
-              post.slug
-            }
-            post={
-              post
-            }
-          />
+        {posts.map(
+          (post) => (
 
-        )
-      )}
+            <JournalCard
+              key={
+                post.id ||
+                post.slug
+              }
+              post={
+                post
+              }
+            />
+
+          )
+        )}
+
+      </div>
 
     </section>
   );

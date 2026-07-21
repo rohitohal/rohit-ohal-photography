@@ -110,136 +110,136 @@ const defaultContactForm = {
 export default function Contact() {
 
   /* =========================
-     LOAD WEBSITE SETTINGS
+     WEBSITE SETTINGS STATE
   ========================= */
 
   const [
-  settings,
-  setSettings,
-] = useState(
-  defaultSettings
-);
+    settings,
+    setSettings,
+  ] = useState(
+    defaultSettings
+  );
 
 
-/* =========================
-   LOAD WEBSITE SETTINGS
-========================= */
+  /* =========================
+     LOAD WEBSITE SETTINGS
+  ========================= */
 
-useEffect(() => {
+  useEffect(() => {
 
-  const loadSettings =
-    async () => {
+    const loadSettings =
+      async () => {
 
-      try {
+        try {
 
-        const {
-          data,
-          error,
-        } =
-          await supabase
-            .from(
-              "site_settings"
-            )
-            .select(
-              "setting_value"
-            )
-            .eq(
-              "setting_key",
-              "global"
-            )
-            .single();
-
-
-        if (error) {
-          throw error;
-        }
+          const {
+            data,
+            error,
+          } =
+            await supabase
+              .from(
+                "site_settings"
+              )
+              .select(
+                "setting_value"
+              )
+              .eq(
+                "setting_key",
+                "global"
+              )
+              .single();
 
 
-        if (
-          data?.setting_value
-        ) {
-
-          const loadedSettings = {
-            ...defaultSettings,
-            ...data.setting_value,
-          };
+          if (error) {
+            throw error;
+          }
 
 
-          setSettings(
-            loadedSettings
+          if (
+            data?.setting_value
+          ) {
+
+            const loadedSettings = {
+              ...defaultSettings,
+              ...data.setting_value,
+            };
+
+
+            setSettings(
+              loadedSettings
+            );
+
+
+            /*
+             * Keep localStorage
+             * synchronized as a
+             * temporary fallback.
+             */
+
+            localStorage.setItem(
+              "rohit-photography-settings",
+              JSON.stringify(
+                loadedSettings
+              )
+            );
+
+
+            return;
+
+          }
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load website settings from Supabase:",
+            error
           );
 
 
           /*
-           * Keep localStorage
-           * synchronized as a
-           * temporary fallback.
+           * FALLBACK:
+           * Load existing settings
+           * from localStorage.
            */
 
-          localStorage.setItem(
-            "rohit-photography-settings",
-            JSON.stringify(
-              loadedSettings
-            )
-          );
-
-
-          return;
-
-        }
-
-      } catch (error) {
-
-        console.error(
-          "Failed to load website settings from Supabase:",
-          error
-        );
-
-
-        /*
-         * FALLBACK:
-         * Load existing settings
-         * from localStorage.
-         */
-
-        const savedSettings =
-          localStorage.getItem(
-            "rohit-photography-settings"
-          );
-
-
-        if (savedSettings) {
-
-          try {
-
-            setSettings({
-              ...defaultSettings,
-              ...JSON.parse(
-                savedSettings
-              ),
-            });
-
-          } catch (
-            localError
-          ) {
-
-            console.error(
-              "Failed to load local website settings:",
-              localError
+          const savedSettings =
+            localStorage.getItem(
+              "rohit-photography-settings"
             );
+
+
+          if (savedSettings) {
+
+            try {
+
+              setSettings({
+                ...defaultSettings,
+                ...JSON.parse(
+                  savedSettings
+                ),
+              });
+
+            } catch (
+              localError
+            ) {
+
+              console.error(
+                "Failed to load local website settings:",
+                localError
+              );
+
+            }
 
           }
 
         }
 
-      }
-
-    };
+      };
 
 
-  loadSettings();
+    loadSettings();
 
-}, []);
+  }, []);
 
 
   /* =========================
@@ -575,6 +575,8 @@ useEffect(() => {
         image={
           contactHeroImage
         }
+        variant="contact"
+        showScroll={false}
       />
 
 

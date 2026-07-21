@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 import {
   useEffect,
   useMemo,
@@ -42,12 +40,6 @@ const defaultSettings = {
     "Documentary storytelling through timeless imagery, capturing emotion, atmosphere and moments that deserve to be remembered.",
 
   heroImages: [],
-
-  buttonText:
-    "View Portfolio",
-
-  buttonLink:
-    "/portfolio",
 };
 
 
@@ -314,34 +306,6 @@ export default function Hero() {
                 .heroDescription
             }
           </p>
-
-        )}
-
-
-        {/* =========================
-            HERO BUTTON
-        ========================= */}
-
-        {homepageSettings
-          .buttonText && (
-
-          <div className="hero-buttons">
-
-            <Link
-              to={
-                homepageSettings
-                  .buttonLink ||
-                "/portfolio"
-              }
-              className="hero-primary"
-            >
-              {
-                homepageSettings
-                  .buttonText
-              }
-            </Link>
-
-          </div>
 
         )}
 

@@ -3,6 +3,8 @@ import {
   useState,
 } from "react";
 
+import ImagePicker from "../components/ImagePicker/ImagePicker";
+
 import "../styles/seo.css";
 
 
@@ -74,10 +76,6 @@ export default function SEO() {
       /*
        * Merge saved settings
        * with default settings.
-       *
-       * This ensures future
-       * SEO fields still receive
-       * default values.
        */
 
       const parsed =
@@ -121,6 +119,16 @@ export default function SEO() {
 
 
   /* =========================
+     IMAGE PICKER STATE
+  ========================= */
+
+  const [
+    isImagePickerOpen,
+    setIsImagePickerOpen,
+  ] = useState(false);
+
+
+  /* =========================
      SAVED MESSAGE
   ========================= */
 
@@ -150,9 +158,13 @@ export default function SEO() {
 
 
     return () =>
-      clearTimeout(timer);
+      clearTimeout(
+        timer
+      );
 
-  }, [savedMessage]);
+  }, [
+    savedMessage,
+  ]);
 
 
   /* =========================
@@ -160,13 +172,13 @@ export default function SEO() {
   ========================= */
 
   const handleChange = (
-    e
+    event
   ) => {
 
     const {
       name,
       value,
-    } = e.target;
+    } = event.target;
 
 
     setSeoData(
@@ -181,15 +193,67 @@ export default function SEO() {
     );
 
 
-    /*
-     * Remove previous
-     * success message when
-     * editing again.
-     */
+    setSavedMessage("");
+
+  };
+
+
+  /* =========================
+     SELECT SOCIAL IMAGE
+  ========================= */
+
+  const handleSelectImage = (
+    imageUrl
+  ) => {
+
+    if (!imageUrl) {
+      return;
+    }
+
+
+    setSeoData(
+      (prev) => ({
+
+        ...prev,
+
+        ogImage:
+          imageUrl,
+
+      })
+    );
+
+
+    setIsImagePickerOpen(
+      false
+    );
+
 
     setSavedMessage("");
 
   };
+
+
+  /* =========================
+     REMOVE SOCIAL IMAGE
+  ========================= */
+
+  const handleRemoveImage =
+    () => {
+
+      setSeoData(
+        (prev) => ({
+
+          ...prev,
+
+          ogImage: "",
+
+        })
+      );
+
+
+      setSavedMessage("");
+
+    };
 
 
   /* =========================
@@ -234,394 +298,491 @@ export default function SEO() {
   ========================= */
 
   return (
+    <>
 
-    <div className="seo-page">
-
-
-      {/* =========================
-          HEADER
-      ========================= */}
-
-      <div className="seo-header">
-
-        <div>
-
-          <span className="seo-overline">
-            SEO MANAGEMENT
-          </span>
-
-
-          <h1>
-            Search Engine Optimization
-          </h1>
-
-
-          <p>
-            Manage your website metadata
-            and social sharing
-            information.
-          </p>
-
-        </div>
-
-
-        <button
-          type="button"
-          className="seo-save-button"
-          onClick={
-            handleSave
-          }
-        >
-          Save Changes
-        </button>
-
-      </div>
-
-
-      {/* =========================
-          SAVED MESSAGE
-      ========================= */}
-
-      {savedMessage && (
-
-        <div className="seo-success-message">
-
-          {savedMessage}
-
-        </div>
-
-      )}
-
-
-      <div className="seo-content">
+      <div className="seo-page">
 
 
         {/* =========================
-            GENERAL SEO
+            HEADER
         ========================= */}
 
-        <section className="seo-card">
+        <div className="seo-header">
 
-          <div className="seo-card-header">
+          <div>
 
-            <span className="seo-section-label">
-              GENERAL
+            <span className="seo-overline">
+              SEO MANAGEMENT
             </span>
 
 
-            <h2>
-              Website SEO
-            </h2>
+            <h1>
+              Search Engine Optimization
+            </h1>
 
 
             <p>
-              Configure the default
-              search engine information
-              for your website.
+              Manage your website metadata
+              and social sharing
+              information.
             </p>
 
           </div>
 
 
-          <div className="seo-form">
+          <button
+            type="button"
+            className="seo-save-button"
+            onClick={
+              handleSave
+            }
+          >
+            Save Changes
+          </button>
 
-
-            {/* SITE TITLE */}
-
-            <div className="seo-form-group">
-
-              <label>
-                Site Title
-              </label>
-
-
-              <input
-                type="text"
-                name="siteTitle"
-                value={
-                  seoData.siteTitle
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Rohit Ohal Photography"
-              />
-
-
-              <span className="seo-help">
-
-                {
-                  seoData
-                    .siteTitle
-                    .length
-                }{" "}
-                characters
-
-              </span>
-
-            </div>
-
-
-            {/* META DESCRIPTION */}
-
-            <div className="seo-form-group">
-
-              <label>
-                Meta Description
-              </label>
-
-
-              <textarea
-                rows="4"
-                name="metaDescription"
-                value={
-                  seoData
-                    .metaDescription
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Describe your photography business..."
-              />
-
-
-              <span className="seo-help">
-
-                {
-                  seoData
-                    .metaDescription
-                    .length
-                }{" "}
-                characters
-
-              </span>
-
-            </div>
-
-
-            {/* KEYWORDS */}
-
-            <div className="seo-form-group">
-
-              <label>
-                Keywords
-              </label>
-
-
-              <textarea
-                rows="3"
-                name="keywords"
-                value={
-                  seoData.keywords
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Wedding Photographer Pune, Commercial Photography..."
-              />
-
-
-              <span className="seo-help">
-                Separate keywords
-                with commas.
-              </span>
-
-            </div>
-
-          </div>
-
-        </section>
+        </div>
 
 
         {/* =========================
-            SOCIAL SHARING
+            SAVED MESSAGE
         ========================= */}
 
-        <section className="seo-card">
+        {savedMessage && (
 
-          <div className="seo-card-header">
+          <div className="seo-success-message">
 
-            <span className="seo-section-label">
-              SOCIAL
-            </span>
-
-
-            <h2>
-              Social Sharing
-            </h2>
-
-
-            <p>
-              Control how your website
-              appears when shared on
-              social media.
-            </p>
+            {
+              savedMessage
+            }
 
           </div>
 
-
-          <div className="seo-form">
-
-
-            {/* OPEN GRAPH TITLE */}
-
-            <div className="seo-form-group">
-
-              <label>
-                Open Graph Title
-              </label>
+        )}
 
 
-              <input
-                type="text"
-                name="ogTitle"
-                value={
-                  seoData.ogTitle
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Rohit Ohal Photography"
-              />
-
-            </div>
+        <div className="seo-content">
 
 
-            {/* OPEN GRAPH DESCRIPTION */}
+          {/* =========================
+              GENERAL SEO
+          ========================= */}
 
-            <div className="seo-form-group">
+          <section className="seo-card">
 
-              <label>
-                Open Graph Description
-              </label>
+            <div className="seo-card-header">
+
+              <span className="seo-section-label">
+                GENERAL
+              </span>
 
 
-              <textarea
-                rows="3"
-                name="ogDescription"
-                value={
-                  seoData
-                    .ogDescription
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Fine art wedding and commercial photography."
-              />
+              <h2>
+                Website SEO
+              </h2>
+
+
+              <p>
+                Configure the default
+                search engine information
+                for your website.
+              </p>
 
             </div>
 
 
-            {/* OPEN GRAPH IMAGE */}
-
-            <div className="seo-form-group">
-
-              <label>
-                Social Sharing Image URL
-              </label>
+            <div className="seo-form">
 
 
-              <input
-                type="text"
-                name="ogImage"
-                value={
-                  seoData.ogImage
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Cloudinary image URL"
-              />
+              {/* =========================
+                  SITE TITLE
+              ========================= */}
 
-            </div>
+              <div className="seo-form-group">
+
+                <label>
+                  Site Title
+                </label>
 
 
-            {/* IMAGE PREVIEW */}
-
-            {seoData.ogImage && (
-
-              <div className="seo-image-preview">
-
-                <img
-                  src={
-                    seoData.ogImage
+                <input
+                  type="text"
+                  name="siteTitle"
+                  value={
+                    seoData.siteTitle
                   }
-                  alt="Social sharing preview"
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Rohit Ohal Photography"
+                />
+
+
+                <span className="seo-help">
+
+                  {
+                    seoData
+                      .siteTitle
+                      .length
+                  }{" "}
+                  characters
+
+                </span>
+
+              </div>
+
+
+              {/* =========================
+                  META DESCRIPTION
+              ========================= */}
+
+              <div className="seo-form-group">
+
+                <label>
+                  Meta Description
+                </label>
+
+
+                <textarea
+                  rows="4"
+                  name="metaDescription"
+                  value={
+                    seoData
+                      .metaDescription
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Describe your photography business..."
+                />
+
+
+                <span className="seo-help">
+
+                  {
+                    seoData
+                      .metaDescription
+                      .length
+                  }{" "}
+                  characters
+
+                </span>
+
+              </div>
+
+
+              {/* =========================
+                  KEYWORDS
+              ========================= */}
+
+              <div className="seo-form-group">
+
+                <label>
+                  Keywords
+                </label>
+
+
+                <textarea
+                  rows="3"
+                  name="keywords"
+                  value={
+                    seoData.keywords
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Wedding Photographer Pune, Commercial Photography..."
+                />
+
+
+                <span className="seo-help">
+                  Separate keywords
+                  with commas.
+                </span>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* =========================
+              SOCIAL SHARING
+          ========================= */}
+
+          <section className="seo-card">
+
+            <div className="seo-card-header">
+
+              <span className="seo-section-label">
+                SOCIAL
+              </span>
+
+
+              <h2>
+                Social Sharing
+              </h2>
+
+
+              <p>
+                Control how your website
+                appears when shared on
+                social media.
+              </p>
+
+            </div>
+
+
+            <div className="seo-form">
+
+
+              {/* =========================
+                  OPEN GRAPH TITLE
+              ========================= */}
+
+              <div className="seo-form-group">
+
+                <label>
+                  Open Graph Title
+                </label>
+
+
+                <input
+                  type="text"
+                  name="ogTitle"
+                  value={
+                    seoData.ogTitle
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Rohit Ohal Photography"
                 />
 
               </div>
 
-            )}
 
-          </div>
+              {/* =========================
+                  OPEN GRAPH DESCRIPTION
+              ========================= */}
 
-        </section>
+              <div className="seo-form-group">
 
-
-        {/* =========================
-            GOOGLE PREVIEW
-        ========================= */}
-
-        <section className="seo-card">
-
-          <div className="seo-card-header">
-
-            <span className="seo-section-label">
-              PREVIEW
-            </span>
+                <label>
+                  Open Graph Description
+                </label>
 
 
-            <h2>
-              Google Search Preview
-            </h2>
+                <textarea
+                  rows="3"
+                  name="ogDescription"
+                  value={
+                    seoData
+                      .ogDescription
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Fine art wedding and commercial photography."
+                />
+
+              </div>
 
 
-            <p>
-              Preview how your homepage
-              may appear in search
-              results.
-            </p>
+              {/* =========================
+                  SOCIAL SHARING IMAGE
+              ========================= */}
 
-          </div>
+              <div className="seo-form-group">
 
-
-          <div className="google-preview">
-
-            <span className="google-url">
-
-              rohitohalphotography.com
-
-            </span>
+                <label>
+                  Social Sharing Image
+                </label>
 
 
-            <h3>
+                <p
+                  className="seo-help"
+                  style={{
+                    marginTop:
+                      "0",
 
-              {
-                seoData.siteTitle ||
-                "Rohit Ohal Photography"
-              }
+                    marginBottom:
+                      "14px",
+                  }}
+                >
+                  Select the default image
+                  used when your website is
+                  shared on social media.
+                </p>
 
-            </h3>
+
+                <button
+                  type="button"
+                  className="seo-save-button"
+                  onClick={() =>
+                    setIsImagePickerOpen(
+                      true
+                    )
+                  }
+                >
+
+                  {seoData.ogImage
+                    ? "Change Social Image"
+                    : "Select Social Image"}
+
+                </button>
 
 
-            <p>
+                {/* =========================
+                    IMAGE PREVIEW
+                ========================= */}
 
-              {
-                seoData
-                  .metaDescription ||
-                "Your website description will appear here."
-              }
+                {seoData.ogImage && (
 
-            </p>
+                  <div
+                    className="seo-image-preview"
+                    style={{
+                      marginTop:
+                        "20px",
+                    }}
+                  >
 
-          </div>
+                    <img
+                      src={
+                        seoData.ogImage
+                      }
+                      alt="Social sharing preview"
+                    />
 
-        </section>
 
+                    <button
+                      type="button"
+                      onClick={
+                        handleRemoveImage
+                      }
+                      style={{
+                        display:
+                          "block",
+
+                        marginTop:
+                          "12px",
+
+                        padding:
+                          "9px 14px",
+
+                        border:
+                          "1px solid #ddd",
+
+                        borderRadius:
+                          "8px",
+
+                        background:
+                          "#fff",
+
+                        cursor:
+                          "pointer",
+                      }}
+                    >
+                      Remove Image
+                    </button>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* =========================
+              GOOGLE PREVIEW
+          ========================= */}
+
+          <section className="seo-card">
+
+            <div className="seo-card-header">
+
+              <span className="seo-section-label">
+                PREVIEW
+              </span>
+
+
+              <h2>
+                Google Search Preview
+              </h2>
+
+
+              <p>
+                Preview how your homepage
+                may appear in search
+                results.
+              </p>
+
+            </div>
+
+
+            <div className="google-preview">
+
+              <span className="google-url">
+
+                rohitohalphotography.com
+
+              </span>
+
+
+              <h3>
+
+                {
+                  seoData.siteTitle ||
+                  "Rohit Ohal Photography"
+                }
+
+              </h3>
+
+
+              <p>
+
+                {
+                  seoData
+                    .metaDescription ||
+                  "Your website description will appear here."
+                }
+
+              </p>
+
+            </div>
+
+          </section>
+
+
+        </div>
 
       </div>
 
-    </div>
 
+      {/* =========================
+          IMAGE PICKER
+      ========================= */}
+
+      <ImagePicker
+        isOpen={
+          isImagePickerOpen
+        }
+
+        onClose={() =>
+          setIsImagePickerOpen(
+            false
+          )
+        }
+
+        onSelect={
+          handleSelectImage
+        }
+      />
+
+    </>
   );
 }

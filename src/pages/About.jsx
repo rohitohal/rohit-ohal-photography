@@ -155,6 +155,8 @@ export default function About() {
         image={
           aboutHeroImage
         }
+        variant="about"
+        showScroll={false}
       />
 
 

@@ -10,19 +10,42 @@ import JournalGrid from "../components/journal/JournalGrid";
 
 
 /* =========================
-   CONSTANTS
+   STORAGE KEYS
 ========================= */
 
 const JOURNAL_KEY =
   "rohit-photography-journal";
 
-const defaultHeroImage =
-  "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=2000&q=80";
+const JOURNAL_SETTINGS_KEY =
+  "rohit-photography-journal-settings";
 
+
+/* =========================
+   DEFAULT JOURNAL SETTINGS
+========================= */
+
+const defaultJournalSettings = {
+
+  heroTitle:
+    "Journal",
+
+  heroDescription:
+    "Stories, insights and behind the scenes moments from weddings, commercial work and photography adventures.",
+
+  heroImage:
+    "",
+
+};
+
+
+/* =========================
+   JOURNAL PAGE
+========================= */
 
 export default function Journal() {
+
   /* =========================
-     JOURNAL STATE
+     JOURNAL POSTS
   ========================= */
 
   const [
@@ -36,44 +59,125 @@ export default function Journal() {
   ========================= */
 
   useEffect(() => {
+
     try {
+
       const savedPosts =
         localStorage.getItem(
           JOURNAL_KEY
         );
 
+
       if (!savedPosts) {
+
         setPosts([]);
 
         return;
+
       }
+
 
       const parsedPosts =
         JSON.parse(
           savedPosts
         );
 
+
       if (
         Array.isArray(
           parsedPosts
         )
       ) {
+
         setPosts(
           parsedPosts
         );
+
       } else {
+
         setPosts([]);
+
       }
 
+
     } catch (error) {
+
       console.error(
         "Failed to load journal posts:",
         error
       );
 
       setPosts([]);
+
     }
+
   }, []);
+
+
+  /* =========================
+     LOAD JOURNAL PAGE SETTINGS
+  ========================= */
+
+  const journalSettings =
+    useMemo(() => {
+
+      try {
+
+        const saved =
+          localStorage.getItem(
+            JOURNAL_SETTINGS_KEY
+          );
+
+
+        if (!saved) {
+
+          return {
+            ...defaultJournalSettings,
+          };
+
+        }
+
+
+        const parsed =
+          JSON.parse(
+            saved
+          );
+
+
+        if (
+          !parsed ||
+          typeof parsed !==
+            "object"
+        ) {
+
+          return {
+            ...defaultJournalSettings,
+          };
+
+        }
+
+
+        return {
+          ...defaultJournalSettings,
+          ...parsed,
+        };
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Journal page settings:",
+          error
+        );
+
+
+        return {
+          ...defaultJournalSettings,
+        };
+
+      }
+
+    }, []);
 
 
   /* =========================
@@ -83,22 +187,27 @@ export default function Journal() {
   const publishedPosts =
     useMemo(() => {
 
-      return posts
-
-        /* Only show published articles */
+      return [...posts]
 
         .filter(
-          (post) =>
+          (
+            post
+          ) =>
             post &&
             post.status ===
               "Published"
         )
 
 
-        /* Newest articles first */
+        /* =========================
+           NEWEST FIRST
+        ========================= */
 
         .sort(
-          (a, b) => {
+          (
+            a,
+            b
+          ) => {
 
             const dateA =
               new Date(
@@ -107,6 +216,7 @@ export default function Journal() {
                 0
               ).getTime();
 
+
             const dateB =
               new Date(
                 b.createdAt ||
@@ -114,10 +224,12 @@ export default function Journal() {
                 0
               ).getTime();
 
+
             return (
               dateB -
               dateA
             );
+
           }
         );
 
@@ -127,15 +239,38 @@ export default function Journal() {
 
 
   /* =========================
-     HERO IMAGE
+     HERO VALUES
   ========================= */
 
+  const heroTitle =
+    journalSettings.heroTitle ||
+    defaultJournalSettings.heroTitle;
+
+
+  const heroDescription =
+    journalSettings.heroDescription ||
+    defaultJournalSettings.heroDescription;
+
+
+  /*
+   * Journal Hero now comes
+   * directly from Admin.
+   *
+   * If no Journal Hero has been
+   * selected yet, use the first
+   * available published article
+   * cover as a temporary fallback.
+   */
+
   const heroImage =
+    journalSettings.heroImage ||
     publishedPosts.find(
-      (post) =>
+      (
+        post
+      ) =>
         post.cover
     )?.cover ||
-    defaultHeroImage;
+    "";
 
 
   /* =========================
@@ -143,6 +278,7 @@ export default function Journal() {
   ========================= */
 
   return (
+
     <>
 
       {/* =========================
@@ -163,10 +299,22 @@ export default function Journal() {
       ========================= */}
 
       <PageHero
-        title="Journal"
-        subtitle="Stories, insights and behind the scenes moments from weddings, commercial work and photography adventures."
+        title={
+          heroTitle
+        }
+
+        subtitle={
+          heroDescription
+        }
+
         image={
           heroImage
+        }
+
+        variant="journal"
+
+        showScroll={
+          false
         }
       />
 
@@ -182,5 +330,7 @@ export default function Journal() {
       />
 
     </>
+
   );
+
 }

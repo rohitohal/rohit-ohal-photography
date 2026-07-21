@@ -1,26 +1,49 @@
-.journal-grid {
-    width: min(92%, 1400px);
+/* ==========================================
+   JOURNAL LIST SECTION
+========================================== */
 
-    margin: 120px auto;
+.journal-list-section {
+    width: 100%;
 
-    display: grid;
+    background: #0b0b0a;
 
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(420px,1fr)
-        );
-
-    gap: 40px;
+    padding: 0 0 120px;
 }
 
+
+/* ==========================================
+   JOURNAL GRID / LIST
+========================================== */
+
+.journal-grid {
+    width: min(90%, 1400px);
+
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
 .journal-empty {
-    padding: 200px 20px;
+    width: min(90%, 1400px);
+
+    margin: 0 auto;
+
+    padding: 180px 20px;
 
     text-align: center;
 }
 
 .journal-empty h2 {
+    margin: 0 0 20px;
+
+    color: #f4f0e8;
+
     font-family:
         "Cormorant Garamond",
         serif;
@@ -31,17 +54,55 @@
 }
 
 .journal-empty p {
-    color: #666;
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.55);
 
     font-size: 18px;
 }
 
-@media (max-width:768px) {
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width: 992px) {
+
+    .journal-list-section {
+        padding-bottom: 90px;
+    }
 
     .journal-grid {
-        grid-template-columns: 1fr;
+        width: 92%;
+    }
 
-        margin: 80px auto;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 768px) {
+
+    .journal-list-section {
+        padding-bottom: 70px;
+    }
+
+    .journal-grid {
+        width: calc(100% - 40px);
+    }
+
+    .journal-empty {
+        padding: 120px 20px;
+    }
+
+    .journal-empty h2 {
+        font-size: 42px;
+    }
+
+    .journal-empty p {
+        font-size: 16px;
     }
 
 }

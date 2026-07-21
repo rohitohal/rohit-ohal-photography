@@ -37,6 +37,7 @@ import NotFound from "../pages/NotFound";
 
 import Dashboard from "../admin/pages/Dashboard";
 import Projects from "../admin/pages/Projects";
+import Disciplines from "../admin/pages/Disciplines";
 import MediaLibrary from "../admin/pages/MediaLibrary";
 import JournalAdmin from "../admin/pages/Journal";
 import HomepageAdmin from "../admin/pages/Homepage";
@@ -216,6 +217,22 @@ export default function AppRoutes() {
           <ProtectedRoute>
             <AdminLayout>
               <Projects />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+
+      {/* =========================
+          ADMIN - DISCIPLINES
+      ========================= */}
+
+      <Route
+        path="/admin/disciplines"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <Disciplines />
             </AdminLayout>
           </ProtectedRoute>
         }

@@ -5,10 +5,16 @@ export default function PageHero({
   subtitle,
   description,
   image,
+  variant = "",
+  showScroll = true,
 }) {
   return (
     <section
-      className="page-hero"
+      className={`page-hero ${
+        variant
+          ? `page-hero--${variant}`
+          : ""
+      }`}
       style={{
         background: image
           ? `linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.55)), url(${image}) center/cover no-repeat`
@@ -21,15 +27,21 @@ export default function PageHero({
           ROHIT OHAL PHOTOGRAPHY
         </span>
 
-        <h1>{title}</h1>
+        <h1>
+          {title}
+        </h1>
 
         {(subtitle || description) && (
-          <p>{subtitle || description}</p>
+          <p>
+            {subtitle || description}
+          </p>
         )}
 
-        <div className="hero-scroll">
-          <span></span>
-        </div>
+        {showScroll && (
+          <div className="hero-scroll">
+            <span></span>
+          </div>
+        )}
 
       </div>
     </section>

@@ -3,6 +3,7 @@ import "./../../styles/sidebar.css";
 import {
   LayoutDashboard,
   FolderKanban,
+  GalleryVerticalEnd,
   Images,
   BookOpen,
   MonitorSmartphone,
@@ -36,6 +37,12 @@ const menuItems = [
     title: "Projects",
     icon: FolderKanban,
     path: "/admin/projects",
+  },
+
+  {
+    title: "Disciplines",
+    icon: GalleryVerticalEnd,
+    path: "/admin/disciplines",
   },
 
   {

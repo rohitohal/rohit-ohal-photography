@@ -4,44 +4,75 @@ import {
 } from "react";
 
 import CreateJournalModal from "../components/CreateJournalModal/CreateJournalModal";
+import JournalSettings from "../components/JournalSettings/JournalSettings";
 
 import "../styles/projects.css";
+
+
+/* =========================
+   STORAGE KEY
+========================= */
 
 const JOURNAL_KEY =
   "rohit-photography-journal";
 
+
+/* =========================
+   JOURNAL ADMIN
+========================= */
+
 export default function Journal() {
+
   /* =========================
      LOAD JOURNAL POSTS
   ========================= */
 
-  const [posts, setPosts] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            JOURNAL_KEY
-          );
+  const [
+    posts,
+    setPosts,
+  ] = useState(() => {
 
-        if (!saved) {
-          return [];
-        }
+    try {
 
-        const parsed =
-          JSON.parse(saved);
-
-        return Array.isArray(parsed)
-          ? parsed
-          : [];
-      } catch (error) {
-        console.error(
-          "Failed to load journal posts:",
-          error
+      const saved =
+        localStorage.getItem(
+          JOURNAL_KEY
         );
 
+
+      if (!saved) {
+
         return [];
+
       }
-    });
+
+
+      const parsed =
+        JSON.parse(
+          saved
+        );
+
+
+      return Array.isArray(
+        parsed
+      )
+        ? parsed
+        : [];
+
+
+    } catch (error) {
+
+      console.error(
+        "Failed to load journal posts:",
+        error
+      );
+
+
+      return [];
+
+    }
+
+  });
 
 
   /* =========================
@@ -52,6 +83,7 @@ export default function Journal() {
     isModalOpen,
     setIsModalOpen,
   ] = useState(false);
+
 
   const [
     editingPost,
@@ -64,165 +96,262 @@ export default function Journal() {
   ========================= */
 
   useEffect(() => {
-    localStorage.setItem(
-      JOURNAL_KEY,
-      JSON.stringify(posts)
-    );
-  }, [posts]);
+
+    try {
+
+      localStorage.setItem(
+        JOURNAL_KEY,
+        JSON.stringify(
+          posts
+        )
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Failed to save journal posts:",
+        error
+      );
+
+    }
+
+  }, [
+    posts,
+  ]);
 
 
   /* =========================
      CREATE / UPDATE ARTICLE
   ========================= */
 
-  const handleSavePost = (
-    postData
-  ) => {
-    /* =========================
-       EDIT EXISTING ARTICLE
-    ========================= */
+  const handleSavePost =
+    (
+      postData
+    ) => {
 
-    if (editingPost) {
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.id ===
-          editingPost.id
-            ? {
-                /*
-                 * Keep existing fields.
-                 *
-                 * This preserves:
-                 * homepageOrder
-                 * createdAt
-                 * featured
-                 * future metadata
-                 */
+      /* =========================
+         EDIT EXISTING ARTICLE
+      ========================= */
 
-                ...post,
+      if (editingPost) {
 
-                /*
-                 * Apply edited fields.
-                 */
+        setPosts(
+          (
+            previousPosts
+          ) =>
 
-                ...postData,
+            previousPosts.map(
+              (
+                post
+              ) =>
 
-                /*
-                 * Never change ID.
-                 */
+                post.id ===
+                editingPost.id
 
-                id:
-                  editingPost.id,
+                  ? {
 
-                /*
-                 * Track update date.
-                 */
+                      /*
+                       * Keep existing
+                       * fields.
+                       *
+                       * This preserves:
+                       * homepageOrder
+                       * createdAt
+                       * featured
+                       * future metadata
+                       */
 
-                updatedAt:
-                  new Date()
-                    .toISOString(),
-              }
-            : post
-        )
+                      ...post,
+
+
+                      /*
+                       * Apply edited
+                       * fields.
+                       */
+
+                      ...postData,
+
+
+                      /*
+                       * Never change ID.
+                       */
+
+                      id:
+                        editingPost.id,
+
+
+                      /*
+                       * Track update
+                       * date.
+                       */
+
+                      updatedAt:
+                        new Date()
+                          .toISOString(),
+
+                    }
+
+                  : post
+
+            )
+
+        );
+
+      }
+
+
+      /* =========================
+         CREATE NEW ARTICLE
+      ========================= */
+
+      else {
+
+        const now =
+          new Date()
+            .toISOString();
+
+
+        const newPost = {
+
+          ...postData,
+
+          id:
+            Date.now(),
+
+          createdAt:
+            now,
+
+          updatedAt:
+            now,
+
+        };
+
+
+        setPosts(
+          (
+            previousPosts
+          ) => [
+
+            newPost,
+
+            ...previousPosts,
+
+          ]
+        );
+
+      }
+
+
+      /* =========================
+         CLOSE MODAL
+      ========================= */
+
+      setEditingPost(
+        null
       );
-    }
 
-    /* =========================
-       CREATE NEW ARTICLE
-    ========================= */
+      setIsModalOpen(
+        false
+      );
 
-    else {
-      const now =
-        new Date()
-          .toISOString();
-
-      const newPost = {
-        ...postData,
-
-        id:
-          Date.now(),
-
-        createdAt:
-          now,
-
-        updatedAt:
-          now,
-      };
-
-      setPosts((prev) => [
-        newPost,
-        ...prev,
-      ]);
-    }
-
-
-    /* =========================
-       CLOSE MODAL
-    ========================= */
-
-    setEditingPost(null);
-
-    setIsModalOpen(false);
-  };
+    };
 
 
   /* =========================
      OPEN NEW ARTICLE
   ========================= */
 
-  const handleNewArticle = () => {
-    setEditingPost(null);
+  const handleNewArticle =
+    () => {
 
-    setIsModalOpen(true);
-  };
+      setEditingPost(
+        null
+      );
+
+      setIsModalOpen(
+        true
+      );
+
+    };
 
 
   /* =========================
      EDIT ARTICLE
   ========================= */
 
-  const handleEdit = (
-    post
-  ) => {
-    setEditingPost(post);
+  const handleEdit =
+    (
+      post
+    ) => {
 
-    setIsModalOpen(true);
-  };
+      setEditingPost(
+        post
+      );
+
+      setIsModalOpen(
+        true
+      );
+
+    };
 
 
   /* =========================
      DELETE ARTICLE
   ========================= */
 
-  const handleDelete = (
-    id
-  ) => {
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this article?"
+  const handleDelete =
+    (
+      id
+    ) => {
+
+      const confirmed =
+        window.confirm(
+          "Are you sure you want to delete this article?"
+        );
+
+
+      if (!confirmed) {
+
+        return;
+
+      }
+
+
+      setPosts(
+        (
+          previousPosts
+        ) =>
+
+          previousPosts.filter(
+            (
+              post
+            ) =>
+              post.id !==
+              id
+          )
+
       );
 
-    if (!confirmed) {
-      return;
-    }
-
-    setPosts((prev) =>
-      prev.filter(
-        (post) =>
-          post.id !== id
-      )
-    );
-  };
+    };
 
 
   /* =========================
      CLOSE MODAL
   ========================= */
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseModal =
+    () => {
 
-    setEditingPost(null);
-  };
+      setIsModalOpen(
+        false
+      );
+
+      setEditingPost(
+        null
+      );
+
+    };
 
 
   /* =========================
@@ -230,9 +359,27 @@ export default function Journal() {
   ========================= */
 
   return (
+
     <>
 
       <div className="projects-page">
+
+
+        {/* =========================
+            JOURNAL PAGE SETTINGS
+        ========================= */}
+
+        <div
+          style={{
+            marginBottom:
+              "50px",
+          }}
+        >
+
+          <JournalSettings />
+
+        </div>
+
 
         {/* =========================
             HEADER
@@ -280,7 +427,9 @@ export default function Journal() {
         <div className="projects-grid">
 
           {posts.map(
-            (post) => (
+            (
+              post
+            ) => (
 
               <div
                 key={
@@ -289,6 +438,7 @@ export default function Journal() {
                 }
                 className="project-card"
               >
+
 
                 {/* =========================
                     COVER IMAGE
@@ -345,27 +495,33 @@ export default function Journal() {
                 <div className="project-content">
 
                   <span className="project-category">
+
                     {
                       post.category ||
                       "Journal"
                     }
+
                   </span>
 
 
                   <h3>
+
                     {
                       post.title ||
                       "Untitled Article"
                     }
+
                   </h3>
 
 
                   {post.excerpt && (
 
                     <p>
+
                       {
                         post.excerpt
                       }
+
                     </p>
 
                   )}
@@ -393,10 +549,12 @@ export default function Journal() {
                         ).toLowerCase()
                       }`}
                     >
+
                       {
                         post.status ||
                         "Draft"
                       }
+
                     </span>
 
                   </div>
@@ -524,17 +682,22 @@ export default function Journal() {
         isOpen={
           isModalOpen
         }
+
         onClose={
           handleCloseModal
         }
+
         onSave={
           handleSavePost
         }
+
         initialData={
           editingPost
         }
       />
 
     </>
+
   );
+
 }

@@ -70,15 +70,11 @@ export default function JournalPreview() {
   const featuredPosts =
     publishedPosts
 
-      /* Only featured posts */
-
       .filter(
         (post) =>
           post.featured ===
           true
       )
-
-      /* Homepage custom order */
 
       .sort(
         (a, b) => {
@@ -103,8 +99,6 @@ export default function JournalPreview() {
           );
         }
       )
-
-      /* Maximum 3 */
 
       .slice(
         0,
@@ -153,15 +147,6 @@ export default function JournalPreview() {
      HOMEPAGE PREVIEW POSTS
   ========================= */
 
-  /*
-   * If featured posts exist,
-   * use the custom featured
-   * homepage order.
-   *
-   * Otherwise show the latest
-   * 3 published articles.
-   */
-
   const previewPosts =
     featuredPosts.length >
     0
@@ -182,51 +167,224 @@ export default function JournalPreview() {
 
 
   /* =========================
+     FEATURED + SIDE POSTS
+  ========================= */
+
+  const mainPost =
+    previewPosts[0];
+
+  const sidePosts =
+    previewPosts.slice(
+      1,
+      3
+    );
+
+
+  /* =========================
+     FORMAT DATE
+  ========================= */
+
+  const formatDate = (
+    post
+  ) => {
+
+    const rawDate =
+      post?.date ||
+      post?.createdAt;
+
+    if (!rawDate) {
+      return "";
+    }
+
+    try {
+      return new Date(
+        rawDate
+      ).toLocaleDateString(
+        "en-IN",
+        {
+          day:
+            "2-digit",
+
+          month:
+            "long",
+
+          year:
+            "numeric",
+        }
+      );
+
+    } catch (error) {
+      console.error(
+        "Failed to format journal date:",
+        error
+      );
+
+      return rawDate;
+    }
+  };
+
+
+  /* =========================
      RENDER
   ========================= */
 
   return (
     <section className="journal-preview">
 
-      <div className="journal-container">
+      <div className="journal-preview-container">
 
 
         {/* =========================
             HEADER
         ========================= */}
 
-        <div className="journal-header">
-
-          <span>
-            FROM THE JOURNAL
-          </span>
+        <div className="journal-preview-header">
 
           <h2>
-            Stories Beyond
-            <br />
-            The Camera
+            Field Notes
           </h2>
+
+          <Link
+            to="/journal"
+            className="journal-preview-all"
+          >
+            READ THE JOURNAL
+            <span aria-hidden="true">
+              ↗
+            </span>
+          </Link>
 
         </div>
 
 
         {/* =========================
-            JOURNAL POSTS
+            EDITORIAL LAYOUT
         ========================= */}
 
-        <div className="journal-grid">
+        <div className="journal-preview-layout">
 
-          {previewPosts.map(
-            (post) => {
 
-              const coverImage =
-                post.cover ||
-                fallbackImage;
+          {/* =========================
+              MAIN FEATURED ARTICLE
+          ========================= */}
 
-              return (
+          {mainPost && (
+
+            <article className="journal-preview-featured">
+
+              <Link
+                to={
+                  mainPost.slug
+                    ? `/journal/${mainPost.slug}`
+                    : "/journal"
+                }
+                className="journal-preview-featured-image"
+              >
+
+                <img
+                  src={
+                    mainPost.cover ||
+                    fallbackImage
+                  }
+                  alt={
+                    mainPost.title ||
+                    "Photography Journal"
+                  }
+                  loading="lazy"
+                />
+
+                {mainPost.category && (
+
+                  <span className="journal-preview-image-category">
+                    {
+                      mainPost.category
+                    }
+                  </span>
+
+                )}
+
+              </Link>
+
+
+              <div className="journal-preview-featured-content">
+
+                {formatDate(
+                  mainPost
+                ) && (
+
+                  <span className="journal-preview-date">
+                    {
+                      formatDate(
+                        mainPost
+                      )
+                    }
+                  </span>
+
+                )}
+
+
+                <Link
+                  to={
+                    mainPost.slug
+                      ? `/journal/${mainPost.slug}`
+                      : "/journal"
+                  }
+                  className="journal-preview-title-link"
+                >
+
+                  <h3>
+                    {
+                      mainPost.title ||
+                      "Untitled Article"
+                    }
+                  </h3>
+
+                </Link>
+
+
+                {mainPost.excerpt && (
+
+                  <p>
+                    {
+                      mainPost.excerpt
+                    }
+                  </p>
+
+                )}
+
+
+                <Link
+                  to={
+                    mainPost.slug
+                      ? `/journal/${mainPost.slug}`
+                      : "/journal"
+                  }
+                  className="journal-preview-read"
+                >
+                  READ
+                  <span aria-hidden="true">
+                    ↗
+                  </span>
+                </Link>
+
+              </div>
+
+            </article>
+
+          )}
+
+
+          {/* =========================
+              SIDE ARTICLES
+          ========================= */}
+
+          <div className="journal-preview-side">
+
+            {sidePosts.map(
+              (post) => (
 
                 <article
-                  className="journal-card"
+                  className="journal-preview-side-card"
                   key={
                     post.id ||
                     post.slug
@@ -234,34 +392,42 @@ export default function JournalPreview() {
                 >
 
 
-                  {/* =========================
-                      COVER IMAGE
-                  ========================= */}
+                  {/* IMAGE */}
 
-                  <img
-                    src={
-                      coverImage
+                  <Link
+                    to={
+                      post.slug
+                        ? `/journal/${post.slug}`
+                        : "/journal"
                     }
-                    alt={
-                      post.title ||
-                      "Photography Journal"
-                    }
-                    loading="lazy"
-                  />
+                    className="journal-preview-side-image"
+                  >
+
+                    <img
+                      src={
+                        post.cover ||
+                        fallbackImage
+                      }
+                      alt={
+                        post.title ||
+                        "Photography Journal"
+                      }
+                      loading="lazy"
+                    />
+
+                  </Link>
 
 
-                  {/* =========================
-                      CONTENT
-                  ========================= */}
+                  {/* CONTENT */}
 
-                  <div className="journal-content">
+                  <div className="journal-preview-side-content">
 
 
                     {/* CATEGORY */}
 
                     {post.category && (
 
-                      <span>
+                      <span className="journal-preview-category">
                         {
                           post.category
                         }
@@ -272,49 +438,79 @@ export default function JournalPreview() {
 
                     {/* TITLE */}
 
-                    <h3>
-                      {
-                        post.title ||
-                        "Untitled Article"
+                    <Link
+                      to={
+                        post.slug
+                          ? `/journal/${post.slug}`
+                          : "/journal"
                       }
-                    </h3>
+                      className="journal-preview-title-link"
+                    >
+
+                      <h3>
+                        {
+                          post.title ||
+                          "Untitled Article"
+                        }
+                      </h3>
+
+                    </Link>
 
 
-                    {/* ARTICLE LINK */}
+                    {/* DATE */}
 
-                    {post.slug && (
+                    {formatDate(
+                      post
+                    ) && (
 
-                      <Link
-                        to={`/journal/${post.slug}`}
-                      >
-                        Read Article →
-                      </Link>
+                      <span className="journal-preview-date">
+                        {
+                          formatDate(
+                            post
+                          )
+                        }
+                      </span>
 
                     )}
+
+
+                    {/* EXCERPT */}
+
+                    {post.excerpt && (
+
+                      <p>
+                        {
+                          post.excerpt
+                        }
+                      </p>
+
+                    )}
+
+
+                    {/* READ */}
+
+                    <Link
+                      to={
+                        post.slug
+                          ? `/journal/${post.slug}`
+                          : "/journal"
+                      }
+                      className="journal-preview-read"
+                    >
+                      READ
+                      <span aria-hidden="true">
+                        ↗
+                      </span>
+                    </Link>
 
                   </div>
 
                 </article>
 
-              );
-            }
-          )}
+              )
+            )}
 
-        </div>
-
-
-        {/* =========================
-            VIEW ALL ARTICLES
-        ========================= */}
-
-        <div className="journal-footer">
-
-          <Link
-            to="/journal"
-            className="journal-view-all"
-          >
-            View All Articles →
-          </Link>
+          </div>
 
         </div>
 

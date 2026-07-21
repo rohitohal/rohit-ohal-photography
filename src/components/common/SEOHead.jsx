@@ -29,7 +29,9 @@ export default function SEOHead({
        LOAD GLOBAL SEO SETTINGS
     ========================= */
 
-    let globalSEO = defaultSEO;
+    let globalSEO = {
+      ...defaultSEO,
+    };
 
     try {
       const savedSEO =
@@ -38,10 +40,24 @@ export default function SEOHead({
         );
 
       if (savedSEO) {
-        globalSEO = {
-          ...defaultSEO,
-          ...JSON.parse(savedSEO),
-        };
+        const parsedSEO =
+          JSON.parse(
+            savedSEO
+          );
+
+        if (
+          parsedSEO &&
+          typeof parsedSEO ===
+            "object" &&
+          !Array.isArray(
+            parsedSEO
+          )
+        ) {
+          globalSEO = {
+            ...defaultSEO,
+            ...parsedSEO,
+          };
+        }
       }
     } catch (error) {
       console.error(
@@ -49,6 +65,7 @@ export default function SEOHead({
         error
       );
     }
+
 
     /* =========================
        PAGE SEO VALUES
@@ -66,12 +83,22 @@ export default function SEOHead({
       image ||
       globalSEO.ogImage;
 
+
+    /* =========================
+       CURRENT PAGE URL
+    ========================= */
+
+    const pageURL =
+      window.location.href;
+
+
     /* =========================
        DOCUMENT TITLE
     ========================= */
 
     document.title =
       pageTitle;
+
 
     /* =========================
        STANDARD META TAGS
@@ -88,6 +115,16 @@ export default function SEOHead({
       "keywords",
       globalSEO.keywords
     );
+
+
+    /* =========================
+       CANONICAL URL
+    ========================= */
+
+    updateCanonicalLink(
+      pageURL
+    );
+
 
     /* =========================
        OPEN GRAPH
@@ -115,6 +152,17 @@ export default function SEOHead({
       "website"
     );
 
+    updateMetaTag(
+      "property",
+      "og:url",
+      pageURL
+    );
+
+
+    /* =========================
+       OPEN GRAPH IMAGE
+    ========================= */
+
     if (pageImage) {
       updateMetaTag(
         "property",
@@ -127,6 +175,7 @@ export default function SEOHead({
         "og:image"
       );
     }
+
 
     /* =========================
        TWITTER / SOCIAL CARDS
@@ -150,6 +199,11 @@ export default function SEOHead({
       pageDescription
     );
 
+
+    /* =========================
+       TWITTER IMAGE
+    ========================= */
+
     if (pageImage) {
       updateMetaTag(
         "name",
@@ -162,6 +216,7 @@ export default function SEOHead({
         "twitter:image"
       );
     }
+
   }, [
     title,
     description,
@@ -170,6 +225,7 @@ export default function SEOHead({
 
   return null;
 }
+
 
 /* =========================
    CREATE / UPDATE META TAG
@@ -180,7 +236,9 @@ function updateMetaTag(
   attributeValue,
   content
 ) {
-  if (!content) return;
+  if (!content) {
+    return;
+  }
 
   let element =
     document.querySelector(
@@ -209,6 +267,7 @@ function updateMetaTag(
   );
 }
 
+
 /* =========================
    REMOVE META TAG
 ========================= */
@@ -225,4 +284,43 @@ function removeMetaTag(
   if (element) {
     element.remove();
   }
+}
+
+
+/* =========================
+   CREATE / UPDATE CANONICAL
+========================= */
+
+function updateCanonicalLink(
+  url
+) {
+  if (!url) {
+    return;
+  }
+
+  let canonical =
+    document.querySelector(
+      'link[rel="canonical"]'
+    );
+
+  if (!canonical) {
+    canonical =
+      document.createElement(
+        "link"
+      );
+
+    canonical.setAttribute(
+      "rel",
+      "canonical"
+    );
+
+    document.head.appendChild(
+      canonical
+    );
+  }
+
+  canonical.setAttribute(
+    "href",
+    url
+  );
 }
