@@ -1,34 +1,99 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import {
+  useState,
+} from "react";
+
+import {
+  useParams,
+  Link,
+} from "react-router-dom";
+
 import portfolio from "../data/portfolio";
-import Lightbox from "../components/lightbox/Lightbox";
+
+
+/* ==========================================
+   ADVANCED LIGHTBOX
+========================================== */
+
+import AdvancedLightbox from
+  "../components/gallery/AdvancedLightbox";
+
+
+/* ==========================================
+   PAGE STYLES
+========================================== */
 
 import "./WeddingStory.css";
 
+
+/* ==========================================
+   WEDDING STORY
+========================================== */
+
 export default function WeddingStory() {
 
-  const { slug } = useParams();
+  /* ========================================
+     URL
+  ======================================== */
 
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const {
+    slug,
+  } =
+    useParams();
 
-  const [currentImage, setCurrentImage] = useState(0);
 
-  const story = portfolio.find(
-    (item) =>
-      item.discipline === "weddings" &&
-      item.slug === slug
-  );
+  /* ========================================
+     LIGHTBOX INDEX
 
-  if (!story) {
+     -1 = CLOSED
+     0+ = ACTIVE IMAGE
+  ======================================== */
+
+  const [
+    lightboxIndex,
+    setLightboxIndex,
+  ] =
+    useState(-1);
+
+
+  /* ========================================
+     FIND STORY
+  ======================================== */
+
+  const story =
+    portfolio.find(
+      (
+        item
+      ) =>
+        item.discipline ===
+          "weddings" &&
+        item.slug ===
+          slug
+    );
+
+
+  /* ========================================
+     STORY NOT FOUND
+  ======================================== */
+
+  if (
+    !story
+  ) {
 
     return (
 
       <main className="story-not-found">
 
-        <h1>Wedding Story Not Found</h1>
+        <h1>
+
+          Wedding Story Not Found
+
+        </h1>
+
 
         <Link to="/weddings">
+
           Back to Wedding Stories
+
         </Link>
 
       </main>
@@ -37,81 +102,186 @@ export default function WeddingStory() {
 
   }
 
-  const openLightbox = (index) => {
 
-    setCurrentImage(index);
+  /* ========================================
+     OPEN LIGHTBOX
+  ======================================== */
 
-    setLightboxOpen(true);
+  const openLightbox =
+    (
+      index
+    ) => {
 
-  };
+      setLightboxIndex(
+        index
+      );
 
-  const closeLightbox = () => {
+    };
 
-    setLightboxOpen(false);
 
-  };
+  /* ========================================
+     CLOSE LIGHTBOX
+  ======================================== */
 
-  const nextImage = () => {
+  const closeLightbox =
+    () => {
 
-    setCurrentImage((prev) =>
-      prev === story.images.length - 1 ? 0 : prev + 1
-    );
+      setLightboxIndex(
+        -1
+      );
 
-  };
+    };
 
-  const previousImage = () => {
 
-    setCurrentImage((prev) =>
-      prev === 0 ? story.images.length - 1 : prev - 1
-    );
+  /* ========================================
+     CHANGE LIGHTBOX IMAGE
+  ======================================== */
 
-  };
+  const changeLightboxImage =
+    (
+      index
+    ) => {
+
+      setLightboxIndex(
+        index
+      );
+
+    };
+
+
+  /* ========================================
+     RENDER
+  ======================================== */
 
   return (
 
     <main className="wedding-story">
 
+
+      {/* =====================================
+          HERO
+      ===================================== */}
+
       <section
         className="story-hero"
         style={{
-          backgroundImage: `url(${story.cover})`
+          backgroundImage:
+            `url(${story.cover})`,
         }}
       >
 
-        <div className="story-overlay" />
+        <div
+          className="story-overlay"
+        />
+
 
         <div className="story-content">
 
-          <span>{story.location}</span>
+          <span>
 
-          <h1>{story.title}</h1>
+            {story.location}
 
-          <p>{story.description}</p>
+          </span>
+
+
+          <h1>
+
+            {story.title}
+
+          </h1>
+
+
+          <p>
+
+            {story.description}
+
+          </p>
 
         </div>
 
       </section>
 
+
+      {/* =====================================
+          GALLERY
+      ===================================== */}
+
       <section className="story-gallery">
 
-        {story.images.map((image, index) => (
+        {story.images.map(
+          (
+            image,
+            index
+          ) => (
 
-          <div
-            className="story-image"
-            key={index}
-            onClick={() => openLightbox(index)}
-          >
+            <div
+              className="story-image"
+              key={
+                `${image}-${index}`
+              }
+              role="button"
+              tabIndex={
+                0
+              }
+              aria-label={
+                `Open ${story.title} image ${
+                  index + 1
+                }`
+              }
+              onClick={() =>
+                openLightbox(
+                  index
+                )
+              }
+              onKeyDown={(
+                event
+              ) => {
 
-            <img
-              src={image}
-              alt={`${story.title} ${index + 1}`}
-            />
+                if (
+                  event.key ===
+                    "Enter" ||
+                  event.key ===
+                    " "
+                ) {
 
-          </div>
+                  event.preventDefault();
 
-        ))}
+
+                  openLightbox(
+                    index
+                  );
+
+                }
+
+              }}
+            >
+
+              <img
+                src={
+                  image
+                }
+                alt={
+                  `${story.title} ${
+                    index + 1
+                  }`
+                }
+                loading="lazy"
+                draggable={
+                  false
+                }
+              />
+
+            </div>
+
+          )
+        )}
 
       </section>
+
+
+      {/* =====================================
+          STORY FOOTER
+      ===================================== */}
 
       <section className="story-footer">
 
@@ -123,19 +293,40 @@ export default function WeddingStory() {
 
       </section>
 
-      <Lightbox
 
-        images={story.images}
+      {/* =====================================
+          ADVANCED LIGHTBOX
+      ===================================== */}
 
-        currentIndex={currentImage}
+      <AdvancedLightbox
 
-        isOpen={lightboxOpen}
+        images={
+          story.images
+        }
 
-        onClose={closeLightbox}
+        currentIndex={
+          lightboxIndex >=
+          0
+            ? lightboxIndex
+            : 0
+        }
 
-        onNext={nextImage}
+        isOpen={
+          lightboxIndex >=
+          0
+        }
 
-        onPrevious={previousImage}
+        onClose={
+          closeLightbox
+        }
+
+        onChange={
+          changeLightboxImage
+        }
+
+        title={
+          story.title
+        }
 
       />
 

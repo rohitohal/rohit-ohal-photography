@@ -1,3 +1,5 @@
+import logoLight from "../../assets/branding/logo-light.svg";
+
 import {
   useEffect,
   useState,
@@ -231,9 +233,38 @@ export default function Footer() {
 
         <div className="footer-brand">
 
-          <h2>
-            ROHIT OHAL
-          </h2>
+
+          {/* =========================
+              LOGO + BRAND NAME
+          ========================= */}
+
+          <Link
+            to="/"
+            className="footer-logo"
+            aria-label="Rohit Ohal Photography - Home"
+          >
+
+            <img
+              src={
+                logoLight
+              }
+              alt=""
+              className="footer-logo-image"
+            />
+
+
+            <span className="footer-logo-text">
+
+              ROHIT OHAL
+
+            </span>
+
+          </Link>
+
+
+          {/* =========================
+              BRAND DESCRIPTION
+          ========================= */}
 
           <p>
             Fine Art Wedding,
@@ -253,7 +284,9 @@ export default function Footer() {
         <div className="footer-links">
 
 
-          {/* PORTFOLIO */}
+          {/* =========================
+              PORTFOLIO
+          ========================= */}
 
           <div>
 
@@ -261,34 +294,48 @@ export default function Footer() {
               Portfolio
             </h4>
 
-            <Link to="/portfolio/weddings">
+            <Link
+              to="/portfolio/weddings"
+            >
               Wedding Stories
             </Link>
 
-            <Link to="/portfolio/portraits">
+            <Link
+              to="/portfolio/portraits"
+            >
               Portraits
             </Link>
 
-            <Link to="/portfolio/events">
+            <Link
+              to="/portfolio/events"
+            >
               Events
             </Link>
 
-            <Link to="/portfolio/industrial">
+            <Link
+              to="/portfolio/industrial"
+            >
               Industrial
             </Link>
 
-            <Link to="/portfolio/food-beverage">
+            <Link
+              to="/portfolio/food-beverage"
+            >
               Food & Beverage
             </Link>
 
-            <Link to="/portfolio/editorial">
+            <Link
+              to="/portfolio/editorial"
+            >
               Editorial
             </Link>
 
           </div>
 
 
-          {/* COMPANY */}
+          {/* =========================
+              COMPANY
+          ========================= */}
 
           <div>
 
@@ -296,22 +343,30 @@ export default function Footer() {
               Company
             </h4>
 
-            <Link to="/about">
+            <Link
+              to="/about"
+            >
               About
             </Link>
 
-            <Link to="/journal">
+            <Link
+              to="/journal"
+            >
               Journal
             </Link>
 
-            <Link to="/contact">
+            <Link
+              to="/contact"
+            >
               Contact
             </Link>
 
           </div>
 
 
-          {/* CONNECT */}
+          {/* =========================
+              CONNECT
+          ========================= */}
 
           <div>
 
@@ -319,6 +374,8 @@ export default function Footer() {
               Connect
             </h4>
 
+
+            {/* INSTAGRAM */}
 
             {settings.instagram && (
 
@@ -335,6 +392,8 @@ export default function Footer() {
             )}
 
 
+            {/* FACEBOOK */}
+
             {settings.facebook && (
 
               <a
@@ -350,6 +409,8 @@ export default function Footer() {
             )}
 
 
+            {/* WHATSAPP */}
+
             {whatsappNumber && (
 
               <a
@@ -364,6 +425,8 @@ export default function Footer() {
 
             )}
 
+
+            {/* EMAIL */}
 
             {settings.email && (
 

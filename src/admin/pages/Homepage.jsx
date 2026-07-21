@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import HomepageSettings from "../components/HomepageSettings/HomepageSettings";
 import AboutSettings from "../components/AboutSettings/AboutSettings";
+import WhyChooseMeSettings from "../components/WhyChooseMeSettings/WhyChooseMeSettings";
+import TestimonialsSettings from "../components/TestimonialsSettings/TestimonialsSettings";
 import CTASettings from "../components/CTASettings/CTASettings";
 import DisciplineSettings from "../components/DisciplineSettings/DisciplineSettings";
 import FeaturedProjectSettings from "../components/FeaturedProjectSettings/FeaturedProjectSettings";
@@ -9,11 +11,25 @@ import JournalHighlightSettings from "../components/JournalHighlightSettings/Jou
 
 import "../styles/homepage-settings.css";
 
+
 export default function Homepage() {
-  const navigate = useNavigate();
+
+  /* =========================
+     NAVIGATION
+  ========================= */
+
+  const navigate =
+    useNavigate();
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
+
     <div className="admin-page">
+
 
       {/* =========================
           PAGE HEADER
@@ -25,14 +41,17 @@ export default function Homepage() {
           HOMEPAGE MANAGEMENT
         </span>
 
+
         <h1>
           Homepage Manager
         </h1>
 
+
         <p>
-          Control everything that appears
-          on the public homepage from one
-          central place.
+          Control everything that
+          appears on the public
+          homepage from one central
+          place.
         </p>
 
       </div>
@@ -51,23 +70,45 @@ export default function Homepage() {
 
       <div
         style={{
-          marginTop: "40px",
+          marginTop:
+            "40px",
         }}
       >
+
         <AboutSettings />
+
       </div>
 
 
       {/* =========================
-          CTA SETTINGS
+          WHY CHOOSE ME SETTINGS
       ========================= */}
 
       <div
         style={{
-          marginTop: "40px",
+          marginTop:
+            "40px",
         }}
       >
-        <CTASettings />
+
+        <WhyChooseMeSettings />
+
+      </div>
+
+
+      {/* =========================
+          TESTIMONIAL SETTINGS
+      ========================= */}
+
+      <div
+        style={{
+          marginTop:
+            "40px",
+        }}
+      >
+
+        <TestimonialsSettings />
+
       </div>
 
 
@@ -77,10 +118,13 @@ export default function Homepage() {
 
       <div
         style={{
-          marginTop: "40px",
+          marginTop:
+            "40px",
         }}
       >
+
         <DisciplineSettings />
+
       </div>
 
 
@@ -90,10 +134,13 @@ export default function Homepage() {
 
       <div
         style={{
-          marginTop: "40px",
+          marginTop:
+            "40px",
         }}
       >
+
         <FeaturedProjectSettings />
+
       </div>
 
 
@@ -103,10 +150,29 @@ export default function Homepage() {
 
       <div
         style={{
-          marginTop: "40px",
+          marginTop:
+            "40px",
         }}
       >
+
         <JournalHighlightSettings />
+
+      </div>
+
+
+      {/* =========================
+          CTA SETTINGS
+      ========================= */}
+
+      <div
+        style={{
+          marginTop:
+            "40px",
+        }}
+      >
+
+        <CTASettings />
+
       </div>
 
 
@@ -117,9 +183,11 @@ export default function Homepage() {
       <div
         className="admin-section-grid"
         style={{
-          marginTop: "40px",
+          marginTop:
+            "40px",
         }}
       >
+
 
         {/* =========================
             SEO
@@ -131,16 +199,20 @@ export default function Homepage() {
             SEO Overview
           </h2>
 
+
           <p>
-            Configure homepage metadata
-            and social sharing
-            information.
+            Configure homepage
+            metadata and social
+            sharing information.
           </p>
+
 
           <button
             type="button"
             onClick={() =>
-              navigate("/admin/seo")
+              navigate(
+                "/admin/seo"
+              )
             }
           >
             Open SEO Settings
@@ -151,5 +223,6 @@ export default function Homepage() {
       </div>
 
     </div>
+
   );
 }

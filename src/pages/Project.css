@@ -3,277 +3,393 @@
 ========================================== */
 
 .project-page {
+
     padding: 120px 0;
+
+    background: #fff;
+
 }
+
 
 .project-container {
-    width: min(92%, 1200px);
-    margin: 0 auto;
+
+    width: min(
+        92%,
+        1400px
+    );
+
+    margin: auto;
+
 }
 
+
 /* ==========================================
-   META INFORMATION
+   PROJECT META
 ========================================== */
 
 .project-meta {
+
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
 
-    margin-bottom: 100px;
-    padding-bottom: 60px;
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
 
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    gap: 50px;
+
+    padding-bottom: 70px;
+
+    border-bottom:
+        1px solid
+        rgba(
+            0,
+            0,
+            0,
+            0.08
+        );
+
 }
 
-.project-meta div {
-    text-align: center;
-}
 
 .project-meta span {
+
     display: block;
 
     margin-bottom: 12px;
 
-    color: #B58B43;
+    color: #999;
 
     font-size: 11px;
-    font-weight: 600;
 
-    letter-spacing: 4px;
+    letter-spacing: 3px;
+
     text-transform: uppercase;
+
 }
 
+
 .project-meta h3 {
+
     margin: 0;
 
     color: #111;
 
-    font-family: "Cormorant Garamond", serif;
-    font-size: 32px;
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 30px;
+
     font-weight: 500;
+
 }
 
+
 /* ==========================================
-   STORY SECTION
+   PROJECT STORY
 ========================================== */
 
 .project-story {
-    max-width: 850px;
 
-    margin: 0 auto 120px;
+    max-width: 800px;
 
-    text-align: center;
+    margin:
+        100px
+        auto;
+
 }
 
+
 .project-story h2 {
-    margin-bottom: 40px;
+
+    margin:
+        0
+        0
+        30px;
 
     color: #111;
 
-    font-family: "Cormorant Garamond", serif;
-    font-size: 56px;
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 48px;
+
     font-weight: 500;
+
 }
+
 
 .project-story p {
+
+    margin: 0;
+
     color: #555;
 
-    font-size: 20px;
+    font-size: 17px;
+
     line-height: 2;
+
 }
 
+
 /* ==========================================
-   GALLERY
+   PROJECT GALLERY
 ========================================== */
 
 .project-gallery {
-    display: grid;
-    grid-template-columns: repeat(
-        auto-fit,
-        minmax(420px, 1fr)
-    );
 
-    gap: 40px;
+    columns: 3;
+
+    column-gap: 18px;
+
 }
+
 
 .project-gallery img {
-    width: 100%;
+
     display: block;
 
-    border-radius: 20px;
+    width: 100%;
 
-    object-fit: cover;
+    margin-bottom: 18px;
+
+    break-inside: avoid;
+
+    cursor: pointer;
 
     transition:
-        transform .5s ease,
-        box-shadow .5s ease;
+        opacity 0.3s ease,
+        transform 0.4s ease;
+
 }
+
 
 .project-gallery img:hover {
-    transform: scale(1.02);
 
-    box-shadow:
-        0 30px 80px rgba(0,0,0,.15);
+    opacity: 0.92;
+
 }
+
 
 /* ==========================================
-   NOT FOUND
+   PROJECT NAVIGATION
 ========================================== */
 
-.project-not-found {
-    padding: 220px 20px;
-
-    text-align: center;
-}
-
-.project-not-found h1 {
-    font-family: "Cormorant Garamond", serif;
-    font-size: 64px;
-    font-weight: 500;
-}
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
-@media (max-width: 992px) {
-
-    .project-meta {
-        grid-template-columns: 1fr;
-        gap: 30px;
-
-        margin-bottom: 80px;
-    }
-
-    .project-story {
-        margin-bottom: 80px;
-    }
-
-    .project-story h2 {
-        font-size: 46px;
-    }
-
-    .project-story p {
-        font-size: 18px;
-    }
-
-    .project-gallery {
-        grid-template-columns: 1fr;
-    }
-
-}
-
-@media (max-width: 768px) {
-
-    .project-page {
-        padding: 80px 0;
-    }
-
-    .project-meta h3 {
-        font-size: 28px;
-    }
-
-    .project-story h2 {
-        font-size: 38px;
-    }
-
-    .project-story p {
-        font-size: 16px;
-        line-height: 1.9;
-    }
-
-}
-
-@media (max-width: 480px) {
-
-    .project-story h2 {
-        font-size: 32px;
-    }
-
-    .project-meta h3 {
-        font-size: 24px;
-    }
-
-}
 .project-navigation {
+
     display: flex;
-    justify-content: space-between;
+
+    justify-content:
+        space-between;
+
     gap: 30px;
 
     margin-top: 100px;
+
     padding-top: 50px;
 
-    border-top: 1px solid rgba(0,0,0,.08);
+    border-top:
+        1px solid
+        rgba(
+            0,
+            0,
+            0,
+            0.08
+        );
+
 }
+
 
 .project-nav-link {
+
     color: #111;
+
     text-decoration: none;
 
-    font-family: "Cormorant Garamond", serif;
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
     font-size: 28px;
 
-    transition: .3s ease;
+    transition:
+        color
+        0.3s ease;
+
 }
+
 
 .project-nav-link:hover {
+
     color: #b58b43;
+
 }
 
-@media (max-width:768px) {
-    .project-navigation {
-        flex-direction: column;
-        text-align: center;
-    }
-}
-.lightbox {
-    position: fixed;
-    inset: 0;
 
-    background: rgba(0,0,0,.92);
+/* ==========================================
+   PROJECT NOT FOUND
+========================================== */
+
+.project-not-found {
+
+    min-height: 70vh;
 
     display: flex;
+
+    flex-direction: column;
+
     align-items: center;
+
     justify-content: center;
 
-    z-index: 9999;
+    gap: 30px;
+
+    padding:
+        100px
+        20px;
+
+    text-align: center;
+
 }
 
-.lightbox-image {
-    max-width: 90%;
-    max-height: 90vh;
 
-    border-radius: 12px;
+.project-not-found h1 {
+
+    margin: 0;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 56px;
+
+    font-weight: 500;
+
 }
 
-.lightbox-close,
-.lightbox-prev,
-.lightbox-next {
-    position: absolute;
 
-    background: transparent;
-    border: none;
+/* ==========================================
+   TABLET
+========================================== */
 
-    color: white;
+@media (
+    max-width:
+    1024px
+) {
 
-    font-size: 42px;
-    cursor: pointer;
+    .project-gallery {
+
+        columns: 2;
+
+    }
+
 }
 
-.lightbox-close {
-    top: 30px;
-    right: 40px;
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (
+    max-width:
+    768px
+) {
+
+    .project-page {
+
+        padding:
+            80px
+            0;
+
+    }
+
+
+    .project-meta {
+
+        grid-template-columns:
+            1fr;
+
+        gap: 35px;
+
+        padding-bottom: 50px;
+
+    }
+
+
+    .project-story {
+
+        margin:
+            70px
+            auto;
+
+    }
+
+
+    .project-story h2 {
+
+        font-size: 38px;
+
+    }
+
+
+    .project-story p {
+
+        font-size: 16px;
+
+        line-height: 1.9;
+
+    }
+
+
+    .project-gallery {
+
+        columns: 1;
+
+    }
+
+
+    .project-navigation {
+
+        flex-direction:
+            column;
+
+        text-align: center;
+
+    }
+
 }
 
-.lightbox-prev {
-    left: 40px;
-}
 
-.lightbox-next {
-    right: 40px;
-}
+/* ==========================================
+   SMALL MOBILE
+========================================== */
 
-.project-gallery img {
-    cursor: pointer;
+@media (
+    max-width:
+    480px
+) {
+
+    .project-story h2 {
+
+        font-size: 32px;
+
+    }
+
+
+    .project-meta h3 {
+
+        font-size: 24px;
+
+    }
+
+
+    .project-not-found h1 {
+
+        font-size: 42px;
+
+    }
+
 }

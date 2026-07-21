@@ -12,6 +12,8 @@ import {
 
 import "./Navbar.css";
 
+import logoLight from "../../assets/branding/logo-light.svg";
+
 import {
   disciplines as defaultDisciplines,
 } from "../../data/disciplines";
@@ -24,6 +26,10 @@ import {
 const DISCIPLINES_KEY =
   "rohit-photography-disciplines";
 
+
+/* =========================
+   NAVBAR
+========================= */
 
 export default function Navbar() {
 
@@ -79,11 +85,6 @@ export default function Navbar() {
         /*
          * Merge Admin data with
          * default discipline data.
-         *
-         * This means title,
-         * description and image
-         * saved from Admin can
-         * override the defaults.
          */
 
         return defaultDisciplines.map(
@@ -168,6 +169,10 @@ export default function Navbar() {
   ] = useState(false);
 
 
+  /* =========================
+     LOCATION
+  ========================= */
+
   const location =
     useLocation();
 
@@ -211,7 +216,7 @@ export default function Navbar() {
 
         /*
          * If it exists, use the
-         * newest version of it.
+         * newest version.
          */
 
         if (
@@ -224,7 +229,7 @@ export default function Navbar() {
 
 
         /*
-         * Otherwise use the first
+         * Otherwise use first
          * available discipline.
          */
 
@@ -313,12 +318,13 @@ export default function Navbar() {
 
 
         {/* =========================
-            LOGO
+            BRAND / LOGO
         ========================= */}
 
         <Link
           to="/"
           className="navbar-logo"
+          aria-label="Rohit Ohal Photography - Home"
           onClick={() => {
 
             setMegaMenu(
@@ -332,7 +338,24 @@ export default function Navbar() {
           }}
         >
 
-          ROHIT OHAL
+          {/* BRAND MARK */}
+
+          <img
+            src={
+              logoLight
+            }
+            alt=""
+            className="navbar-logo-image"
+          />
+
+
+          {/* BRAND NAME */}
+
+          <span className="navbar-logo-text">
+
+            ROHIT OHAL
+
+          </span>
 
         </Link>
 
@@ -407,10 +430,16 @@ export default function Navbar() {
               }
             >
 
+              {/* =========================
+                  MEGA MENU LEFT
+              ========================= */}
+
               <div className="mega-left">
 
                 <span className="mega-label">
+
                   SELECTED WORK
+
                 </span>
 
 
@@ -446,15 +475,20 @@ export default function Navbar() {
                     >
 
                       <h3>
+
                         {
                           item.title
                         }
+
                       </h3>
 
+
                       <p>
+
                         {
                           item.description
                         }
+
                       </p>
 
                     </NavLink>
@@ -486,17 +520,24 @@ export default function Navbar() {
                 )}
 
 
+                {/* IMAGE OVERLAY */}
+
                 <div className="mega-image-overlay">
 
                   <span>
+
                     EXPLORE
+
                   </span>
 
+
                   <h2>
+
                     {
                       active?.title ||
                       "Portfolio"
                     }
+
                   </h2>
 
                 </div>
@@ -576,6 +617,9 @@ export default function Navbar() {
               : "mobile-button"
           }
           aria-label="Toggle navigation menu"
+          aria-expanded={
+            mobileMenu
+          }
           onClick={() =>
             setMobileMenu(
               !mobileMenu

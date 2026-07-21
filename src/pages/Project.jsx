@@ -4,12 +4,14 @@ import {
 } from "react-router-dom";
 
 import {
-  useEffect,
   useState,
 } from "react";
 
 import SEOHead from "../components/common/SEOHead";
 import PageHero from "../components/common/PageHero";
+
+import AdvancedLightbox from
+  "../components/gallery/AdvancedLightbox";
 
 import "./Project.css";
 
@@ -19,13 +21,25 @@ import "./Project.css";
 ========================= */
 
 const categoryToDiscipline = {
-  Wedding: "weddings",
-  Portrait: "portraits",
-  Events: "events",
-  Industrial: "industrial",
+
+  Wedding:
+    "weddings",
+
+  Portrait:
+    "portraits",
+
+  Events:
+    "events",
+
+  Industrial:
+    "industrial",
+
   "Food & Beverage":
     "food-beverage",
-  Editorial: "editorial",
+
+  Editorial:
+    "editorial",
+
 };
 
 
@@ -34,6 +48,7 @@ const categoryToDiscipline = {
 ========================= */
 
 const disciplineLabels = {
+
   weddings:
     "Wedding Stories",
 
@@ -51,10 +66,16 @@ const disciplineLabels = {
 
   editorial:
     "Editorial",
+
 };
 
 
+/* =========================
+   PROJECT
+========================= */
+
 export default function Project() {
+
   /* =========================
      ROUTE PARAMETERS
   ========================= */
@@ -62,22 +83,22 @@ export default function Project() {
   const {
     disciplineSlug,
     projectSlug,
-  } = useParams();
+  } =
+    useParams();
 
 
   /* =========================
-     LIGHTBOX STATE
+     LIGHTBOX INDEX
+
+     -1 = CLOSED
+     0+ = ACTIVE IMAGE
   ========================= */
 
   const [
-    lightboxOpen,
-    setLightboxOpen,
-  ] = useState(false);
-
-  const [
-    activeImage,
-    setActiveImage,
-  ] = useState(0);
+    lightboxIndex,
+    setLightboxIndex,
+  ] =
+    useState(-1);
 
 
   /* =========================
@@ -86,33 +107,47 @@ export default function Project() {
 
   let cmsProjects = [];
 
+
   try {
+
     const savedProjects =
       localStorage.getItem(
         "rohit-photography-projects"
       );
 
-    if (savedProjects) {
+
+    if (
+      savedProjects
+    ) {
+
       const parsedProjects =
         JSON.parse(
           savedProjects
         );
+
 
       if (
         Array.isArray(
           parsedProjects
         )
       ) {
+
         cmsProjects =
           parsedProjects;
+
       }
+
     }
 
-  } catch (error) {
+  } catch (
+    error
+  ) {
+
     console.error(
       "Failed to load CMS projects:",
       error
     );
+
   }
 
 
@@ -124,7 +159,9 @@ export default function Project() {
     cmsProjects
 
       .filter(
-        (project) =>
+        (
+          project
+        ) =>
           project &&
           project.status ===
             "Published"
@@ -143,32 +180,41 @@ export default function Project() {
             "other";
 
 
-          /* PROJECT YEAR */
+          /* =========================
+             PROJECT YEAR
+          ========================= */
 
           let year = "";
+
 
           if (
             project.date
           ) {
+
             const parsedDate =
               new Date(
                 project.date
               );
+
 
             if (
               !Number.isNaN(
                 parsedDate.getTime()
               )
             ) {
+
               year =
                 parsedDate
                   .getFullYear()
                   .toString();
+
             }
+
           }
 
 
           return {
+
             ...project,
 
             discipline,
@@ -194,6 +240,7 @@ export default function Project() {
               "number"
                 ? project.order
                 : index,
+
           };
 
         }
@@ -209,18 +256,24 @@ export default function Project() {
     allProjects
 
       .filter(
-        (project) =>
+        (
+          project
+        ) =>
           project.discipline ===
           disciplineSlug
       )
 
       .sort(
-        (a, b) => {
+        (
+          a,
+          b
+        ) => {
 
           const aFeatured =
             a.featuredPortfolio
               ? 1
               : 0;
+
 
           const bFeatured =
             b.featuredPortfolio
@@ -234,10 +287,12 @@ export default function Project() {
             aFeatured !==
             bFeatured
           ) {
+
             return (
               bFeatured -
               aFeatured
             );
+
           }
 
 
@@ -258,7 +313,9 @@ export default function Project() {
 
   const projectIndex =
     disciplineProjects.findIndex(
-      (item) =>
+      (
+        item
+      ) =>
         item.slug ===
         projectSlug
     );
@@ -271,7 +328,7 @@ export default function Project() {
 
 
   /* =========================
-     PREVIOUS / NEXT PROJECT
+     PREVIOUS PROJECT
   ========================= */
 
   const previousProject =
@@ -281,6 +338,10 @@ export default function Project() {
         ]
       : null;
 
+
+  /* =========================
+     NEXT PROJECT
+  ========================= */
 
   const nextProject =
     projectIndex >= 0 &&
@@ -294,248 +355,49 @@ export default function Project() {
 
 
   /* =========================
-     LIGHTBOX FUNCTIONS
+     OPEN LIGHTBOX
   ========================= */
 
-  const openLightbox = (
-    index
-  ) => {
-
-    setActiveImage(
+  const openLightbox =
+    (
       index
-    );
+    ) => {
 
-    setLightboxOpen(
-      true
-    );
+      setLightboxIndex(
+        index
+      );
 
-  };
+    };
 
+
+  /* =========================
+     CLOSE LIGHTBOX
+  ========================= */
 
   const closeLightbox =
     () => {
 
-      setLightboxOpen(
-        false
-      );
-
-      setActiveImage(
-        0
+      setLightboxIndex(
+        -1
       );
 
     };
 
 
   /* =========================
-     NEXT IMAGE
+     CHANGE LIGHTBOX IMAGE
   ========================= */
 
-  const nextImage = () => {
+  const changeLightboxImage =
+    (
+      index
+    ) => {
 
-    if (
-      !project ||
-      project.gallery.length ===
-        0
-    ) {
-      return;
-    }
-
-    setActiveImage(
-      (prev) =>
-        (
-          prev +
-          1
-        ) %
-        project.gallery.length
-    );
-
-  };
-
-
-  /* =========================
-     PREVIOUS IMAGE
-  ========================= */
-
-  const previousImage =
-    () => {
-
-      if (
-        !project ||
-        project.gallery.length ===
-          0
-      ) {
-        return;
-      }
-
-      setActiveImage(
-        (prev) =>
-          prev === 0
-            ? project.gallery
-                .length - 1
-            : prev - 1
+      setLightboxIndex(
+        index
       );
 
     };
-
-
-  /* =========================
-     KEYBOARD NAVIGATION
-  ========================= */
-
-  useEffect(() => {
-
-    /*
-     * Keyboard controls should
-     * only work while the
-     * lightbox is open.
-     */
-
-    if (
-      !lightboxOpen
-    ) {
-      return undefined;
-    }
-
-
-    const handleKeyDown =
-      (event) => {
-
-        /* NEXT IMAGE */
-
-        if (
-          event.key ===
-          "ArrowRight"
-        ) {
-          event.preventDefault();
-
-          setActiveImage(
-            (prev) => {
-
-              if (
-                !project ||
-                project.gallery
-                  .length === 0
-              ) {
-                return prev;
-              }
-
-              return (
-                prev +
-                1
-              ) %
-                project.gallery
-                  .length;
-
-            }
-          );
-        }
-
-
-        /* PREVIOUS IMAGE */
-
-        if (
-          event.key ===
-          "ArrowLeft"
-        ) {
-          event.preventDefault();
-
-          setActiveImage(
-            (prev) => {
-
-              if (
-                !project ||
-                project.gallery
-                  .length === 0
-              ) {
-                return prev;
-              }
-
-              return prev ===
-                0
-                ? project
-                    .gallery
-                    .length -
-                    1
-                : prev -
-                    1;
-
-            }
-          );
-        }
-
-
-        /* CLOSE LIGHTBOX */
-
-        if (
-          event.key ===
-          "Escape"
-        ) {
-          event.preventDefault();
-
-          setLightboxOpen(
-            false
-          );
-
-          setActiveImage(
-            0
-          );
-        }
-
-      };
-
-
-    window.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
-
-
-    return () => {
-
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
-
-    };
-
-  }, [
-    lightboxOpen,
-    project,
-  ]);
-
-
-  /* =========================
-     PREVENT PAGE SCROLL
-     WHILE LIGHTBOX IS OPEN
-  ========================= */
-
-  useEffect(() => {
-
-    if (
-      !lightboxOpen
-    ) {
-      return undefined;
-    }
-
-    const previousOverflow =
-      document.body.style
-        .overflow;
-
-    document.body.style.overflow =
-      "hidden";
-
-
-    return () => {
-
-      document.body.style.overflow =
-        previousOverflow;
-
-    };
-
-  }, [
-    lightboxOpen,
-  ]);
 
 
   /* =========================
@@ -543,7 +405,9 @@ export default function Project() {
   ========================= */
 
   const preventImageContextMenu =
-    (event) => {
+    (
+      event
+    ) => {
 
       event.preventDefault();
 
@@ -551,7 +415,9 @@ export default function Project() {
 
 
   const preventImageDrag =
-    (event) => {
+    (
+      event
+    ) => {
 
       event.preventDefault();
 
@@ -562,30 +428,44 @@ export default function Project() {
      PROJECT NOT FOUND
   ========================= */
 
-  if (!project) {
+  if (
+    !project
+  ) {
+
     return (
+
       <>
+
         <SEOHead
           title="Project Not Found | Rohit Ohal Photography"
           description="The photography project you are looking for could not be found."
         />
 
+
         <div className="project-not-found">
 
           <h1>
+
             Project not found
+
           </h1>
+
 
           <Link
             to="/portfolio"
             className="project-nav-link"
           >
+
             ← Back to Portfolio
+
           </Link>
 
         </div>
+
       </>
+
     );
+
   }
 
 
@@ -636,6 +516,7 @@ export default function Project() {
   ========================= */
 
   return (
+
     <>
 
       {/* =========================
@@ -693,14 +574,19 @@ export default function Project() {
             <div>
 
               <span>
+
                 Location
+
               </span>
 
+
               <h3>
+
                 {
                   project.location ||
                   "—"
                 }
+
               </h3>
 
             </div>
@@ -711,14 +597,19 @@ export default function Project() {
             <div>
 
               <span>
+
                 Year
+
               </span>
 
+
               <h3>
+
                 {
                   project.year ||
                   "—"
                 }
+
               </h3>
 
             </div>
@@ -729,13 +620,18 @@ export default function Project() {
             <div>
 
               <span>
+
                 Discipline
+
               </span>
 
+
               <h3>
+
                 {
                   disciplineLabel
                 }
+
               </h3>
 
             </div>
@@ -750,14 +646,19 @@ export default function Project() {
           <div className="project-story">
 
             <h2>
+
               Project Story
+
             </h2>
 
+
             <p>
+
               {
                 project.description ||
                 "Project description coming soon."
               }
+
             </p>
 
           </div>
@@ -779,28 +680,27 @@ export default function Project() {
                 ) => (
 
                   <img
-                    key={`${image}-${index}`}
+                    key={
+                      `${image}-${index}`
+                    }
                     src={
                       image
                     }
-                    alt={`${project.title} - Image ${
-                      index +
-                      1
-                    }`}
+                    alt={
+                      `${project.title} - Image ${
+                        index + 1
+                      }`
+                    }
                     loading="lazy"
-
                     draggable={
                       false
                     }
-
                     onContextMenu={
                       preventImageContextMenu
                     }
-
                     onDragStart={
                       preventImageDrag
                     }
-
                     onClick={() =>
                       openLightbox(
                         index
@@ -828,14 +728,18 @@ export default function Project() {
             {previousProject ? (
 
               <Link
-                to={`/portfolio/${previousProject.discipline}/${previousProject.slug}`}
+                to={
+                  `/portfolio/${previousProject.discipline}/${previousProject.slug}`
+                }
                 className="project-nav-link"
               >
+
                 ←{" "}
                 {
                   previousProject
                     .title
                 }
+
               </Link>
 
             ) : (
@@ -850,14 +754,18 @@ export default function Project() {
             {nextProject ? (
 
               <Link
-                to={`/portfolio/${nextProject.discipline}/${nextProject.slug}`}
+                to={
+                  `/portfolio/${nextProject.discipline}/${nextProject.slug}`
+                }
                 className="project-nav-link"
               >
+
                 {
                   nextProject
                     .title
                 }{" "}
                 →
+
               </Link>
 
             ) : (
@@ -874,139 +782,43 @@ export default function Project() {
 
 
       {/* =========================
-          LIGHTBOX
+          SHARED ADVANCED LIGHTBOX
       ========================= */}
 
-      {lightboxOpen &&
-        project.gallery.length >
-          0 && (
+      <AdvancedLightbox
 
-        <div
-          className="lightbox"
+        images={
+          project.gallery
+        }
 
-          onClick={
-            closeLightbox
-          }
+        currentIndex={
+          lightboxIndex >=
+          0
+            ? lightboxIndex
+            : 0
+        }
 
-          onContextMenu={
-            preventImageContextMenu
-          }
+        isOpen={
+          lightboxIndex >=
+          0
+        }
 
-          role="dialog"
+        onClose={
+          closeLightbox
+        }
 
-          aria-modal="true"
+        onChange={
+          changeLightboxImage
+        }
 
-          aria-label={`${project.title} image gallery`}
-        >
+        title={
+          project.title
+        }
 
-
-          {/* =========================
-              CLOSE
-          ========================= */}
-
-          <button
-            type="button"
-            className="lightbox-close"
-            onClick={
-              closeLightbox
-            }
-            aria-label="Close lightbox"
-          >
-            ×
-          </button>
-
-
-          {/* =========================
-              PREVIOUS IMAGE
-          ========================= */}
-
-          <button
-            type="button"
-            className="lightbox-prev"
-
-            onClick={(
-              event
-            ) => {
-
-              event.stopPropagation();
-
-              previousImage();
-
-            }}
-
-            aria-label="Previous image"
-          >
-            ←
-          </button>
-
-
-          {/* =========================
-              ACTIVE IMAGE
-          ========================= */}
-
-          <img
-            src={
-              project.gallery[
-                activeImage
-              ]
-            }
-
-            alt={`${project.title} - Image ${
-              activeImage +
-              1
-            }`}
-
-            className="lightbox-image"
-
-            draggable={
-              false
-            }
-
-            onContextMenu={
-              preventImageContextMenu
-            }
-
-            onDragStart={
-              preventImageDrag
-            }
-
-            onClick={(
-              event
-            ) => {
-
-              event.stopPropagation();
-
-            }}
-          />
-
-
-          {/* =========================
-              NEXT IMAGE
-          ========================= */}
-
-          <button
-            type="button"
-            className="lightbox-next"
-
-            onClick={(
-              event
-            ) => {
-
-              event.stopPropagation();
-
-              nextImage();
-
-            }}
-
-            aria-label="Next image"
-          >
-            →
-          </button>
-
-        </div>
-
-      )}
+      />
 
     </>
+
   );
+
 }
