@@ -1,9 +1,36 @@
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import {
+  supabase,
+} from "../../lib/supabase";
 
 import "./AboutPreview.css";
 
+
+/* =========================
+   SUPABASE SETTING KEY
+========================= */
+
+const SETTING_KEY =
+  "homepage_about";
+
+
+/* =========================
+   DEFAULT ABOUT SETTINGS
+========================= */
+
 const defaultAboutSettings = {
-  label: "ABOUT ROHIT OHAL",
+
+  label:
+    "ABOUT ROHIT OHAL",
 
   heading:
     "Fine Art.\nDocumentary.\nTimeless.",
@@ -11,14 +38,23 @@ const defaultAboutSettings = {
   description:
     "I believe photographs should do more than document a moment. They should preserve emotion, atmosphere and the little details that become priceless with time. My work combines documentary storytelling with a fine art approach to create images that feel authentic, elegant and enduring.",
 
-  yearsValue: "10+",
-  yearsLabel: "Years Experience",
+  yearsValue:
+    "10+",
 
-  projectsValue: "500+",
-  projectsLabel: "Projects Delivered",
+  yearsLabel:
+    "Years Experience",
 
-  educationValue: "Fine Arts",
-  educationLabel: "Graduate",
+  projectsValue:
+    "500+",
+
+  projectsLabel:
+    "Projects Delivered",
+
+  educationValue:
+    "Fine Arts",
+
+  educationLabel:
+    "Graduate",
 
   image:
     "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1200&q=80",
@@ -28,91 +64,312 @@ const defaultAboutSettings = {
 
   buttonLink:
     "/about",
+
 };
 
+
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+      ...defaultAboutSettings,
+    };
+
+  }
+
+
+  return {
+
+    ...defaultAboutSettings,
+
+    ...data,
+
+  };
+
+}
+
+
+/* =========================
+   ABOUT PREVIEW
+========================= */
+
 export default function AboutPreview() {
+
   /* =========================
-     LOAD ABOUT SETTINGS
+     SETTINGS
   ========================= */
 
-  let settings =
-    defaultAboutSettings;
-
-  try {
-    const saved =
-      localStorage.getItem(
-        "rohit-photography-homepage-about"
-      );
-
-    if (saved) {
-      settings = {
-        ...defaultAboutSettings,
-        ...JSON.parse(saved),
-      };
-    }
-  } catch (error) {
-    console.error(
-      "Failed to load homepage about settings:",
-      error
+  const [
+    settings,
+    setSettings,
+  ] =
+    useState(
+      defaultAboutSettings
     );
-  }
+
+
+  /* =========================
+     LOAD FROM SUPABASE
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadAboutSettings() {
+
+      try {
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          data?.setting_value
+        ) {
+
+          setSettings(
+            normalizeSettings(
+              data.setting_value
+            )
+          );
+
+
+          return;
+
+        }
+
+
+        /*
+         * No saved Supabase data.
+         * Keep default settings.
+         */
+
+        setSettings({
+          ...defaultAboutSettings,
+        });
+
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to load Homepage About from Supabase:",
+          error
+        );
+
+
+        /*
+         * Keep default content if
+         * Supabase cannot be reached.
+         */
+
+        if (
+          mounted
+        ) {
+
+          setSettings({
+            ...defaultAboutSettings,
+          });
+
+        }
+
+      }
+
+    }
+
+
+    loadAboutSettings();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
+
 
   /* =========================
      HEADING LINES
   ========================= */
 
   const headingLines =
-    settings.heading
-      .split("\n")
-      .filter(
-        (line) =>
-          line.trim() !== ""
-      );
+    useMemo(
+      () => {
+
+        const heading =
+          typeof settings.heading ===
+          "string"
+            ? settings.heading
+            : "";
+
+
+        return heading
+          .split(
+            "\n"
+          )
+          .filter(
+            (
+              line
+            ) =>
+              line.trim() !==
+              ""
+          );
+
+      },
+      [
+        settings.heading,
+      ]
+    );
+
 
   /* =========================
      RENDER
   ========================= */
 
   return (
+
     <section className="about-preview">
 
       <div className="about-preview-container">
 
-        {/* CONTENT */}
+
+        {/* =========================
+            CONTENT
+        ========================= */}
 
         <div className="about-preview-content">
 
-          <span className="about-label">
-            {settings.label}
-          </span>
 
-          <h2>
+          {/* LABEL */}
 
-            {headingLines.map(
-              (line, index) => (
-                <span
-                  key={index}
-                >
-                  {line}
+          {settings.label && (
 
-                  {index <
-                    headingLines.length -
-                      1 && (
-                    <br />
-                  )}
-                </span>
-              )
-            )}
+            <span className="about-label">
 
-          </h2>
+              {
+                settings.label
+              }
 
-          <p>
-            {settings.description}
-          </p>
+            </span>
 
-          {/* STATISTICS */}
+          )}
+
+
+          {/* HEADING */}
+
+          {headingLines.length >
+            0 && (
+
+            <h2>
+
+              {headingLines.map(
+                (
+                  line,
+                  index
+                ) => (
+
+                  <span
+                    key={
+                      `${line}-${index}`
+                    }
+                  >
+
+                    {
+                      line
+                    }
+
+
+                    {index <
+                      headingLines.length -
+                        1 && (
+
+                      <br />
+
+                    )}
+
+                  </span>
+
+                )
+              )}
+
+            </h2>
+
+          )}
+
+
+          {/* DESCRIPTION */}
+
+          {settings.description && (
+
+            <p>
+
+              {
+                settings.description
+              }
+
+            </p>
+
+          )}
+
+
+          {/* =========================
+              STATISTICS
+          ========================= */}
 
           <div className="about-info">
+
+
+            {/* YEARS */}
 
             <div>
 
@@ -130,6 +387,9 @@ export default function AboutPreview() {
 
             </div>
 
+
+            {/* PROJECTS */}
+
             <div>
 
               <h3>
@@ -145,6 +405,9 @@ export default function AboutPreview() {
               </span>
 
             </div>
+
+
+            {/* EDUCATION */}
 
             <div>
 
@@ -164,35 +427,56 @@ export default function AboutPreview() {
 
           </div>
 
-          {/* BUTTON */}
 
-          <Link
-            to={
-              settings.buttonLink ||
-              "/about"
-            }
-            className="about-button"
-          >
-            {settings.buttonText}
-          </Link>
+          {/* =========================
+              BUTTON
+          ========================= */}
 
-        </div>
+          {settings.buttonText && (
 
-        {/* IMAGE */}
+            <Link
+              to={
+                settings.buttonLink ||
+                "/about"
+              }
+              className="about-button"
+            >
 
-        <div className="about-preview-image">
+              {
+                settings.buttonText
+              }
 
-          <img
-            src={
-              settings.image
-            }
-            alt="Rohit Ohal"
-          />
+            </Link>
+
+          )}
 
         </div>
+
+
+        {/* =========================
+            IMAGE
+        ========================= */}
+
+        {settings.image && (
+
+          <div className="about-preview-image">
+
+            <img
+              src={
+                settings.image
+              }
+              alt="Rohit Ohal"
+              loading="lazy"
+            />
+
+          </div>
+
+        )}
 
       </div>
 
     </section>
+
   );
+
 }

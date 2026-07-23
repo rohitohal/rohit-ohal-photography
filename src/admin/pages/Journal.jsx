@@ -3,18 +3,20 @@ import {
   useState,
 } from "react";
 
-import CreateJournalModal from "../components/CreateJournalModal/CreateJournalModal";
-import JournalSettings from "../components/JournalSettings/JournalSettings";
+import CreateJournalModal from
+  "../components/CreateJournalModal/CreateJournalModal";
+
+import JournalSettings from
+  "../components/JournalSettings/JournalSettings";
+
+import {
+  getAllPosts,
+  createPost,
+  updatePost,
+  deletePost,
+} from "../../services/journalService";
 
 import "../styles/projects.css";
-
-
-/* =========================
-   STORAGE KEY
-========================= */
-
-const JOURNAL_KEY =
-  "rohit-photography-journal";
 
 
 /* =========================
@@ -24,101 +26,153 @@ const JOURNAL_KEY =
 export default function Journal() {
 
   /* =========================
-     LOAD JOURNAL POSTS
+     POSTS
   ========================= */
 
   const [
     posts,
     setPosts,
-  ] = useState(() => {
-
-    try {
-
-      const saved =
-        localStorage.getItem(
-          JOURNAL_KEY
-        );
-
-
-      if (!saved) {
-
-        return [];
-
-      }
-
-
-      const parsed =
-        JSON.parse(
-          saved
-        );
-
-
-      return Array.isArray(
-        parsed
-      )
-        ? parsed
-        : [];
-
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load journal posts:",
-        error
-      );
-
-
-      return [];
-
-    }
-
-  });
+  ] =
+    useState([]);
 
 
   /* =========================
-     MODAL STATE
+     LOADING
+  ========================= */
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     ERROR
+  ========================= */
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] =
+    useState("");
+
+
+  /* =========================
+     SAVING
+  ========================= */
+
+  const [
+    isSaving,
+    setIsSaving,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     MODAL
   ========================= */
 
   const [
     isModalOpen,
     setIsModalOpen,
-  ] = useState(false);
+  ] =
+    useState(false);
 
 
   const [
     editingPost,
     setEditingPost,
-  ] = useState(null);
+  ] =
+    useState(null);
 
 
   /* =========================
-     SAVE JOURNAL POSTS
+     LOAD POSTS FROM SUPABASE
   ========================= */
 
   useEffect(() => {
 
-    try {
-
-      localStorage.setItem(
-        JOURNAL_KEY,
-        JSON.stringify(
-          posts
-        )
-      );
+    let isMounted =
+      true;
 
 
-    } catch (error) {
+    async function loadPosts() {
 
-      console.error(
-        "Failed to save journal posts:",
+      try {
+
+        setIsLoading(
+          true
+        );
+
+
+        setErrorMessage(
+          ""
+        );
+
+
+        const journalPosts =
+          await getAllPosts();
+
+
+        if (
+          isMounted
+        ) {
+
+          setPosts(
+            journalPosts
+          );
+
+        }
+
+      } catch (
         error
-      );
+      ) {
+
+        console.error(
+          "Failed to load Admin Journal:",
+          error
+        );
+
+
+        if (
+          isMounted
+        ) {
+
+          setErrorMessage(
+            "Unable to load journal articles from Supabase."
+          );
+
+        }
+
+      } finally {
+
+        if (
+          isMounted
+        ) {
+
+          setIsLoading(
+            false
+          );
+
+        }
+
+      }
 
     }
 
-  }, [
-    posts,
-  ]);
+
+    loadPosts();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
@@ -126,148 +180,167 @@ export default function Journal() {
   ========================= */
 
   const handleSavePost =
-    (
+    async (
       postData
     ) => {
 
-      /* =========================
-         EDIT EXISTING ARTICLE
-      ========================= */
+      if (
+        isSaving
+      ) {
 
-      if (editingPost) {
-
-        setPosts(
-          (
-            previousPosts
-          ) =>
-
-            previousPosts.map(
-              (
-                post
-              ) =>
-
-                post.id ===
-                editingPost.id
-
-                  ? {
-
-                      /*
-                       * Keep existing
-                       * fields.
-                       *
-                       * This preserves:
-                       * homepageOrder
-                       * createdAt
-                       * featured
-                       * future metadata
-                       */
-
-                      ...post,
-
-
-                      /*
-                       * Apply edited
-                       * fields.
-                       */
-
-                      ...postData,
-
-
-                      /*
-                       * Never change ID.
-                       */
-
-                      id:
-                        editingPost.id,
-
-
-                      /*
-                       * Track update
-                       * date.
-                       */
-
-                      updatedAt:
-                        new Date()
-                          .toISOString(),
-
-                    }
-
-                  : post
-
-            )
-
-        );
+        return;
 
       }
 
 
-      /* =========================
-         CREATE NEW ARTICLE
-      ========================= */
+      try {
 
-      else {
-
-        const now =
-          new Date()
-            .toISOString();
+        setIsSaving(
+          true
+        );
 
 
-        const newPost = {
-
-          ...postData,
-
-          id:
-            Date.now(),
-
-          createdAt:
-            now,
-
-          updatedAt:
-            now,
-
-        };
+        setErrorMessage(
+          ""
+        );
 
 
-        setPosts(
-          (
-            previousPosts
-          ) => [
+        /* =====================
+           UPDATE
+        ===================== */
 
-            newPost,
+        if (
+          editingPost
+        ) {
 
-            ...previousPosts,
+          const updatedPost =
+            await updatePost(
+              editingPost.id,
+              {
+                ...editingPost,
+                ...postData,
+              }
+            );
 
-          ]
+
+          setPosts(
+            (
+              previousPosts
+            ) =>
+              previousPosts.map(
+                (
+                  post
+                ) =>
+                  post.id ===
+                  updatedPost.id
+                    ? updatedPost
+                    : post
+              )
+          );
+
+        }
+
+
+        /* =====================
+           CREATE
+        ===================== */
+
+        else {
+
+          const newPost =
+            await createPost(
+              postData
+            );
+
+
+          setPosts(
+            (
+              previousPosts
+            ) => [
+
+              newPost,
+
+              ...previousPosts,
+
+            ]
+          );
+
+        }
+
+
+        /* =====================
+           CLOSE MODAL
+        ===================== */
+
+        setEditingPost(
+          null
+        );
+
+
+        setIsModalOpen(
+          false
+        );
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to save journal article:",
+          error
+        );
+
+
+        /*
+         * PostgreSQL unique constraint
+         * error.
+         */
+
+        if (
+          error?.code ===
+          "23505"
+        ) {
+
+          setErrorMessage(
+            "An article with this slug already exists. Please use a different slug."
+          );
+
+        } else {
+
+          setErrorMessage(
+            error?.message ||
+            "Unable to save the journal article."
+          );
+
+        }
+
+      } finally {
+
+        setIsSaving(
+          false
         );
 
       }
-
-
-      /* =========================
-         CLOSE MODAL
-      ========================= */
-
-      setEditingPost(
-        null
-      );
-
-      setIsModalOpen(
-        false
-      );
 
     };
 
 
   /* =========================
-     OPEN NEW ARTICLE
+     NEW ARTICLE
   ========================= */
 
   const handleNewArticle =
     () => {
 
+      setErrorMessage(
+        ""
+      );
+
+
       setEditingPost(
         null
       );
+
 
       setIsModalOpen(
         true
@@ -285,9 +358,15 @@ export default function Journal() {
       post
     ) => {
 
+      setErrorMessage(
+        ""
+      );
+
+
       setEditingPost(
         post
       );
+
 
       setIsModalOpen(
         true
@@ -301,7 +380,7 @@ export default function Journal() {
   ========================= */
 
   const handleDelete =
-    (
+    async (
       id
     ) => {
 
@@ -311,27 +390,56 @@ export default function Journal() {
         );
 
 
-      if (!confirmed) {
+      if (
+        !confirmed
+      ) {
 
         return;
 
       }
 
 
-      setPosts(
-        (
-          previousPosts
-        ) =>
+      try {
 
-          previousPosts.filter(
-            (
-              post
-            ) =>
-              post.id !==
-              id
-          )
+        setErrorMessage(
+          ""
+        );
 
-      );
+
+        await deletePost(
+          id
+        );
+
+
+        setPosts(
+          (
+            previousPosts
+          ) =>
+            previousPosts.filter(
+              (
+                post
+              ) =>
+                post.id !==
+                id
+            )
+        );
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to delete journal article:",
+          error
+        );
+
+
+        setErrorMessage(
+          error?.message ||
+          "Unable to delete the journal article."
+        );
+
+      }
 
     };
 
@@ -343,9 +451,19 @@ export default function Journal() {
   const handleCloseModal =
     () => {
 
+      if (
+        isSaving
+      ) {
+
+        return;
+
+      }
+
+
       setIsModalOpen(
         false
       );
+
 
       setEditingPost(
         null
@@ -365,9 +483,9 @@ export default function Journal() {
       <div className="projects-page">
 
 
-        {/* =========================
-            JOURNAL PAGE SETTINGS
-        ========================= */}
+        {/* =====================
+            JOURNAL SETTINGS
+        ===================== */}
 
         <div
           style={{
@@ -381,9 +499,9 @@ export default function Journal() {
         </div>
 
 
-        {/* =========================
+        {/* =====================
             HEADER
-        ========================= */}
+        ===================== */}
 
         <div className="projects-header">
 
@@ -393,9 +511,11 @@ export default function Journal() {
               JOURNAL MANAGEMENT
             </span>
 
+
             <h1>
               Manage Journal
             </h1>
+
 
             <p>
               Create stories,
@@ -413,270 +533,351 @@ export default function Journal() {
             onClick={
               handleNewArticle
             }
+            disabled={
+              isLoading ||
+              isSaving
+            }
           >
+
             + New Article
+
           </button>
 
         </div>
 
 
-        {/* =========================
-            JOURNAL GRID
-        ========================= */}
+        {/* =====================
+            ERROR
+        ===================== */}
 
-        <div className="projects-grid">
+        {errorMessage && (
 
-          {posts.map(
-            (
-              post
-            ) => (
+          <div
+            style={{
+              marginBottom:
+                "30px",
 
-              <div
-                key={
-                  post.id ||
-                  post.slug
-                }
-                className="project-card"
-              >
+              padding:
+                "16px 20px",
 
+              background:
+                "#fff3f3",
 
-                {/* =========================
-                    COVER IMAGE
-                ========================= */}
+              borderRadius:
+                "10px",
 
-                {post.cover ? (
+              color:
+                "#a33",
+            }}
+          >
 
-                  <img
-                    src={
-                      post.cover
-                    }
-                    alt={
-                      post.title ||
-                      "Journal Article"
-                    }
-                  />
+            {
+              errorMessage
+            }
 
-                ) : (
+          </div>
 
-                  <div
-                    style={{
-                      width:
-                        "100%",
-
-                      height:
-                        "220px",
-
-                      display:
-                        "flex",
-
-                      alignItems:
-                        "center",
-
-                      justifyContent:
-                        "center",
-
-                      background:
-                        "#f3f1ec",
-
-                      color:
-                        "#999",
-                    }}
-                  >
-                    No Cover Image
-                  </div>
-
-                )}
+        )}
 
 
-                {/* =========================
-                    ARTICLE CONTENT
-                ========================= */}
+        {/* =====================
+            LOADING
+        ===================== */}
 
-                <div className="project-content">
+        {isLoading ? (
 
-                  <span className="project-category">
+          <div
+            style={{
+              background:
+                "#fff",
 
-                    {
-                      post.category ||
-                      "Journal"
-                    }
+              padding:
+                "80px",
 
-                  </span>
+              borderRadius:
+                "24px",
 
+              textAlign:
+                "center",
+            }}
+          >
 
-                  <h3>
-
-                    {
-                      post.title ||
-                      "Untitled Article"
-                    }
-
-                  </h3>
+            <h2>
+              Loading Journal
+            </h2>
 
 
-                  {post.excerpt && (
+            <p>
+              Loading articles from Supabase...
+            </p>
 
-                    <p>
+          </div>
 
-                      {
-                        post.excerpt
+        ) : (
+
+
+          /* =====================
+             JOURNAL GRID
+          ===================== */
+
+          <div className="projects-grid">
+
+            {posts.map(
+              (
+                post
+              ) => (
+
+                <div
+                  key={
+                    post.id ||
+                    post.slug
+                  }
+                  className="project-card"
+                >
+
+
+                  {/* COVER */}
+
+                  {post.cover ? (
+
+                    <img
+                      src={
+                        post.cover
                       }
-
-                    </p>
-
-                  )}
-
-
-                  {/* =========================
-                      ARTICLE STATUS
-                  ========================= */}
-
-                  <div
-                    style={{
-                      marginTop:
-                        "12px",
-
-                      marginBottom:
-                        "15px",
-                    }}
-                  >
-
-                    <span
-                      className={`status ${
-                        (
-                          post.status ||
-                          "Draft"
-                        ).toLowerCase()
-                      }`}
-                    >
-
-                      {
-                        post.status ||
-                        "Draft"
+                      alt={
+                        post.title ||
+                        "Journal Article"
                       }
+                    />
 
-                    </span>
-
-                  </div>
-
-
-                  {/* =========================
-                      HOMEPAGE FEATURED
-                  ========================= */}
-
-                  {post.featured ===
-                    true && (
+                  ) : (
 
                     <div
                       style={{
-                        marginBottom:
-                          "15px",
+                        width:
+                          "100%",
+
+                        height:
+                          "220px",
+
+                        display:
+                          "flex",
+
+                        alignItems:
+                          "center",
+
+                        justifyContent:
+                          "center",
+
+                        background:
+                          "#f3f1ec",
 
                         color:
-                          "#b58b43",
-
-                        fontSize:
-                          "12px",
-
-                        fontWeight:
-                          "600",
-
-                        letterSpacing:
-                          "0.5px",
+                          "#999",
                       }}
                     >
-                      ★ HOMEPAGE FEATURED
+
+                      No Cover Image
+
                     </div>
 
                   )}
 
 
-                  {/* =========================
-                      FOOTER
-                  ========================= */}
+                  {/* CONTENT */}
 
-                  <div className="project-footer">
+                  <div className="project-content">
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleEdit(
-                          post
-                        )
+                    <span className="project-category">
+
+                      {
+                        post.category ||
+                        "Journal"
                       }
-                    >
-                      Edit
-                    </button>
+
+                    </span>
 
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleDelete(
-                          post.id
-                        )
+                    <h3>
+
+                      {
+                        post.title ||
+                        "Untitled Article"
                       }
+
+                    </h3>
+
+
+                    {post.excerpt && (
+
+                      <p>
+
+                        {
+                          post.excerpt
+                        }
+
+                      </p>
+
+                    )}
+
+
+                    {/* STATUS */}
+
+                    <div
+                      style={{
+                        marginTop:
+                          "12px",
+
+                        marginBottom:
+                          "15px",
+                      }}
                     >
-                      Delete
-                    </button>
+
+                      <span
+                        className={`status ${
+                          (
+                            post.status ||
+                            "Draft"
+                          ).toLowerCase()
+                        }`}
+                      >
+
+                        {
+                          post.status ||
+                          "Draft"
+                        }
+
+                      </span>
+
+                    </div>
+
+
+                    {/* FEATURED */}
+
+                    {post.featured ===
+                      true && (
+
+                      <div
+                        style={{
+                          marginBottom:
+                            "15px",
+
+                          color:
+                            "#b58b43",
+
+                          fontSize:
+                            "12px",
+
+                          fontWeight:
+                            "600",
+
+                          letterSpacing:
+                            "0.5px",
+                        }}
+                      >
+
+                        ★ HOMEPAGE FEATURED
+
+                      </div>
+
+                    )}
+
+
+                    {/* FOOTER */}
+
+                    <div className="project-footer">
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleEdit(
+                            post
+                          )
+                        }
+                        disabled={
+                          isSaving
+                        }
+                      >
+
+                        Edit
+
+                      </button>
+
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDelete(
+                            post.id
+                          )
+                        }
+                        disabled={
+                          isSaving
+                        }
+                      >
+
+                        Delete
+
+                      </button>
+
+                    </div>
 
                   </div>
 
                 </div>
 
+              )
+            )}
+
+
+            {/* EMPTY STATE */}
+
+            {posts.length ===
+              0 && (
+
+              <div
+                style={{
+                  width:
+                    "100%",
+
+                  background:
+                    "#fff",
+
+                  padding:
+                    "80px",
+
+                  borderRadius:
+                    "24px",
+
+                  textAlign:
+                    "center",
+                }}
+              >
+
+                <h2>
+                  No Articles Yet
+                </h2>
+
+
+                <p>
+                  Create your first
+                  journal article.
+                </p>
+
               </div>
 
-            )
-          )}
+            )}
 
+          </div>
 
-          {/* =========================
-              EMPTY STATE
-          ========================= */}
-
-          {posts.length ===
-            0 && (
-
-            <div
-              style={{
-                width:
-                  "100%",
-
-                background:
-                  "#fff",
-
-                padding:
-                  "80px",
-
-                borderRadius:
-                  "24px",
-
-                textAlign:
-                  "center",
-              }}
-            >
-
-              <h2>
-                No Articles Yet
-              </h2>
-
-              <p>
-                Create your first
-                journal article.
-              </p>
-
-            </div>
-
-          )}
-
-        </div>
+        )}
 
       </div>
 
 
-      {/* =========================
+      {/* =====================
           CREATE / EDIT MODAL
-      ========================= */}
+      ===================== */}
 
       <CreateJournalModal
         isOpen={

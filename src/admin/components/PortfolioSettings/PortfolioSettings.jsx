@@ -5,15 +5,19 @@ import {
 
 import GalleryPicker from "../GalleryPicker/GalleryPicker";
 
+import {
+  supabase,
+} from "../../../lib/supabase";
+
 import "../../styles/homepage-settings.css";
 
 
 /* =========================
-   STORAGE KEY
+   SUPABASE SETTING KEY
 ========================= */
 
-const PORTFOLIO_KEY =
-  "rohit-photography-portfolio";
+const SETTING_KEY =
+  "portfolio_page";
 
 
 /* =========================
@@ -41,71 +45,41 @@ const defaultSettings = {
 export default function PortfolioSettings() {
 
   /* =========================
-     SETTINGS STATE
+     SETTINGS
   ========================= */
 
   const [
     settings,
     setSettings,
-  ] = useState(() => {
-
-    try {
-
-      const saved =
-        localStorage.getItem(
-          PORTFOLIO_KEY
-        );
-
-
-      if (!saved) {
-
-        return {
-          ...defaultSettings,
-        };
-
-      }
-
-
-      const parsed =
-        JSON.parse(
-          saved
-        );
-
-
-      if (
-        !parsed ||
-        typeof parsed !==
-          "object"
-      ) {
-
-        return {
-          ...defaultSettings,
-        };
-
-      }
-
-
-      return {
-        ...defaultSettings,
-        ...parsed,
-      };
-
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load Portfolio settings:",
-        error
-      );
-
-
-      return {
-        ...defaultSettings,
-      };
-
-    }
-
+  ] = useState({
+    ...defaultSettings,
   });
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+
+  /* =========================
+     SAVING
+  ========================= */
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
+
+
+  const [
+    saved,
+    setSaved,
+  ] = useState(false);
 
 
   /* =========================
@@ -119,33 +93,139 @@ export default function PortfolioSettings() {
 
 
   /* =========================
-     SAVE SETTINGS
+     LOAD SETTINGS
   ========================= */
 
   useEffect(() => {
 
-    try {
-
-      localStorage.setItem(
-        PORTFOLIO_KEY,
-        JSON.stringify(
-          settings
-        )
-      );
+    let mounted =
+      true;
 
 
-    } catch (error) {
+    async function loadSettings() {
 
-      console.error(
-        "Failed to save Portfolio settings:",
-        error
-      );
+      try {
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (!mounted) {
+          return;
+        }
+
+
+        if (
+          data?.setting_value &&
+          typeof data.setting_value ===
+            "object" &&
+          !Array.isArray(
+            data.setting_value
+          )
+        ) {
+
+          setSettings({
+
+            ...defaultSettings,
+
+            ...data.setting_value,
+
+          });
+
+        } else {
+
+          /*
+           * Temporary migration
+           * fallback.
+           */
+
+          const legacySaved =
+            localStorage.getItem(
+              "rohit-photography-portfolio"
+            );
+
+
+          if (legacySaved) {
+
+            const parsed =
+              JSON.parse(
+                legacySaved
+              );
+
+
+            if (
+              parsed &&
+              typeof parsed ===
+                "object"
+            ) {
+
+              setSettings({
+
+                ...defaultSettings,
+
+                ...parsed,
+
+              });
+
+            }
+
+          }
+
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Portfolio settings:",
+          error
+        );
+
+      } finally {
+
+        if (mounted) {
+
+          setLoading(
+            false
+          );
+
+        }
+
+      }
 
     }
 
-  }, [
-    settings,
-  ]);
+
+    loadSettings();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
@@ -153,9 +233,7 @@ export default function PortfolioSettings() {
   ========================= */
 
   const handleChange =
-    (
-      event
-    ) => {
+    (event) => {
 
       const {
         name,
@@ -164,9 +242,7 @@ export default function PortfolioSettings() {
 
 
       setSettings(
-        (
-          previous
-        ) => ({
+        (previous) => ({
 
           ...previous,
 
@@ -174,6 +250,11 @@ export default function PortfolioSettings() {
             value,
 
         })
+      );
+
+
+      setSaved(
+        false
       );
 
     };
@@ -184,9 +265,7 @@ export default function PortfolioSettings() {
   ========================= */
 
   const handleHeroImage =
-    (
-      images
-    ) => {
+    (images) => {
 
       if (
         !Array.isArray(
@@ -201,19 +280,8 @@ export default function PortfolioSettings() {
       }
 
 
-      /*
-       * Portfolio Hero only needs
-       * one image.
-       *
-       * GalleryPicker returns an
-       * array, so we use the first
-       * selected image.
-       */
-
       setSettings(
-        (
-          previous
-        ) => ({
+        (previous) => ({
 
           ...previous,
 
@@ -228,6 +296,11 @@ export default function PortfolioSettings() {
         false
       );
 
+
+      setSaved(
+        false
+      );
+
     };
 
 
@@ -239,9 +312,7 @@ export default function PortfolioSettings() {
     () => {
 
       setSettings(
-        (
-          previous
-        ) => ({
+        (previous) => ({
 
           ...previous,
 
@@ -251,7 +322,141 @@ export default function PortfolioSettings() {
         })
       );
 
+
+      setSaved(
+        false
+      );
+
     };
+
+
+  /* =========================
+     SAVE SETTINGS
+  ========================= */
+
+  const handleSave =
+    async () => {
+
+      try {
+
+        setSaving(
+          true
+        );
+
+
+        setSaved(
+          false
+        );
+
+
+        const {
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .upsert(
+              {
+
+                setting_key:
+                  SETTING_KEY,
+
+                setting_value:
+                  settings,
+
+                updated_at:
+                  new Date()
+                    .toISOString(),
+
+              },
+              {
+
+                onConflict:
+                  "setting_key",
+
+              }
+            );
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        setSaved(
+          true
+        );
+
+
+        window.setTimeout(
+          () => {
+
+            setSaved(
+              false
+            );
+
+          },
+          3000
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to save Portfolio settings:",
+          error
+        );
+
+
+        alert(
+          error?.message ||
+          "Unable to save Portfolio settings."
+        );
+
+
+      } finally {
+
+        setSaving(
+          false
+        );
+
+      }
+
+    };
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (loading) {
+
+    return (
+
+      <div className="homepage-settings-card">
+
+        <div className="homepage-settings-header">
+
+          <span className="homepage-overline">
+            PORTFOLIO PAGE
+          </span>
+
+          <h2>
+            Portfolio Hero
+          </h2>
+
+          <p>
+            Loading Portfolio settings...
+          </p>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
 
 
   /* =========================
@@ -265,9 +470,7 @@ export default function PortfolioSettings() {
       <div className="homepage-settings-card">
 
 
-        {/* =========================
-            HEADER
-        ========================= */}
+        {/* HEADER */}
 
         <div className="homepage-settings-header">
 
@@ -288,16 +491,10 @@ export default function PortfolioSettings() {
         </div>
 
 
-        {/* =========================
-            FORM
-        ========================= */}
-
         <div className="homepage-form">
 
 
-          {/* =========================
-              HERO TITLE
-          ========================= */}
+          {/* HERO TITLE */}
 
           <div className="form-group">
 
@@ -320,9 +517,7 @@ export default function PortfolioSettings() {
           </div>
 
 
-          {/* =========================
-              HERO DESCRIPTION
-          ========================= */}
+          {/* HERO DESCRIPTION */}
 
           <div className="form-group">
 
@@ -365,9 +560,7 @@ export default function PortfolioSettings() {
           </div>
 
 
-          {/* =========================
-              HERO IMAGE
-          ========================= */}
+          {/* HERO IMAGE */}
 
           <div className="form-group">
 
@@ -396,10 +589,6 @@ export default function PortfolioSettings() {
             </p>
 
 
-            {/* =========================
-                SELECT IMAGE
-            ========================= */}
-
             <button
               type="button"
               className="media-button secondary"
@@ -418,10 +607,6 @@ export default function PortfolioSettings() {
 
             </button>
 
-
-            {/* =========================
-                IMAGE PREVIEW
-            ========================= */}
 
             {settings.heroImage && (
 
@@ -467,10 +652,6 @@ export default function PortfolioSettings() {
                   }}
                 />
 
-
-                {/* =========================
-                    REMOVE IMAGE
-                ========================= */}
 
                 <button
                   type="button"
@@ -532,14 +713,45 @@ export default function PortfolioSettings() {
 
           </div>
 
+
+          {/* SAVE */}
+
+          <button
+            type="button"
+            className="media-button"
+            onClick={
+              handleSave
+            }
+            disabled={
+              saving
+            }
+          >
+
+            {
+              saving
+                ? "Saving..."
+                : "Save Portfolio Settings"
+            }
+
+          </button>
+
+
+          {saved && (
+
+            <div className="settings-success-message">
+
+              Portfolio settings saved successfully.
+
+            </div>
+
+          )}
+
         </div>
 
       </div>
 
 
-      {/* =========================
-          MEDIA LIBRARY PICKER
-      ========================= */}
+      {/* MEDIA LIBRARY PICKER */}
 
       <GalleryPicker
         isOpen={

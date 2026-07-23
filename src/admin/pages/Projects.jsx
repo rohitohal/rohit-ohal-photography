@@ -4,84 +4,64 @@ import {
   useState,
 } from "react";
 
-import CreateProjectModal from "../components/CreateProjectModal/CreateProjectModal";
+import CreateProjectModal from
+  "../components/CreateProjectModal/CreateProjectModal";
+
+import {
+  createProject,
+  deleteProject,
+  getAllProjects,
+  updateProject,
+  updateProjectOrder,
+} from "../../services/projectService";
 
 import "../styles/projects.css";
 
 
 /* =========================
-   LOCAL STORAGE KEY
+   PROJECTS
 ========================= */
-
-const PROJECTS_KEY =
-  "rohit-photography-projects";
-
 
 export default function Projects() {
 
   /* =========================
-     LOAD PROJECTS
+     PROJECTS STATE
   ========================= */
 
-  const [projects, setProjects] =
-    useState(() => {
-
-      try {
-
-        const savedProjects =
-          localStorage.getItem(
-            PROJECTS_KEY
-          );
-
-        if (!savedProjects) {
-          return [];
-        }
-
-        const parsedProjects =
-          JSON.parse(
-            savedProjects
-          );
-
-        if (
-          !Array.isArray(
-            parsedProjects
-          )
-        ) {
-          return [];
-        }
+  const [
+    projects,
+    setProjects,
+  ] = useState([]);
 
 
-        /* =========================
-           NORMALIZE PROJECT ORDER
-        ========================= */
+  /* =========================
+     LOADING
+  ========================= */
 
-        return parsedProjects.map(
-          (
-            project,
-            index
-          ) => ({
-            ...project,
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
 
-            order:
-              typeof project.order ===
-              "number"
-                ? project.order
-                : index,
-          })
-        );
 
-      } catch (error) {
+  /* =========================
+     SAVING
+  ========================= */
 
-        console.error(
-          "Failed to load projects:",
-          error
-        );
+  const [
+    isSaving,
+    setIsSaving,
+  ] = useState(false);
 
-        return [];
 
-      }
+  /* =========================
+     ERROR
+  ========================= */
 
-    });
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
 
   /* =========================
@@ -92,6 +72,7 @@ export default function Projects() {
     isModalOpen,
     setIsModalOpen,
   ] = useState(false);
+
 
   const [
     editingProject,
@@ -108,10 +89,12 @@ export default function Projects() {
     setSearchQuery,
   ] = useState("");
 
+
   const [
     statusFilter,
     setStatusFilter,
   ] = useState("All");
+
 
   const [
     categoryFilter,
@@ -120,19 +103,101 @@ export default function Projects() {
 
 
   /* =========================
-     SAVE PROJECTS
+     LOAD PROJECTS
+     FROM SUPABASE
   ========================= */
 
   useEffect(() => {
 
-    localStorage.setItem(
-      PROJECTS_KEY,
-      JSON.stringify(
-        projects
-      )
-    );
+    let isMounted =
+      true;
 
-  }, [projects]);
+
+    async function loadProjects() {
+
+      try {
+
+        setIsLoading(
+          true
+        );
+
+        setErrorMessage(
+          ""
+        );
+
+
+        const loadedProjects =
+          await getAllProjects();
+
+
+        if (
+          !isMounted
+        ) {
+
+          return;
+
+        }
+
+
+        setProjects(
+          Array.isArray(
+            loadedProjects
+          )
+            ? loadedProjects
+            : []
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Admin projects:",
+          error
+        );
+
+
+        if (
+          isMounted
+        ) {
+
+          setProjects(
+            []
+          );
+
+          setErrorMessage(
+            error?.message ||
+            "Unable to load projects."
+          );
+
+        }
+
+      } finally {
+
+        if (
+          isMounted
+        ) {
+
+          setIsLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadProjects();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
@@ -142,13 +207,26 @@ export default function Projects() {
   const orderedProjects =
     useMemo(() => {
 
-      return [...projects].sort(
-        (a, b) =>
-          (a.order ?? 0) -
-          (b.order ?? 0)
+      return [
+        ...projects,
+      ].sort(
+        (
+          a,
+          b
+        ) =>
+          (
+            a.order ??
+            0
+          ) -
+          (
+            b.order ??
+            0
+          )
       );
 
-    }, [projects]);
+    }, [
+      projects,
+    ]);
 
 
   /* =========================
@@ -163,8 +241,11 @@ export default function Projects() {
           .trim()
           .toLowerCase();
 
+
       return orderedProjects.filter(
-        (project) => {
+        (
+          project
+        ) => {
 
           const matchesSearch =
 
@@ -230,331 +311,654 @@ export default function Projects() {
 
   const filtersActive =
 
-    searchQuery.trim() !== "" ||
+    searchQuery.trim() !==
+      "" ||
 
-    statusFilter !== "All" ||
+    statusFilter !==
+      "All" ||
 
-    categoryFilter !== "All";
+    categoryFilter !==
+      "All";
 
 
   /* =========================
      NORMALIZE ORDER
   ========================= */
 
-  const normalizeOrder = (
-    projectList
-  ) => {
+  const normalizeOrder =
+    (
+      projectList
+    ) => {
 
-    return projectList.map(
-      (
-        project,
-        index
-      ) => ({
-        ...project,
-        order: index,
-      })
-    );
+      return projectList.map(
+        (
+          project,
+          index
+        ) => ({
 
-  };
+          ...project,
+
+          order:
+            index,
+
+        })
+      );
+
+    };
 
 
   /* =========================
      SAVE PROJECT
   ========================= */
 
-  const handleSaveProject = (
-    projectData
-  ) => {
+  const handleSaveProject =
+    async (
+      projectData
+    ) => {
 
-    /* =========================
-       EDIT PROJECT
-    ========================= */
+      if (
+        isSaving
+      ) {
 
-    if (editingProject) {
+        return;
 
-      setProjects(
-        (prevProjects) =>
-
-          prevProjects.map(
-            (project) =>
-
-              project.id ===
-              editingProject.id
-
-                ? {
-                    ...project,
-
-                    ...projectData,
-
-                    id:
-                      editingProject.id,
-
-                    /*
-                     * Preserve existing
-                     * project order.
-                     */
-
-                    order:
-                      project.order,
-                  }
-
-                : project
-          )
-      );
-
-    } else {
-
-      /* =========================
-         CREATE NEW PROJECT
-
-         New projects appear first.
-      ========================= */
-
-      const newProject = {
-
-        ...projectData,
-
-        id:
-          Date.now(),
-
-        order: 0,
-
-      };
+      }
 
 
-      setProjects(
-        (prevProjects) => {
+      try {
 
-          const updatedProjects =
-            prevProjects.map(
-              (project) => ({
+        setIsSaving(
+          true
+        );
+
+        setErrorMessage(
+          ""
+        );
+
+
+        /* =====================
+           EDIT PROJECT
+        ===================== */
+
+        if (
+          editingProject
+        ) {
+
+          const updatedProject =
+            await updateProject(
+              editingProject.id,
+              {
+
+                ...editingProject,
+
+                ...projectData,
+
+                id:
+                  editingProject.id,
+
+                order:
+                  editingProject.order,
+
+              }
+            );
+
+
+          setProjects(
+            (
+              previous
+            ) =>
+              previous.map(
+                (
+                  project
+                ) =>
+                  project.id ===
+                    editingProject.id
+                    ? updatedProject
+                    : project
+              )
+          );
+
+        } else {
+
+          /* =====================
+             CREATE PROJECT
+          ===================== */
+
+          const currentOrdered =
+            [
+              ...orderedProjects,
+            ];
+
+
+          const shiftedProjects =
+            currentOrdered.map(
+              (
+                project,
+                index
+              ) => ({
+
                 ...project,
 
                 order:
-                  (
-                    project.order ??
-                    0
-                  ) + 1,
+                  index + 1,
+
               })
             );
 
 
-          return [
-            newProject,
-            ...updatedProjects,
-          ];
+          if (
+            shiftedProjects.length >
+              0
+          ) {
+
+            await updateProjectOrder(
+              shiftedProjects
+            );
+
+          }
+
+
+          const createdProject =
+            await createProject({
+
+              ...projectData,
+
+              order:
+                0,
+
+            });
+
+
+          setProjects(
+            normalizeOrder([
+              createdProject,
+              ...currentOrdered,
+            ])
+          );
 
         }
-      );
-
-    }
 
 
-    setEditingProject(
-      null
-    );
+        setEditingProject(
+          null
+        );
 
-    setIsModalOpen(
-      false
-    );
+        setIsModalOpen(
+          false
+        );
 
-  };
+      } catch (error) {
+
+        console.error(
+          "Failed to save project:",
+          error
+        );
+
+
+        setErrorMessage(
+          error?.message ||
+          "Unable to save project."
+        );
+
+      } finally {
+
+        setIsSaving(
+          false
+        );
+
+      }
+
+    };
 
 
   /* =========================
      EDIT PROJECT
   ========================= */
 
-  const handleEditProject = (
-    project
-  ) => {
-
-    setEditingProject(
+  const handleEditProject =
+    (
       project
-    );
+    ) => {
 
-    setIsModalOpen(
-      true
-    );
+      if (
+        isSaving
+      ) {
 
-  };
+        return;
+
+      }
+
+
+      setErrorMessage(
+        ""
+      );
+
+      setEditingProject(
+        project
+      );
+
+      setIsModalOpen(
+        true
+      );
+
+    };
 
 
   /* =========================
      DELETE PROJECT
   ========================= */
 
-  const handleDeleteProject = (
-    projectId
-  ) => {
+  const handleDeleteProject =
+    async (
+      projectId
+    ) => {
 
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this project?"
-      );
+      if (
+        isSaving
+      ) {
+
+        return;
+
+      }
 
 
-    if (!confirmed) {
-      return;
-    }
+      const confirmed =
+        window.confirm(
+          "Are you sure you want to delete this project?"
+        );
 
 
-    setProjects(
-      (prevProjects) => {
+      if (
+        !confirmed
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        setIsSaving(
+          true
+        );
+
+        setErrorMessage(
+          ""
+        );
+
+
+        await deleteProject(
+          projectId
+        );
+
 
         const remainingProjects =
-          prevProjects.filter(
-            (project) =>
-              project.id !==
-              projectId
+          normalizeOrder(
+            orderedProjects.filter(
+              (
+                project
+              ) =>
+                project.id !==
+                  projectId
+            )
           );
 
 
-        return normalizeOrder(
-          [...remainingProjects].sort(
-            (a, b) =>
-              (a.order ?? 0) -
-              (b.order ?? 0)
-          )
+        if (
+          remainingProjects.length >
+            0
+        ) {
+
+          const savedProjects =
+            await updateProjectOrder(
+              remainingProjects
+            );
+
+
+          setProjects(
+            savedProjects
+          );
+
+        } else {
+
+          setProjects(
+            []
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to delete project:",
+          error
+        );
+
+
+        setErrorMessage(
+          error?.message ||
+          "Unable to delete project."
+        );
+
+      } finally {
+
+        setIsSaving(
+          false
         );
 
       }
-    );
 
-  };
+    };
 
 
   /* =========================
      MOVE PROJECT UP
   ========================= */
 
-  const handleMoveUp = (
-    projectId
-  ) => {
+  const handleMoveUp =
+    async (
+      projectId
+    ) => {
 
-    if (filtersActive) {
-      return;
-    }
+      if (
+        filtersActive ||
+        isSaving
+      ) {
 
+        return;
 
-    setProjects(
-      (prevProjects) => {
-
-        const sorted =
-          [...prevProjects].sort(
-            (a, b) =>
-              (a.order ?? 0) -
-              (b.order ?? 0)
-          );
+      }
 
 
-        const index =
-          sorted.findIndex(
-            (project) =>
-              project.id ===
-              projectId
-          );
-
-
-        if (index <= 0) {
-          return prevProjects;
-        }
-
-
+      const sorted =
         [
-          sorted[index - 1],
-          sorted[index],
-        ] = [
-          sorted[index],
-          sorted[index - 1],
+          ...orderedProjects,
         ];
 
 
-        return normalizeOrder(
+      const index =
+        sorted.findIndex(
+          (
+            project
+          ) =>
+            project.id ===
+              projectId
+        );
+
+
+      if (
+        index <= 0
+      ) {
+
+        return;
+
+      }
+
+
+      [
+        sorted[
+          index - 1
+        ],
+        sorted[
+          index
+        ],
+      ] = [
+        sorted[
+          index
+        ],
+        sorted[
+          index - 1
+        ],
+      ];
+
+
+      const reordered =
+        normalizeOrder(
           sorted
         );
 
-      }
-    );
 
-  };
+      setProjects(
+        reordered
+      );
+
+
+      try {
+
+        setIsSaving(
+          true
+        );
+
+        setErrorMessage(
+          ""
+        );
+
+
+        const savedProjects =
+          await updateProjectOrder(
+            reordered
+          );
+
+
+        setProjects(
+          savedProjects
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to move project:",
+          error
+        );
+
+
+        setErrorMessage(
+          error?.message ||
+          "Unable to update project order."
+        );
+
+
+        try {
+
+          const loadedProjects =
+            await getAllProjects();
+
+
+          setProjects(
+            loadedProjects
+          );
+
+        } catch (
+          reloadError
+        ) {
+
+          console.error(
+            "Failed to reload projects:",
+            reloadError
+          );
+
+        }
+
+      } finally {
+
+        setIsSaving(
+          false
+        );
+
+      }
+
+    };
 
 
   /* =========================
      MOVE PROJECT DOWN
   ========================= */
 
-  const handleMoveDown = (
-    projectId
-  ) => {
+  const handleMoveDown =
+    async (
+      projectId
+    ) => {
 
-    if (filtersActive) {
-      return;
-    }
+      if (
+        filtersActive ||
+        isSaving
+      ) {
 
+        return;
 
-    setProjects(
-      (prevProjects) => {
-
-        const sorted =
-          [...prevProjects].sort(
-            (a, b) =>
-              (a.order ?? 0) -
-              (b.order ?? 0)
-          );
+      }
 
 
-        const index =
-          sorted.findIndex(
-            (project) =>
-              project.id ===
-              projectId
-          );
-
-
-        if (
-          index === -1 ||
-          index >=
-            sorted.length - 1
-        ) {
-          return prevProjects;
-        }
-
-
+      const sorted =
         [
-          sorted[index],
-          sorted[index + 1],
-        ] = [
-          sorted[index + 1],
-          sorted[index],
+          ...orderedProjects,
         ];
 
 
-        return normalizeOrder(
+      const index =
+        sorted.findIndex(
+          (
+            project
+          ) =>
+            project.id ===
+              projectId
+        );
+
+
+      if (
+        index ===
+          -1 ||
+        index >=
+          sorted.length -
+            1
+      ) {
+
+        return;
+
+      }
+
+
+      [
+        sorted[
+          index
+        ],
+        sorted[
+          index + 1
+        ],
+      ] = [
+        sorted[
+          index + 1
+        ],
+        sorted[
+          index
+        ],
+      ];
+
+
+      const reordered =
+        normalizeOrder(
           sorted
         );
 
-      }
-    );
 
-  };
+      setProjects(
+        reordered
+      );
+
+
+      try {
+
+        setIsSaving(
+          true
+        );
+
+        setErrorMessage(
+          ""
+        );
+
+
+        const savedProjects =
+          await updateProjectOrder(
+            reordered
+          );
+
+
+        setProjects(
+          savedProjects
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to move project:",
+          error
+        );
+
+
+        setErrorMessage(
+          error?.message ||
+          "Unable to update project order."
+        );
+
+
+        try {
+
+          const loadedProjects =
+            await getAllProjects();
+
+
+          setProjects(
+            loadedProjects
+          );
+
+        } catch (
+          reloadError
+        ) {
+
+          console.error(
+            "Failed to reload projects:",
+            reloadError
+          );
+
+        }
+
+      } finally {
+
+        setIsSaving(
+          false
+        );
+
+      }
+
+    };
 
 
   /* =========================
      CLOSE MODAL
   ========================= */
 
-  const handleCloseModal = () => {
+  const handleCloseModal =
+    () => {
 
-    setEditingProject(
-      null
-    );
+      if (
+        isSaving
+      ) {
 
-    setIsModalOpen(
-      false
-    );
+        return;
 
-  };
+      }
+
+
+      setEditingProject(
+        null
+      );
+
+      setIsModalOpen(
+        false
+      );
+
+    };
 
 
   /* =========================
@@ -562,14 +966,15 @@ export default function Projects() {
   ========================= */
 
   return (
+
     <>
 
       <div className="projects-page">
 
 
-        {/* =========================
+        {/* =====================
             HEADER
-        ========================= */}
+        ===================== */}
 
         <div className="projects-header">
 
@@ -579,9 +984,11 @@ export default function Projects() {
               PROJECT MANAGEMENT
             </span>
 
+
             <h1>
               Manage Projects
             </h1>
+
 
             <p>
               Create, organize and
@@ -597,7 +1004,15 @@ export default function Projects() {
           <button
             type="button"
             className="new-project-button"
+            disabled={
+              isLoading ||
+              isSaving
+            }
             onClick={() => {
+
+              setErrorMessage(
+                ""
+              );
 
               setEditingProject(
                 null
@@ -609,15 +1024,57 @@ export default function Projects() {
 
             }}
           >
+
             + New Project
+
           </button>
 
         </div>
 
 
-        {/* =========================
+        {/* =====================
+            ERROR
+        ===================== */}
+
+        {errorMessage && (
+
+          <div
+            style={{
+              marginBottom:
+                "20px",
+
+              padding:
+                "14px 18px",
+
+              background:
+                "#fff3f3",
+
+              border:
+                "1px solid #f1cccc",
+
+              borderRadius:
+                "12px",
+
+              color:
+                "#a33",
+
+              fontSize:
+                "14px",
+            }}
+          >
+
+            {
+              errorMessage
+            }
+
+          </div>
+
+        )}
+
+
+        {/* =====================
             SEARCH + FILTERS
-        ========================= */}
+        ===================== */}
 
         <div
           style={{
@@ -650,13 +1107,17 @@ export default function Projects() {
             value={
               searchQuery
             }
-            onChange={(event) =>
-              setSearchQuery(
-                event.target.value
-              )
+            onChange={
+              (
+                event
+              ) =>
+                setSearchQuery(
+                  event.target.value
+                )
             }
             style={{
-              flex: 1,
+              flex:
+                1,
 
               minWidth:
                 "250px",
@@ -677,10 +1138,13 @@ export default function Projects() {
             value={
               statusFilter
             }
-            onChange={(event) =>
-              setStatusFilter(
-                event.target.value
-              )
+            onChange={
+              (
+                event
+              ) =>
+                setStatusFilter(
+                  event.target.value
+                )
             }
             style={{
               padding:
@@ -713,10 +1177,13 @@ export default function Projects() {
             value={
               categoryFilter
             }
-            onChange={(event) =>
-              setCategoryFilter(
-                event.target.value
-              )
+            onChange={
+              (
+                event
+              ) =>
+                setCategoryFilter(
+                  event.target.value
+                )
             }
             style={{
               padding:
@@ -763,9 +1230,9 @@ export default function Projects() {
         </div>
 
 
-        {/* =========================
+        {/* =====================
             ORDERING MESSAGE
-        ========================= */}
+        ===================== */}
 
         {filtersActive && (
 
@@ -793,23 +1260,80 @@ export default function Projects() {
                 "14px",
             }}
           >
+
             Clear search and filters
             to reorder projects.
+
           </div>
 
         )}
 
 
-        {/* =========================
+        {/* =====================
+            SAVING MESSAGE
+        ===================== */}
+
+        {isSaving && (
+
+          <div
+            style={{
+              marginTop:
+                "16px",
+
+              color:
+                "#777",
+
+              fontSize:
+                "14px",
+            }}
+          >
+
+            Saving changes...
+
+          </div>
+
+        )}
+
+
+        {/* =====================
             PROJECT GRID
-        ========================= */}
+        ===================== */}
 
         <div className="projects-grid">
 
 
-          {/* EMPTY STATE */}
+          {isLoading && (
 
-          {filteredProjects.length ===
+            <div
+              style={{
+                background:
+                  "#fff",
+
+                padding:
+                  "60px",
+
+                borderRadius:
+                  "20px",
+
+                textAlign:
+                  "center",
+
+                width:
+                  "100%",
+              }}
+            >
+
+              <h2>
+                Loading projects...
+              </h2>
+
+            </div>
+
+          )}
+
+
+          {!isLoading &&
+          filteredProjects.length ===
             0 && (
 
             <div
@@ -835,6 +1359,7 @@ export default function Projects() {
                 No projects found
               </h2>
 
+
               <p>
                 Try changing your
                 search or filters.
@@ -845,9 +1370,8 @@ export default function Projects() {
           )}
 
 
-          {/* PROJECT CARDS */}
-
-          {filteredProjects.map(
+          {!isLoading &&
+          filteredProjects.map(
             (
               project,
               index
@@ -861,8 +1385,6 @@ export default function Projects() {
                 className="project-card"
               >
 
-
-                {/* COVER */}
 
                 {project.cover ? (
 
@@ -901,36 +1423,40 @@ export default function Projects() {
                         "#999",
                     }}
                   >
+
                     No Cover Image
+
                   </div>
 
                 )}
 
 
-                {/* CONTENT */}
-
                 <div className="project-content">
 
                   <span className="project-category">
+
                     {
-                      project.category
+                      project.category ||
+                      "Project"
                     }
+
                   </span>
 
 
                   <h3>
+
                     {
-                      project.title
+                      project.title ||
+                      "Untitled Project"
                     }
+
                   </h3>
 
 
                   {project.location && (
 
                     <p>
-                      {
-                        project.location
-                      }
+                      {project.location}
                     </p>
 
                   )}
@@ -939,17 +1465,13 @@ export default function Projects() {
                   {project.date && (
 
                     <small>
-                      {
-                        project.date
-                      }
+                      {project.date}
                     </small>
 
                   )}
 
 
-                  {/* =========================
-                      ORDER CONTROLS
-                  ========================= */}
+                  {/* ORDER CONTROLS */}
 
                   <div
                     style={{
@@ -967,23 +1489,27 @@ export default function Projects() {
                     <button
                       type="button"
                       disabled={
+                        isSaving ||
                         filtersActive ||
-                        index === 0
+                        index ===
+                          0
                       }
                       onClick={() =>
                         handleMoveUp(
                           project.id
                         )
                       }
-                      title="Move project up"
                     >
+
                       ↑ Move Up
+
                     </button>
 
 
                     <button
                       type="button"
                       disabled={
+                        isSaving ||
                         filtersActive ||
                         index ===
                           filteredProjects.length -
@@ -994,17 +1520,14 @@ export default function Projects() {
                           project.id
                         )
                       }
-                      title="Move project down"
                     >
+
                       ↓ Move Down
+
                     </button>
 
                   </div>
 
-
-                  {/* =========================
-                      PROJECT FOOTER
-                  ========================= */}
 
                   <div className="project-footer">
 
@@ -1015,10 +1538,12 @@ export default function Projects() {
                         "draft"
                       }`}
                     >
+
                       {
                         project.status ||
                         "Draft"
                       }
+
                     </span>
 
 
@@ -1034,25 +1559,35 @@ export default function Projects() {
 
                       <button
                         type="button"
+                        disabled={
+                          isSaving
+                        }
                         onClick={() =>
                           handleEditProject(
                             project
                           )
                         }
                       >
+
                         Edit
+
                       </button>
 
 
                       <button
                         type="button"
+                        disabled={
+                          isSaving
+                        }
                         onClick={() =>
                           handleDeleteProject(
                             project.id
                           )
                         }
                       >
+
                         Delete
+
                       </button>
 
                     </div>
@@ -1071,9 +1606,9 @@ export default function Projects() {
       </div>
 
 
-      {/* =========================
+      {/* =====================
           CREATE / EDIT MODAL
-      ========================= */}
+      ===================== */}
 
       <CreateProjectModal
         isOpen={
@@ -1091,5 +1626,7 @@ export default function Projects() {
       />
 
     </>
+
   );
+
 }

@@ -1,14 +1,51 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  supabase,
+} from "../../../lib/supabase";
 
 import "../../styles/homepage-settings.css";
 
-const defaultCTASettings = {
-  label: "CONVERSATION",
 
-  headingLine1: "Let's make",
-  headingLine2: "something",
-  headingLine3: "quiet,",
-  headingLine4: "and lasting.",
+/* =========================
+   SUPABASE SETTING KEY
+========================= */
+
+const SETTING_KEY =
+  "homepage_cta";
+
+
+/* =========================
+   LEGACY STORAGE KEY
+========================= */
+
+const LEGACY_KEY =
+  "rohit-photography-homepage-cta";
+
+
+/* =========================
+   DEFAULT SETTINGS
+========================= */
+
+const defaultCTASettings = {
+
+  label:
+    "CONVERSATION",
+
+  headingLine1:
+    "Let's make",
+
+  headingLine2:
+    "something",
+
+  headingLine3:
+    "quiet,",
+
+  headingLine4:
+    "and lasting.",
 
   description:
     "Every wedding has its own rhythm and story. If you connect with my work, I'd love to hear about your plans and create something timeless together.",
@@ -18,77 +55,586 @@ const defaultCTASettings = {
 
   buttonLink:
     "/contact",
+
 };
 
+
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+      ...defaultCTASettings,
+    };
+
+  }
+
+
+  return {
+
+    ...defaultCTASettings,
+
+    ...data,
+
+  };
+
+}
+
+
+/* =========================
+   LOAD LEGACY SETTINGS
+========================= */
+
+function getLegacySettings() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        LEGACY_KEY
+      );
+
+
+    if (
+      !saved
+    ) {
+
+      return null;
+
+    }
+
+
+    return normalizeSettings(
+      JSON.parse(
+        saved
+      )
+    );
+
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "Failed to load legacy CTA settings:",
+      error
+    );
+
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================
+   CTA SETTINGS
+========================= */
+
 export default function CTASettings() {
-  const [settings, setSettings] =
-    useState(() => {
+
+  /* =========================
+     SETTINGS
+  ========================= */
+
+  const [
+    settings,
+    setSettings,
+  ] =
+    useState({
+      ...defaultCTASettings,
+    });
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     SAVING
+  ========================= */
+
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     MESSAGE
+  ========================= */
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+
+  /* =========================
+     LOAD SETTINGS
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadSettings() {
+
       try {
-        const saved =
-          localStorage.getItem(
-            "rohit-photography-homepage-cta"
+
+        setLoading(
+          true
+        );
+
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        /*
+         * Supabase settings exist.
+         */
+
+        if (
+          data?.setting_value
+        ) {
+
+          setSettings(
+            normalizeSettings(
+              data.setting_value
+            )
           );
 
-        return saved
-          ? {
-              ...defaultCTASettings,
-              ...JSON.parse(saved),
-            }
-          : defaultCTASettings;
-      } catch (error) {
+
+          return;
+
+        }
+
+
+        /*
+         * No Supabase record yet.
+         * Try old localStorage data.
+         */
+
+        const legacySettings =
+          getLegacySettings();
+
+
+        if (
+          legacySettings
+        ) {
+
+          setSettings(
+            legacySettings
+          );
+
+
+          setMessage({
+
+            type:
+              "info",
+
+            text:
+              "Existing CTA settings were loaded. Click Save CTA to migrate them to Supabase.",
+
+          });
+
+
+          return;
+
+        }
+
+
+        setSettings({
+          ...defaultCTASettings,
+        });
+
+
+      } catch (
+        error
+      ) {
+
         console.error(
           "Failed to load CTA settings:",
           error
         );
 
-        return defaultCTASettings;
-      }
-    });
 
-  const [saved, setSaved] =
-    useState(false);
+        if (
+          mounted
+        ) {
+
+          const legacySettings =
+            getLegacySettings();
+
+
+          if (
+            legacySettings
+          ) {
+
+            setSettings(
+              legacySettings
+            );
+
+          }
+
+
+          setMessage({
+
+            type:
+              "error",
+
+            text:
+              "Unable to load CTA settings from Supabase.",
+
+          });
+
+        }
+
+
+      } finally {
+
+        if (
+          mounted
+        ) {
+
+          setLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadSettings();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
+
 
   /* =========================
      HANDLE CHANGE
   ========================= */
 
-  const handleChange = (e) => {
+  function handleChange(
+    event
+  ) {
+
     const {
       name,
       value,
-    } = e.target;
+    } =
+      event.target;
+
 
     setSettings(
-      (prev) => ({
-        ...prev,
-        [name]: value,
+      (
+        previous
+      ) => ({
+
+        ...previous,
+
+        [name]:
+          value,
+
       })
     );
 
-    setSaved(false);
-  };
+
+    setMessage({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
+
 
   /* =========================
      SAVE SETTINGS
   ========================= */
 
-  const handleSave = () => {
-    localStorage.setItem(
-      "rohit-photography-homepage-cta",
-      JSON.stringify(
-        settings
-      )
+  async function handleSave() {
+
+    if (
+      saving
+    ) {
+
+      return;
+
+    }
+
+
+    try {
+
+      setSaving(
+        true
+      );
+
+
+      setMessage({
+
+        type:
+          "",
+
+        text:
+          "",
+
+      });
+
+
+      const payload = {
+
+        label:
+          settings.label?.trim() ||
+          "",
+
+        headingLine1:
+          settings.headingLine1?.trim() ||
+          "",
+
+        headingLine2:
+          settings.headingLine2?.trim() ||
+          "",
+
+        headingLine3:
+          settings.headingLine3?.trim() ||
+          "",
+
+        headingLine4:
+          settings.headingLine4?.trim() ||
+          "",
+
+        description:
+          settings.description?.trim() ||
+          "",
+
+        buttonText:
+          settings.buttonText?.trim() ||
+          "",
+
+        buttonLink:
+          settings.buttonLink?.trim() ||
+          "/contact",
+
+      };
+
+
+      const {
+        error,
+      } =
+        await supabase
+          .from(
+            "site_settings"
+          )
+          .upsert(
+            {
+
+              setting_key:
+                SETTING_KEY,
+
+              setting_value:
+                payload,
+
+              updated_at:
+                new Date()
+                  .toISOString(),
+
+            },
+            {
+
+              onConflict:
+                "setting_key",
+
+            }
+          );
+
+
+      if (
+        error
+      ) {
+
+        throw error;
+
+      }
+
+
+      setSettings(
+        normalizeSettings(
+          payload
+        )
+      );
+
+
+      setMessage({
+
+        type:
+          "success",
+
+        text:
+          "CTA saved successfully.",
+
+      });
+
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Failed to save CTA settings:",
+        error
+      );
+
+
+      setMessage({
+
+        type:
+          "error",
+
+        text:
+          error?.message ||
+          "Unable to save CTA settings.",
+
+      });
+
+
+    } finally {
+
+      setSaving(
+        false
+      );
+
+    }
+
+  }
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    loading
+  ) {
+
+    return (
+
+      <div className="homepage-settings-card">
+
+        <div className="homepage-settings-header">
+
+          <span className="homepage-overline">
+            CALL TO ACTION
+          </span>
+
+
+          <h2>
+            Homepage CTA
+          </h2>
+
+
+          <p>
+            Loading CTA settings...
+          </p>
+
+        </div>
+
+      </div>
+
     );
 
-    setSaved(true);
+  }
 
-    setTimeout(() => {
-      setSaved(false);
-    }, 3000);
-  };
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
+
     <div className="homepage-settings-card">
+
+
+      {/* =========================
+          HEADER
+      ========================= */}
 
       <div className="homepage-settings-header">
 
@@ -96,18 +642,79 @@ export default function CTASettings() {
           CALL TO ACTION
         </span>
 
+
         <h2>
           Homepage CTA
         </h2>
 
+
         <p>
-          Manage the call to action displayed
-          near the bottom of your homepage.
+          Manage the call to action
+          displayed near the bottom
+          of your homepage.
         </p>
 
       </div>
 
+
+      {/* =========================
+          MESSAGE
+      ========================= */}
+
+      {message.text && (
+
+        <div
+          style={{
+            marginBottom:
+              "24px",
+
+            padding:
+              "12px 16px",
+
+            borderRadius:
+              "8px",
+
+            fontSize:
+              "14px",
+
+            lineHeight:
+              "1.5",
+
+            background:
+              message.type ===
+              "success"
+                ? "#f3faf4"
+                : message.type ===
+                  "error"
+                  ? "#fff4f4"
+                  : "#f7f7f7",
+
+            color:
+              message.type ===
+              "success"
+                ? "#347342"
+                : message.type ===
+                  "error"
+                  ? "#b33a3a"
+                  : "#555",
+          }}
+        >
+
+          {
+            message.text
+          }
+
+        </div>
+
+      )}
+
+
+      {/* =========================
+          FORM
+      ========================= */}
+
       <div className="homepage-form">
+
 
         {/* LABEL */}
 
@@ -116,6 +723,7 @@ export default function CTASettings() {
           <label>
             Section Label
           </label>
+
 
           <input
             type="text"
@@ -130,13 +738,15 @@ export default function CTASettings() {
 
         </div>
 
-        {/* HEADING */}
+
+        {/* HEADING LINE 1 */}
 
         <div className="form-group">
 
           <label>
             Heading Line 1
           </label>
+
 
           <input
             type="text"
@@ -151,11 +761,15 @@ export default function CTASettings() {
 
         </div>
 
+
+        {/* HEADING LINE 2 */}
+
         <div className="form-group">
 
           <label>
             Heading Line 2
           </label>
+
 
           <input
             type="text"
@@ -170,11 +784,15 @@ export default function CTASettings() {
 
         </div>
 
+
+        {/* HEADING LINE 3 */}
+
         <div className="form-group">
 
           <label>
             Heading Line 3
           </label>
+
 
           <input
             type="text"
@@ -189,11 +807,15 @@ export default function CTASettings() {
 
         </div>
 
+
+        {/* HEADING LINE 4 */}
+
         <div className="form-group">
 
           <label>
             Heading Line 4
           </label>
+
 
           <input
             type="text"
@@ -208,6 +830,7 @@ export default function CTASettings() {
 
         </div>
 
+
         {/* DESCRIPTION */}
 
         <div className="form-group">
@@ -215,6 +838,7 @@ export default function CTASettings() {
           <label>
             Description
           </label>
+
 
           <textarea
             rows="6"
@@ -229,13 +853,15 @@ export default function CTASettings() {
 
         </div>
 
-        {/* BUTTON */}
+
+        {/* BUTTON TEXT */}
 
         <div className="form-group">
 
           <label>
             Button Text
           </label>
+
 
           <input
             type="text"
@@ -250,11 +876,15 @@ export default function CTASettings() {
 
         </div>
 
+
+        {/* BUTTON LINK */}
+
         <div className="form-group">
 
           <label>
             Button Link
           </label>
+
 
           <input
             type="text"
@@ -270,7 +900,10 @@ export default function CTASettings() {
 
         </div>
 
-        {/* SAVE */}
+
+        {/* =========================
+            SAVE
+        ========================= */}
 
         <button
           type="button"
@@ -278,18 +911,23 @@ export default function CTASettings() {
           onClick={
             handleSave
           }
+          disabled={
+            saving
+          }
         >
-          Save CTA
-        </button>
 
-        {saved && (
-          <div className="settings-success-message">
-            CTA saved successfully.
-          </div>
-        )}
+          {
+            saving
+              ? "Saving..."
+              : "Save CTA"
+          }
+
+        </button>
 
       </div>
 
     </div>
+
   );
+
 }

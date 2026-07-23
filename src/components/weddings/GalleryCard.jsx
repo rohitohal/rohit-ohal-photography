@@ -1,36 +1,52 @@
-import { Link } from "react-router-dom";
+import {
+  Link,
+} from "react-router-dom";
 
-export default function GalleryCard({ wedding }) {
+export default function GalleryCard({
+  wedding,
+}) {
+
   return (
+
     <Link
-      to={`/weddings/${wedding.slug}`}
-      className="gallery-card"
+      to={
+        `/portfolio/weddings/${wedding.slug}`
+      }
+      className="wedding-gallery-card"
+      aria-label={
+        `View ${wedding.title} wedding story`
+      }
     >
-      <div className="gallery-image">
+
+      <div className="wedding-gallery-image">
 
         <img
-          src={wedding.cover}
-          alt={wedding.title}
+          src={
+            wedding.cover
+          }
+          alt={
+            `${wedding.title} wedding photography in ${wedding.location}`
+          }
           loading="lazy"
         />
 
       </div>
 
-      <div className="gallery-overlay">
+
+      <div className="wedding-gallery-content">
 
         <span>
-          {wedding.location} • {wedding.year}
+          {wedding.location}
         </span>
 
         <h3>
           {wedding.title}
         </h3>
 
-        <p>
-          {wedding.subtitle}
-        </p>
-
       </div>
+
     </Link>
+
   );
+
 }

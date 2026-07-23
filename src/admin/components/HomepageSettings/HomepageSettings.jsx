@@ -3,17 +3,30 @@ import {
   useState,
 } from "react";
 
-
 import GalleryPicker from "../GalleryPicker/GalleryPicker";
+
+import {
+  supabase,
+} from "../../../lib/supabase";
 
 import "../../styles/homepage-settings.css";
 
 
 /* =========================
-   STORAGE KEY
+   SUPABASE SETTING KEY
 ========================= */
 
-const HOMEPAGE_KEY =
+const SETTING_KEY =
+  "homepage_hero";
+
+
+/* =========================
+   OLD LOCAL STORAGE KEY
+
+   Used only as migration fallback.
+========================= */
+
+const LEGACY_HOMEPAGE_KEY =
   "rohit-photography-homepage";
 
 
@@ -22,6 +35,7 @@ const HOMEPAGE_KEY =
 ========================= */
 
 const defaultSettings = {
+
   heroTitle:
     "Capturing Timeless Stories",
 
@@ -31,84 +45,181 @@ const defaultSettings = {
   heroDescription:
     "Documentary storytelling through timeless imagery, capturing emotion, atmosphere and moments that deserve to be remembered.",
 
-  heroImages: [],
+  heroImages:
+    [],
 
   buttonText:
     "View Portfolio",
 
   buttonLink:
     "/portfolio",
+
 };
 
 
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+      ...defaultSettings,
+    };
+
+  }
+
+
+  /*
+   * Support old single
+   * heroImage format.
+   */
+
+  const heroImages =
+    Array.isArray(
+      data.heroImages
+    )
+      ? data.heroImages
+      : data.heroImage
+        ? [
+            data.heroImage,
+          ]
+        : [];
+
+
+  return {
+
+    ...defaultSettings,
+
+    ...data,
+
+    heroImages,
+
+  };
+
+}
+
+
+/* =========================
+   LOAD LEGACY SETTINGS
+
+   Only used when Supabase has
+   no homepage_hero record.
+========================= */
+
+function getLegacySettings() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        LEGACY_HOMEPAGE_KEY
+      );
+
+
+    if (
+      !saved
+    ) {
+
+      return null;
+
+    }
+
+
+    const parsed =
+      JSON.parse(
+        saved
+      );
+
+
+    return normalizeSettings(
+      parsed
+    );
+
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "Failed to load legacy homepage settings:",
+      error
+    );
+
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================
+   HOMEPAGE SETTINGS
+========================= */
+
 export default function HomepageSettings() {
+
   /* =========================
-     HOMEPAGE SETTINGS
+     SETTINGS
   ========================= */
 
   const [
     settings,
     setSettings,
-  ] = useState(() => {
-    try {
-      const saved =
-        localStorage.getItem(
-          HOMEPAGE_KEY
-        );
-
-      if (!saved) {
-        return {
-          ...defaultSettings,
-        };
-      }
-
-      const parsed =
-        JSON.parse(
-          saved
-        );
+  ] =
+    useState(
+      defaultSettings
+    );
 
 
-      /* =========================
-         MIGRATE OLD SINGLE
-         HERO IMAGE
-      ========================= */
+  /* =========================
+     LOADING
+  ========================= */
 
-      const migratedHeroImages =
-        Array.isArray(
-          parsed.heroImages
-        )
-          ? parsed.heroImages
-          : parsed.heroImage
-          ? [
-              parsed.heroImage,
-            ]
-          : [];
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
 
 
-      /* =========================
-         MERGE SAVED SETTINGS
-         WITH NEW DEFAULTS
-      ========================= */
+  /* =========================
+     SAVING
+  ========================= */
 
-      return {
-        ...defaultSettings,
-        ...parsed,
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
 
-        heroImages:
-          migratedHeroImages,
-      };
 
-    } catch (error) {
-      console.error(
-        "Failed to load homepage settings:",
-        error
-      );
+  /* =========================
+     MESSAGE
+  ========================= */
 
-      return {
-        ...defaultSettings,
-      };
-    }
-  });
+  const [
+    message,
+    setMessage,
+  ] =
+    useState({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
 
 
   /* =========================
@@ -118,108 +229,546 @@ export default function HomepageSettings() {
   const [
     isHeroPickerOpen,
     setIsHeroPickerOpen,
-  ] = useState(false);
+  ] =
+    useState(false);
 
 
   /* =========================
-     SAVE SETTINGS
+     LOAD FROM SUPABASE
   ========================= */
 
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        HOMEPAGE_KEY,
-        JSON.stringify(
-          settings
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Failed to save homepage settings:",
+
+    let mounted =
+      true;
+
+
+    async function loadSettings() {
+
+      try {
+
+        setLoading(
+          true
+        );
+
+
+        setMessage({
+
+          type:
+            "",
+
+          text:
+            "",
+
+        });
+
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        /*
+         * Supabase already contains
+         * homepage hero settings.
+         */
+
+        if (
+          data?.setting_value
+        ) {
+
+          setSettings(
+            normalizeSettings(
+              data.setting_value
+            )
+          );
+
+
+          return;
+
+        }
+
+
+        /*
+         * No Supabase record yet.
+         *
+         * Load old localStorage data
+         * so existing homepage content
+         * is not lost during migration.
+         */
+
+        const legacySettings =
+          getLegacySettings();
+
+
+        if (
+          legacySettings
+        ) {
+
+          setSettings(
+            legacySettings
+          );
+
+
+          setMessage({
+
+            type:
+              "info",
+
+            text:
+              "Existing homepage hero settings were loaded. Click Save Hero Settings to store them in Supabase.",
+
+          });
+
+
+          return;
+
+        }
+
+
+        /*
+         * Nothing exists yet.
+         */
+
+        setSettings({
+          ...defaultSettings,
+        });
+
+
+      } catch (
         error
-      );
+      ) {
+
+        console.error(
+          "Failed to load homepage hero settings:",
+          error
+        );
+
+
+        if (
+          mounted
+        ) {
+
+          /*
+           * If Supabase fails, try the
+           * old data so the admin form
+           * still has the previous content.
+           */
+
+          const legacySettings =
+            getLegacySettings();
+
+
+          if (
+            legacySettings
+          ) {
+
+            setSettings(
+              legacySettings
+            );
+
+          }
+
+
+          setMessage({
+
+            type:
+              "error",
+
+            text:
+              "Unable to load Homepage Hero settings from Supabase.",
+
+          });
+
+        }
+
+
+      } finally {
+
+        if (
+          mounted
+        ) {
+
+          setLoading(
+            false
+          );
+
+        }
+
+      }
+
     }
-  }, [
-    settings,
-  ]);
+
+
+    loadSettings();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
      INPUT CHANGE
   ========================= */
 
-  const handleChange = (
+  function handleChange(
     event
-  ) => {
+  ) {
+
     const {
       name,
       value,
-    } = event.target;
+    } =
+      event.target;
+
 
     setSettings(
-      (prev) => ({
-        ...prev,
+      (
+        previous
+      ) => ({
+
+        ...previous,
 
         [name]:
           value,
+
       })
     );
-  };
+
+
+    setMessage({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
 
 
   /* =========================
      HERO IMAGE SELECTION
   ========================= */
 
-  const handleHeroImages =
-    (images) => {
+  function handleHeroImages(
+    images
+  ) {
 
-      if (
-        !Array.isArray(
-          images
-        )
-      ) {
-        return;
-      }
+    if (
+      !Array.isArray(
+        images
+      )
+    ) {
 
-      setSettings(
-        (prev) => ({
-          ...prev,
+      return;
 
-          heroImages:
-            images,
-        })
-      );
+    }
 
-      setIsHeroPickerOpen(
-        false
-      );
-    };
+
+    setSettings(
+      (
+        previous
+      ) => ({
+
+        ...previous,
+
+        heroImages:
+          images,
+
+      })
+    );
+
+
+    setMessage({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+
+    setIsHeroPickerOpen(
+      false
+    );
+
+  }
 
 
   /* =========================
      REMOVE HERO IMAGE
   ========================= */
 
-  const removeHeroImage =
-    (imageUrl) => {
+  function removeHeroImage(
+    imageUrl
+  ) {
+
+    setSettings(
+      (
+        previous
+      ) => ({
+
+        ...previous,
+
+        heroImages:
+          (
+            previous.heroImages ||
+            []
+          ).filter(
+            (
+              image
+            ) =>
+              image !==
+              imageUrl
+          ),
+
+      })
+    );
+
+
+    setMessage({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
+
+
+  /* =========================
+     SAVE TO SUPABASE
+  ========================= */
+
+  async function saveSettings() {
+
+    if (
+      saving
+    ) {
+
+      return;
+
+    }
+
+
+    try {
+
+      setSaving(
+        true
+      );
+
+
+      setMessage({
+
+        type:
+          "",
+
+        text:
+          "",
+
+      });
+
+
+      const payload = {
+
+        heroTitle:
+          settings.heroTitle?.trim() ||
+          "",
+
+        heroSubtitle:
+          settings.heroSubtitle?.trim() ||
+          "",
+
+        heroDescription:
+          settings.heroDescription?.trim() ||
+          "",
+
+        heroImages:
+          Array.isArray(
+            settings.heroImages
+          )
+            ? settings.heroImages
+            : [],
+
+        buttonText:
+          settings.buttonText?.trim() ||
+          "",
+
+        buttonLink:
+          settings.buttonLink?.trim() ||
+          "",
+
+      };
+
+
+      const {
+        error,
+      } =
+        await supabase
+          .from(
+            "site_settings"
+          )
+          .upsert(
+            {
+
+              setting_key:
+                SETTING_KEY,
+
+              setting_value:
+                payload,
+
+              updated_at:
+                new Date()
+                  .toISOString(),
+
+            },
+            {
+
+              onConflict:
+                "setting_key",
+
+            }
+          );
+
+
+      if (
+        error
+      ) {
+
+        throw error;
+
+      }
+
 
       setSettings(
-        (prev) => ({
-          ...prev,
-
-          heroImages:
-            (
-              prev.heroImages ||
-              []
-            ).filter(
-              (image) =>
-                image !==
-                imageUrl
-            ),
-        })
+        payload
       );
-    };
+
+
+      setMessage({
+
+        type:
+          "success",
+
+        text:
+          "Homepage Hero settings saved successfully.",
+
+      });
+
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Failed to save homepage hero settings:",
+        error
+      );
+
+
+      setMessage({
+
+        type:
+          "error",
+
+        text:
+          error?.message ||
+          "Unable to save Homepage Hero settings.",
+
+      });
+
+
+    } finally {
+
+      setSaving(
+        false
+      );
+
+    }
+
+  }
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    loading
+  ) {
+
+    return (
+
+      <div className="homepage-settings-card">
+
+        <div className="homepage-settings-header">
+
+          <span className="homepage-overline">
+            HERO SETTINGS
+          </span>
+
+
+          <h2>
+            Homepage Hero
+          </h2>
+
+
+          <p>
+            Loading Homepage Hero settings...
+          </p>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
 
 
   /* =========================
@@ -227,6 +776,7 @@ export default function HomepageSettings() {
   ========================= */
 
   return (
+
     <>
 
       <div className="homepage-settings-card">
@@ -242,9 +792,11 @@ export default function HomepageSettings() {
             HERO SETTINGS
           </span>
 
+
           <h2>
             Homepage Hero
           </h2>
+
 
           <p>
             Manage the homepage
@@ -253,6 +805,58 @@ export default function HomepageSettings() {
           </p>
 
         </div>
+
+
+        {/* =========================
+            MESSAGE
+        ========================= */}
+
+        {message.text && (
+
+          <div
+            style={{
+              marginBottom:
+                "24px",
+
+              padding:
+                "12px 16px",
+
+              borderRadius:
+                "8px",
+
+              fontSize:
+                "14px",
+
+              lineHeight:
+                "1.5",
+
+              background:
+                message.type ===
+                "success"
+                  ? "#f3faf4"
+                  : message.type ===
+                    "error"
+                    ? "#fff4f4"
+                    : "#f7f7f7",
+
+              color:
+                message.type ===
+                "success"
+                  ? "#347342"
+                  : message.type ===
+                    "error"
+                    ? "#b33a3a"
+                    : "#555",
+            }}
+          >
+
+            {
+              message.text
+            }
+
+          </div>
+
+        )}
 
 
         <div className="homepage-form">
@@ -267,6 +871,7 @@ export default function HomepageSettings() {
             <label>
               Hero Title
             </label>
+
 
             <input
               type="text"
@@ -293,6 +898,7 @@ export default function HomepageSettings() {
               Hero Subtitle
             </label>
 
+
             <textarea
               rows="3"
               name="heroSubtitle"
@@ -318,6 +924,7 @@ export default function HomepageSettings() {
               Hero Description
             </label>
 
+
             <textarea
               rows="4"
               name="heroDescription"
@@ -329,6 +936,7 @@ export default function HomepageSettings() {
               }
               placeholder="Enter a short introduction for the homepage hero..."
             />
+
 
             <p
               style={{
@@ -345,9 +953,11 @@ export default function HomepageSettings() {
                   "1.5",
               }}
             >
+
               This text appears below
               the hero title and subtitle
               on the public homepage.
+
             </p>
 
           </div>
@@ -363,6 +973,7 @@ export default function HomepageSettings() {
               Hero Slideshow Images
             </label>
 
+
             <p
               style={{
                 margin:
@@ -375,14 +986,13 @@ export default function HomepageSettings() {
                   "14px",
               }}
             >
+
               Select multiple images
               from your Media Library
-              for the homepage
-              slideshow.
+              for the homepage slideshow.
+
             </p>
 
-
-            {/* SELECT IMAGES */}
 
             <button
               type="button"
@@ -393,11 +1003,11 @@ export default function HomepageSettings() {
                 )
               }
             >
+
               Select Hero Images
+
             </button>
 
-
-            {/* IMAGE COUNT */}
 
             {settings.heroImages
               .length > 0 && (
@@ -414,19 +1024,21 @@ export default function HomepageSettings() {
                     "14px",
                 }}
               >
+
                 {
                   settings
                     .heroImages
                     .length
                 }{" "}
                 images selected
+
               </p>
 
             )}
 
 
             {/* =========================
-                HERO IMAGE PREVIEWS
+                IMAGE PREVIEWS
             ========================= */}
 
             {settings.heroImages
@@ -455,7 +1067,9 @@ export default function HomepageSettings() {
                   ) => (
 
                     <div
-                      key={`${image}-${index}`}
+                      key={
+                        `${image}-${index}`
+                      }
                       style={{
                         position:
                           "relative",
@@ -466,10 +1080,9 @@ export default function HomepageSettings() {
                         src={
                           image
                         }
-                        alt={`Hero ${
-                          index +
-                          1
-                        }`}
+                        alt={
+                          `Hero ${index + 1}`
+                        }
                         style={{
                           width:
                             "100%",
@@ -488,8 +1101,6 @@ export default function HomepageSettings() {
                         }}
                       />
 
-
-                      {/* REMOVE IMAGE */}
 
                       <button
                         type="button"
@@ -544,7 +1155,9 @@ export default function HomepageSettings() {
                         aria-label="Remove Hero Image"
                         title="Remove Hero Image"
                       >
+
                         ×
+
                       </button>
 
                     </div>
@@ -568,6 +1181,7 @@ export default function HomepageSettings() {
             <label>
               Button Text
             </label>
+
 
             <input
               type="text"
@@ -594,6 +1208,7 @@ export default function HomepageSettings() {
               Button Link
             </label>
 
+
             <input
               type="text"
               name="buttonLink"
@@ -605,6 +1220,7 @@ export default function HomepageSettings() {
               }
               placeholder="/portfolio"
             />
+
 
             <p
               style={{
@@ -618,8 +1234,43 @@ export default function HomepageSettings() {
                   "13px",
               }}
             >
+
               Example: /portfolio
+
             </p>
+
+          </div>
+
+
+          {/* =========================
+              SAVE
+          ========================= */}
+
+          <div
+            style={{
+              marginTop:
+                "24px",
+            }}
+          >
+
+            <button
+              type="button"
+              className="media-button"
+              onClick={
+                saveSettings
+              }
+              disabled={
+                saving
+              }
+            >
+
+              {
+                saving
+                  ? "Saving..."
+                  : "Save Hero Settings"
+              }
+
+            </button>
 
           </div>
 
@@ -636,22 +1287,21 @@ export default function HomepageSettings() {
         isOpen={
           isHeroPickerOpen
         }
-
         onClose={() =>
           setIsHeroPickerOpen(
             false
           )
         }
-
         selectedImages={
           settings.heroImages
         }
-
         onSelect={
           handleHeroImages
         }
       />
 
     </>
+
   );
+
 }

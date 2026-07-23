@@ -1,15 +1,28 @@
 import {
+  useEffect,
   useState,
 } from "react";
+
+import {
+  supabase,
+} from "../../../lib/supabase";
 
 import "../../styles/homepage-settings.css";
 
 
 /* =========================
-   STORAGE KEY
+   SUPABASE SETTING KEY
 ========================= */
 
-const STORAGE_KEY =
+const SETTING_KEY =
+  "homepage_why";
+
+
+/* =========================
+   LEGACY STORAGE KEY
+========================= */
+
+const LEGACY_KEY =
   "rohit-photography-homepage-why";
 
 
@@ -18,6 +31,7 @@ const STORAGE_KEY =
 ========================= */
 
 const defaultSettings = {
+
   label:
     "WHY CHOOSE ROHIT OHAL",
 
@@ -28,8 +42,10 @@ const defaultSettings = {
     "Around Emotion.",
 
   features: [
+
     {
-      number: "01",
+      number:
+        "01",
 
       title:
         "Fine Art Foundation",
@@ -39,7 +55,8 @@ const defaultSettings = {
     },
 
     {
-      number: "02",
+      number:
+        "02",
 
       title:
         "Story-Driven Approach",
@@ -49,7 +66,8 @@ const defaultSettings = {
     },
 
     {
-      number: "03",
+      number:
+        "03",
 
       title:
         "Professional Experience",
@@ -59,7 +77,8 @@ const defaultSettings = {
     },
 
     {
-      number: "04",
+      number:
+        "04",
 
       title:
         "Quality Over Quantity",
@@ -67,141 +86,455 @@ const defaultSettings = {
       text:
         "Every image is individually selected, colour graded and refined to maintain a consistent premium standard throughout the final collection.",
     },
+
   ],
+
 };
 
+
+/* =========================
+   CLONE DEFAULT FEATURES
+========================= */
+
+function getDefaultFeatures() {
+
+  return defaultSettings.features.map(
+    (
+      feature
+    ) => ({
+
+      ...feature,
+
+    })
+  );
+
+}
+
+
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+
+      ...defaultSettings,
+
+      features:
+        getDefaultFeatures(),
+
+    };
+
+  }
+
+
+  return {
+
+    ...defaultSettings,
+
+    ...data,
+
+    features:
+      Array.isArray(
+        data.features
+      )
+        ? data.features.map(
+            (
+              feature,
+              index
+            ) => ({
+
+              ...(
+                defaultSettings
+                  .features[
+                    index
+                  ] || {}
+              ),
+
+              ...feature,
+
+            })
+          )
+        : getDefaultFeatures(),
+
+  };
+
+}
+
+
+/* =========================
+   LOAD LEGACY SETTINGS
+========================= */
+
+function getLegacySettings() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        LEGACY_KEY
+      );
+
+
+    if (
+      !saved
+    ) {
+
+      return null;
+
+    }
+
+
+    return normalizeSettings(
+      JSON.parse(
+        saved
+      )
+    );
+
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "Failed to load legacy Why Choose Me settings:",
+      error
+    );
+
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================
+   WHY CHOOSE ME SETTINGS
+========================= */
 
 export default function WhyChooseMeSettings() {
 
   /* =========================
-     LOAD SETTINGS
+     SETTINGS
   ========================= */
 
   const [
     settings,
     setSettings,
-  ] = useState(() => {
+  ] =
+    useState({
 
-    try {
+      ...defaultSettings,
 
-      const saved =
-        localStorage.getItem(
-          STORAGE_KEY
-        );
+      features:
+        getDefaultFeatures(),
 
-
-      if (!saved) {
-
-        return {
-          ...defaultSettings,
-
-          features:
-            defaultSettings.features.map(
-              (item) => ({
-                ...item,
-              })
-            ),
-        };
-
-      }
-
-
-      const parsed =
-        JSON.parse(
-          saved
-        );
-
-
-      return {
-        ...defaultSettings,
-        ...parsed,
-
-        features:
-          Array.isArray(
-            parsed.features
-          )
-            ? parsed.features
-            : defaultSettings.features,
-      };
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load Why Choose Me settings:",
-        error
-      );
-
-
-      return {
-        ...defaultSettings,
-
-        features:
-          defaultSettings.features.map(
-            (item) => ({
-              ...item,
-            })
-          ),
-      };
-
-    }
-
-  });
+    });
 
 
   /* =========================
-     SAVED MESSAGE
+     LOADING
   ========================= */
 
   const [
-    saved,
-    setSaved,
-  ] = useState(false);
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     SAVING
+  ========================= */
+
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     MESSAGE
+  ========================= */
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+
+  /* =========================
+     LOAD SETTINGS
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadSettings() {
+
+      try {
+
+        setLoading(
+          true
+        );
+
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        /*
+         * Supabase already contains
+         * the Why Choose Me settings.
+         */
+
+        if (
+          data?.setting_value
+        ) {
+
+          setSettings(
+            normalizeSettings(
+              data.setting_value
+            )
+          );
+
+
+          return;
+
+        }
+
+
+        /*
+         * No Supabase record yet.
+         * Load the existing local
+         * settings for migration.
+         */
+
+        const legacySettings =
+          getLegacySettings();
+
+
+        if (
+          legacySettings
+        ) {
+
+          setSettings(
+            legacySettings
+          );
+
+
+          setMessage({
+
+            type:
+              "info",
+
+            text:
+              "Existing Why Choose Me settings were loaded. Click Save Why Choose Me to migrate them to Supabase.",
+
+          });
+
+
+          return;
+
+        }
+
+
+        setSettings({
+
+          ...defaultSettings,
+
+          features:
+            getDefaultFeatures(),
+
+        });
+
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to load Why Choose Me settings:",
+          error
+        );
+
+
+        if (
+          mounted
+        ) {
+
+          const legacySettings =
+            getLegacySettings();
+
+
+          if (
+            legacySettings
+          ) {
+
+            setSettings(
+              legacySettings
+            );
+
+          }
+
+
+          setMessage({
+
+            type:
+              "error",
+
+            text:
+              "Unable to load Why Choose Me settings from Supabase.",
+
+          });
+
+        }
+
+
+      } finally {
+
+        if (
+          mounted
+        ) {
+
+          setLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadSettings();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
      HANDLE GENERAL CHANGE
   ========================= */
 
-  const handleChange = (
+  function handleChange(
     event
-  ) => {
+  ) {
 
     const {
       name,
       value,
-    } = event.target;
+    } =
+      event.target;
 
 
     setSettings(
-      (prev) => ({
-        ...prev,
+      (
+        previous
+      ) => ({
+
+        ...previous,
 
         [name]:
           value,
+
       })
     );
 
 
-    setSaved(false);
+    setMessage({
 
-  };
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
 
 
   /* =========================
      HANDLE FEATURE CHANGE
   ========================= */
 
-  const handleFeatureChange = (
+  function handleFeatureChange(
     index,
     field,
     value
-  ) => {
+  ) {
 
     setSettings(
-      (prev) => {
+      (
+        previous
+      ) => {
 
         const updatedFeatures =
-          prev.features.map(
+          previous.features.map(
             (
               feature,
               featureIndex
@@ -209,70 +542,239 @@ export default function WhyChooseMeSettings() {
               featureIndex ===
               index
                 ? {
+
                     ...feature,
 
                     [field]:
                       value,
+
                   }
                 : feature
           );
 
 
         return {
-          ...prev,
+
+          ...previous,
 
           features:
             updatedFeatures,
+
         };
 
       }
     );
 
 
-    setSaved(false);
+    setMessage({
 
-  };
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
 
 
   /* =========================
      SAVE SETTINGS
   ========================= */
 
-  const handleSave =
-    () => {
+  async function handleSave() {
 
-      try {
+    if (
+      saving
+    ) {
 
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(
-            settings
+      return;
+
+    }
+
+
+    try {
+
+      setSaving(
+        true
+      );
+
+
+      setMessage({
+
+        type:
+          "",
+
+        text:
+          "",
+
+      });
+
+
+      const payload = {
+
+        label:
+          settings.label?.trim() ||
+          "",
+
+        headingLine1:
+          settings.headingLine1?.trim() ||
+          "",
+
+        headingLine2:
+          settings.headingLine2?.trim() ||
+          "",
+
+        features:
+          settings.features.map(
+            (
+              feature
+            ) => ({
+
+              number:
+                feature.number?.trim() ||
+                "",
+
+              title:
+                feature.title?.trim() ||
+                "",
+
+              text:
+                feature.text?.trim() ||
+                "",
+
+            })
+          ),
+
+      };
+
+
+      const {
+        error,
+      } =
+        await supabase
+          .from(
+            "site_settings"
           )
-        );
+          .upsert(
+            {
+
+              setting_key:
+                SETTING_KEY,
+
+              setting_value:
+                payload,
+
+              updated_at:
+                new Date()
+                  .toISOString(),
+
+            },
+            {
+
+              onConflict:
+                "setting_key",
+
+            }
+          );
 
 
-        setSaved(true);
+      if (
+        error
+      ) {
 
-
-        setTimeout(
-          () => {
-
-            setSaved(false);
-
-          },
-          3000
-        );
-
-      } catch (error) {
-
-        console.error(
-          "Failed to save Why Choose Me settings:",
-          error
-        );
+        throw error;
 
       }
 
-    };
+
+      setSettings(
+        normalizeSettings(
+          payload
+        )
+      );
+
+
+      setMessage({
+
+        type:
+          "success",
+
+        text:
+          "Why Choose Me settings saved successfully.",
+
+      });
+
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Failed to save Why Choose Me settings:",
+        error
+      );
+
+
+      setMessage({
+
+        type:
+          "error",
+
+        text:
+          error?.message ||
+          "Unable to save Why Choose Me settings.",
+
+      });
+
+
+    } finally {
+
+      setSaving(
+        false
+      );
+
+    }
+
+  }
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    loading
+  ) {
+
+    return (
+
+      <div className="homepage-settings-card">
+
+        <div className="homepage-settings-header">
+
+          <span className="homepage-overline">
+            WHY CHOOSE ME
+          </span>
+
+
+          <h2>
+            Why Choose Me Section
+          </h2>
+
+
+          <p>
+            Loading Why Choose Me settings...
+          </p>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
 
 
   /* =========================
@@ -308,6 +810,58 @@ export default function WhyChooseMeSettings() {
         </p>
 
       </div>
+
+
+      {/* =========================
+          MESSAGE
+      ========================= */}
+
+      {message.text && (
+
+        <div
+          style={{
+            marginBottom:
+              "24px",
+
+            padding:
+              "12px 16px",
+
+            borderRadius:
+              "8px",
+
+            fontSize:
+              "14px",
+
+            lineHeight:
+              "1.5",
+
+            background:
+              message.type ===
+              "success"
+                ? "#f3faf4"
+                : message.type ===
+                  "error"
+                  ? "#fff4f4"
+                  : "#f7f7f7",
+
+            color:
+              message.type ===
+              "success"
+                ? "#347342"
+                : message.type ===
+                  "error"
+                  ? "#b33a3a"
+                  : "#555",
+          }}
+        >
+
+          {
+            message.text
+          }
+
+        </div>
+
+      )}
 
 
       {/* =========================
@@ -397,7 +951,9 @@ export default function WhyChooseMeSettings() {
           ) => (
 
             <div
-              key={index}
+              key={
+                index
+              }
               style={{
                 marginTop:
                   "30px",
@@ -416,7 +972,6 @@ export default function WhyChooseMeSettings() {
               }}
             >
 
-
               <h3
                 style={{
                   marginTop:
@@ -426,8 +981,12 @@ export default function WhyChooseMeSettings() {
                     "20px",
                 }}
               >
+
                 Feature Card{" "}
-                {index + 1}
+                {
+                  index + 1
+                }
+
               </h3>
 
 
@@ -521,7 +1080,7 @@ export default function WhyChooseMeSettings() {
 
 
         {/* =========================
-            SAVE BUTTON
+            SAVE
         ========================= */}
 
         <button
@@ -530,33 +1089,27 @@ export default function WhyChooseMeSettings() {
           onClick={
             handleSave
           }
+          disabled={
+            saving
+          }
           style={{
             marginTop:
               "30px",
           }}
         >
-          Save Why Choose Me
+
+          {
+            saving
+              ? "Saving..."
+              : "Save Why Choose Me"
+          }
+
         </button>
-
-
-        {/* =========================
-            SUCCESS MESSAGE
-        ========================= */}
-
-        {saved && (
-
-          <div className="settings-success-message">
-
-            Why Choose Me settings
-            saved successfully.
-
-          </div>
-
-        )}
 
       </div>
 
     </div>
 
   );
+
 }

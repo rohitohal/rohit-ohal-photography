@@ -1,11 +1,41 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import ImagePicker from "../ImagePicker/ImagePicker";
 
+import {
+  supabase,
+} from "../../../lib/supabase";
+
 import "../../styles/homepage-settings.css";
 
+
+/* =========================
+   SUPABASE SETTING KEY
+========================= */
+
+const SETTING_KEY =
+  "homepage_about";
+
+
+/* =========================
+   LEGACY STORAGE KEY
+========================= */
+
+const LEGACY_KEY =
+  "rohit-photography-homepage-about";
+
+
+/* =========================
+   DEFAULT SETTINGS
+========================= */
+
 const defaultAboutSettings = {
-  label: "ABOUT ROHIT OHAL",
+
+  label:
+    "ABOUT ROHIT OHAL",
 
   heading:
     "Fine Art.\nDocumentary.\nTimeless.",
@@ -13,14 +43,23 @@ const defaultAboutSettings = {
   description:
     "I believe photographs should do more than document a moment. They should preserve emotion, atmosphere and the little details that become priceless with time. My work combines documentary storytelling with a fine art approach to create images that feel authentic, elegant and enduring.",
 
-  yearsValue: "10+",
-  yearsLabel: "Years Experience",
+  yearsValue:
+    "10+",
 
-  projectsValue: "500+",
-  projectsLabel: "Projects Delivered",
+  yearsLabel:
+    "Years Experience",
 
-  educationValue: "Fine Arts",
-  educationLabel: "Graduate",
+  projectsValue:
+    "500+",
+
+  projectsLabel:
+    "Projects Delivered",
+
+  educationValue:
+    "Fine Arts",
+
+  educationLabel:
+    "Graduate",
 
   image:
     "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1200&q=80",
@@ -30,86 +69,622 @@ const defaultAboutSettings = {
 
   buttonLink:
     "/about",
+
 };
 
+
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+      ...defaultAboutSettings,
+    };
+
+  }
+
+
+  return {
+
+    ...defaultAboutSettings,
+
+    ...data,
+
+  };
+
+}
+
+
+/* =========================
+   LOAD LEGACY SETTINGS
+========================= */
+
+function getLegacySettings() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        LEGACY_KEY
+      );
+
+
+    if (
+      !saved
+    ) {
+
+      return null;
+
+    }
+
+
+    return normalizeSettings(
+      JSON.parse(
+        saved
+      )
+    );
+
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "Failed to load legacy Homepage About settings:",
+      error
+    );
+
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================
+   ABOUT SETTINGS
+========================= */
+
 export default function AboutSettings() {
-  const [settings, setSettings] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            "rohit-photography-homepage-about"
-          );
 
-        return saved
-          ? {
-              ...defaultAboutSettings,
-              ...JSON.parse(saved),
-            }
-          : defaultAboutSettings;
-      } catch (error) {
-        console.error(
-          "Failed to load homepage about settings:",
-          error
-        );
+  /* =========================
+     SETTINGS
+  ========================= */
 
-        return defaultAboutSettings;
-      }
+  const [
+    settings,
+    setSettings,
+  ] =
+    useState(
+      defaultAboutSettings
+    );
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     SAVING
+  ========================= */
+
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     MESSAGE
+  ========================= */
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState({
+
+      type:
+        "",
+
+      text:
+        "",
+
     });
+
+
+  /* =========================
+     IMAGE PICKER
+  ========================= */
 
   const [
     isImagePickerOpen,
     setIsImagePickerOpen,
-  ] = useState(false);
-
-  const [saved, setSaved] =
+  ] =
     useState(false);
+
+
+  /* =========================
+     LOAD SETTINGS
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadSettings() {
+
+      try {
+
+        setLoading(
+          true
+        );
+
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        /*
+         * Supabase data exists.
+         */
+
+        if (
+          data?.setting_value
+        ) {
+
+          setSettings(
+            normalizeSettings(
+              data.setting_value
+            )
+          );
+
+
+          return;
+
+        }
+
+
+        /*
+         * No Supabase data yet.
+         * Load previous localStorage
+         * content for migration.
+         */
+
+        const legacySettings =
+          getLegacySettings();
+
+
+        if (
+          legacySettings
+        ) {
+
+          setSettings(
+            legacySettings
+          );
+
+
+          setMessage({
+
+            type:
+              "info",
+
+            text:
+              "Existing Homepage About settings were loaded. Click Save About Section to migrate them to Supabase.",
+
+          });
+
+
+          return;
+
+        }
+
+
+        setSettings({
+          ...defaultAboutSettings,
+        });
+
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to load Homepage About settings:",
+          error
+        );
+
+
+        if (
+          mounted
+        ) {
+
+          const legacySettings =
+            getLegacySettings();
+
+
+          if (
+            legacySettings
+          ) {
+
+            setSettings(
+              legacySettings
+            );
+
+          }
+
+
+          setMessage({
+
+            type:
+              "error",
+
+            text:
+              "Unable to load Homepage About settings from Supabase.",
+
+          });
+
+        }
+
+
+      } finally {
+
+        if (
+          mounted
+        ) {
+
+          setLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadSettings();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
+
 
   /* =========================
      HANDLE CHANGE
   ========================= */
 
-  const handleChange = (e) => {
+  function handleChange(
+    event
+  ) {
+
     const {
       name,
       value,
-    } = e.target;
+    } =
+      event.target;
+
 
     setSettings(
-      (prev) => ({
-        ...prev,
-        [name]: value,
+      (
+        previous
+      ) => ({
+
+        ...previous,
+
+        [name]:
+          value,
+
       })
     );
 
-    setSaved(false);
-  };
+
+    setMessage({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
+
+
+  /* =========================
+     IMAGE SELECTION
+  ========================= */
+
+  function handleImageSelect(
+    imageUrl
+  ) {
+
+    if (
+      !imageUrl
+    ) {
+
+      return;
+
+    }
+
+
+    setSettings(
+      (
+        previous
+      ) => ({
+
+        ...previous,
+
+        image:
+          imageUrl,
+
+      })
+    );
+
+
+    setIsImagePickerOpen(
+      false
+    );
+
+
+    setMessage({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
+
 
   /* =========================
      SAVE SETTINGS
   ========================= */
 
-  const handleSave = () => {
-    localStorage.setItem(
-      "rohit-photography-homepage-about",
-      JSON.stringify(
-        settings
-      )
-    );
+  async function handleSave() {
 
-    setSaved(true);
+    if (
+      saving
+    ) {
 
-    setTimeout(() => {
-      setSaved(false);
-    }, 3000);
-  };
+      return;
+
+    }
+
+
+    try {
+
+      setSaving(
+        true
+      );
+
+
+      setMessage({
+
+        type:
+          "",
+
+        text:
+          "",
+
+      });
+
+
+      const payload = {
+
+        label:
+          settings.label?.trim() ||
+          "",
+
+        heading:
+          settings.heading?.trim() ||
+          "",
+
+        description:
+          settings.description?.trim() ||
+          "",
+
+        yearsValue:
+          settings.yearsValue?.trim() ||
+          "",
+
+        yearsLabel:
+          settings.yearsLabel?.trim() ||
+          "",
+
+        projectsValue:
+          settings.projectsValue?.trim() ||
+          "",
+
+        projectsLabel:
+          settings.projectsLabel?.trim() ||
+          "",
+
+        educationValue:
+          settings.educationValue?.trim() ||
+          "",
+
+        educationLabel:
+          settings.educationLabel?.trim() ||
+          "",
+
+        image:
+          settings.image ||
+          "",
+
+        buttonText:
+          settings.buttonText?.trim() ||
+          "",
+
+        buttonLink:
+          settings.buttonLink?.trim() ||
+          "",
+
+      };
+
+
+      const {
+        error,
+      } =
+        await supabase
+          .from(
+            "site_settings"
+          )
+          .upsert(
+            {
+
+              setting_key:
+                SETTING_KEY,
+
+              setting_value:
+                payload,
+
+              updated_at:
+                new Date()
+                  .toISOString(),
+
+            },
+            {
+
+              onConflict:
+                "setting_key",
+
+            }
+          );
+
+
+      if (
+        error
+      ) {
+
+        throw error;
+
+      }
+
+
+      setSettings(
+        payload
+      );
+
+
+      setMessage({
+
+        type:
+          "success",
+
+        text:
+          "Homepage About section saved successfully.",
+
+      });
+
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Failed to save Homepage About settings:",
+        error
+      );
+
+
+      setMessage({
+
+        type:
+          "error",
+
+        text:
+          error?.message ||
+          "Unable to save Homepage About section.",
+
+      });
+
+
+    } finally {
+
+      setSaving(
+        false
+      );
+
+    }
+
+  }
+
 
   /* =========================
-     RENDER
+     LOADING
   ========================= */
 
-  return (
-    <>
+  if (
+    loading
+  ) {
+
+    return (
+
       <div className="homepage-settings-card">
 
         <div className="homepage-settings-header">
@@ -118,9 +693,49 @@ export default function AboutSettings() {
             ABOUT SECTION
           </span>
 
+
           <h2>
             Homepage About Me
           </h2>
+
+
+          <p>
+            Loading Homepage About settings...
+          </p>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+
+  /* =========================
+     RENDER
+  ========================= */
+
+  return (
+
+    <>
+
+      <div className="homepage-settings-card">
+
+
+        {/* HEADER */}
+
+        <div className="homepage-settings-header">
+
+          <span className="homepage-overline">
+            ABOUT SECTION
+          </span>
+
+
+          <h2>
+            Homepage About Me
+          </h2>
+
 
           <p>
             Manage the introduction,
@@ -131,7 +746,59 @@ export default function AboutSettings() {
 
         </div>
 
+
+        {/* MESSAGE */}
+
+        {message.text && (
+
+          <div
+            style={{
+              marginBottom:
+                "24px",
+
+              padding:
+                "12px 16px",
+
+              borderRadius:
+                "8px",
+
+              fontSize:
+                "14px",
+
+              lineHeight:
+                "1.5",
+
+              background:
+                message.type ===
+                "success"
+                  ? "#f3faf4"
+                  : message.type ===
+                    "error"
+                    ? "#fff4f4"
+                    : "#f7f7f7",
+
+              color:
+                message.type ===
+                "success"
+                  ? "#347342"
+                  : message.type ===
+                    "error"
+                    ? "#b33a3a"
+                    : "#555",
+            }}
+          >
+
+            {
+              message.text
+            }
+
+          </div>
+
+        )}
+
+
         <div className="homepage-form">
+
 
           {/* LABEL */}
 
@@ -140,6 +807,7 @@ export default function AboutSettings() {
             <label>
               Section Label
             </label>
+
 
             <input
               type="text"
@@ -154,6 +822,7 @@ export default function AboutSettings() {
 
           </div>
 
+
           {/* HEADING */}
 
           <div className="form-group">
@@ -161,6 +830,7 @@ export default function AboutSettings() {
             <label>
               Main Heading
             </label>
+
 
             <textarea
               rows="4"
@@ -171,10 +841,13 @@ export default function AboutSettings() {
               onChange={
                 handleChange
               }
-              placeholder="Fine Art.&#10;Documentary.&#10;Timeless."
+              placeholder={
+                "Fine Art.\nDocumentary.\nTimeless."
+              }
             />
 
           </div>
+
 
           {/* DESCRIPTION */}
 
@@ -183,6 +856,7 @@ export default function AboutSettings() {
             <label>
               About Description
             </label>
+
 
             <textarea
               rows="7"
@@ -197,6 +871,7 @@ export default function AboutSettings() {
 
           </div>
 
+
           {/* ABOUT IMAGE */}
 
           <div className="form-group">
@@ -204,6 +879,7 @@ export default function AboutSettings() {
             <label>
               About Photo
             </label>
+
 
             <button
               type="button"
@@ -214,10 +890,14 @@ export default function AboutSettings() {
                 )
               }
             >
+
               Select About Photo
+
             </button>
 
+
             {settings.image && (
+
               <img
                 src={
                   settings.image
@@ -225,17 +905,20 @@ export default function AboutSettings() {
                 alt="About Preview"
                 className="hero-preview-image"
               />
+
             )}
 
           </div>
 
-          {/* STATISTICS */}
+
+          {/* YEARS EXPERIENCE */}
 
           <div className="form-group">
 
             <label>
               Years Experience
             </label>
+
 
             <input
               type="text"
@@ -248,6 +931,7 @@ export default function AboutSettings() {
               }
               placeholder="10+"
             />
+
 
             <input
               type="text"
@@ -263,11 +947,15 @@ export default function AboutSettings() {
 
           </div>
 
+
+          {/* PROJECTS */}
+
           <div className="form-group">
 
             <label>
               Projects Delivered
             </label>
+
 
             <input
               type="text"
@@ -280,6 +968,7 @@ export default function AboutSettings() {
               }
               placeholder="500+"
             />
+
 
             <input
               type="text"
@@ -295,11 +984,15 @@ export default function AboutSettings() {
 
           </div>
 
+
+          {/* EDUCATION */}
+
           <div className="form-group">
 
             <label>
               Education
             </label>
+
 
             <input
               type="text"
@@ -312,6 +1005,7 @@ export default function AboutSettings() {
               }
               placeholder="Fine Arts"
             />
+
 
             <input
               type="text"
@@ -327,13 +1021,15 @@ export default function AboutSettings() {
 
           </div>
 
-          {/* BUTTON */}
+
+          {/* BUTTON TEXT */}
 
           <div className="form-group">
 
             <label>
               Button Text
             </label>
+
 
             <input
               type="text"
@@ -348,11 +1044,15 @@ export default function AboutSettings() {
 
           </div>
 
+
+          {/* BUTTON LINK */}
+
           <div className="form-group">
 
             <label>
               Button Link
             </label>
+
 
             <input
               type="text"
@@ -367,6 +1067,7 @@ export default function AboutSettings() {
 
           </div>
 
+
           {/* SAVE */}
 
           <button
@@ -375,22 +1076,27 @@ export default function AboutSettings() {
             onClick={
               handleSave
             }
+            disabled={
+              saving
+            }
           >
-            Save About Section
-          </button>
 
-          {saved && (
-            <div className="settings-success-message">
-              About section saved
-              successfully.
-            </div>
-          )}
+            {
+              saving
+                ? "Saving..."
+                : "Save About Section"
+            }
+
+          </button>
 
         </div>
 
       </div>
 
-      {/* IMAGE PICKER */}
+
+      {/* =========================
+          IMAGE PICKER
+      ========================= */}
 
       <ImagePicker
         isOpen={
@@ -401,24 +1107,13 @@ export default function AboutSettings() {
             false
           )
         }
-        onSelect={(
-          imageUrl
-        ) => {
-          setSettings(
-            (prev) => ({
-              ...prev,
-              image:
-                imageUrl,
-            })
-          );
-
-          setIsImagePickerOpen(
-            false
-          );
-
-          setSaved(false);
-        }}
+        onSelect={
+          handleImageSelect
+        }
       />
+
     </>
+
   );
+
 }

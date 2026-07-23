@@ -1,12 +1,21 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  supabase,
+} from "../../lib/supabase";
+
 import "./WhyChooseMe.css";
 
 
 /* =========================
-   STORAGE KEY
+   SUPABASE SETTING KEY
 ========================= */
 
-const STORAGE_KEY =
-  "rohit-photography-homepage-why";
+const SETTING_KEY =
+  "homepage_why";
 
 
 /* =========================
@@ -14,6 +23,7 @@ const STORAGE_KEY =
 ========================= */
 
 const defaultSettings = {
+
   label:
     "WHY CHOOSE ROHIT OHAL",
 
@@ -24,8 +34,10 @@ const defaultSettings = {
     "Around Emotion.",
 
   features: [
+
     {
-      number: "01",
+      number:
+        "01",
 
       title:
         "Fine Art Foundation",
@@ -35,7 +47,8 @@ const defaultSettings = {
     },
 
     {
-      number: "02",
+      number:
+        "02",
 
       title:
         "Story-Driven Approach",
@@ -45,7 +58,8 @@ const defaultSettings = {
     },
 
     {
-      number: "03",
+      number:
+        "03",
 
       title:
         "Professional Experience",
@@ -55,7 +69,8 @@ const defaultSettings = {
     },
 
     {
-      number: "04",
+      number:
+        "04",
 
       title:
         "Quality Over Quantity",
@@ -63,58 +78,237 @@ const defaultSettings = {
       text:
         "Every image is individually selected, colour graded and refined to maintain a consistent premium standard throughout the final collection.",
     },
+
   ],
+
 };
 
+
+/* =========================
+   CLONE DEFAULT FEATURES
+========================= */
+
+function getDefaultFeatures() {
+
+  return defaultSettings.features.map(
+    (
+      feature
+    ) => ({
+
+      ...feature,
+
+    })
+  );
+
+}
+
+
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+
+      ...defaultSettings,
+
+      features:
+        getDefaultFeatures(),
+
+    };
+
+  }
+
+
+  return {
+
+    ...defaultSettings,
+
+    ...data,
+
+    features:
+      Array.isArray(
+        data.features
+      )
+        ? data.features.map(
+            (
+              feature,
+              index
+            ) => ({
+
+              ...(
+                defaultSettings
+                  .features[
+                    index
+                  ] || {}
+              ),
+
+              ...feature,
+
+            })
+          )
+        : getDefaultFeatures(),
+
+  };
+
+}
+
+
+/* =========================
+   WHY CHOOSE ME
+========================= */
 
 export default function WhyChooseMe() {
 
   /* =========================
-     LOAD SETTINGS
+     SETTINGS
   ========================= */
 
-  let settings =
-    defaultSettings;
+  const [
+    settings,
+    setSettings,
+  ] =
+    useState({
+
+      ...defaultSettings,
+
+      features:
+        getDefaultFeatures(),
+
+    });
 
 
-  try {
+  /* =========================
+     LOAD FROM SUPABASE
+  ========================= */
 
-    const saved =
-      localStorage.getItem(
-        STORAGE_KEY
-      );
+  useEffect(() => {
+
+    let mounted =
+      true;
 
 
-    if (saved) {
+    async function loadSettings() {
 
-      const parsed =
-        JSON.parse(
-          saved
+      try {
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          data?.setting_value
+        ) {
+
+          setSettings(
+            normalizeSettings(
+              data.setting_value
+            )
+          );
+
+
+          return;
+
+        }
+
+
+        /*
+         * No Supabase record.
+         * Keep default content.
+         */
+
+        setSettings({
+
+          ...defaultSettings,
+
+          features:
+            getDefaultFeatures(),
+
+        });
+
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to load Why Choose Me from Supabase:",
+          error
         );
 
 
-      settings = {
-        ...defaultSettings,
-        ...parsed,
+        if (
+          mounted
+        ) {
 
-        features:
-          Array.isArray(
-            parsed.features
-          )
-            ? parsed.features
-            : defaultSettings.features,
-      };
+          setSettings({
+
+            ...defaultSettings,
+
+            features:
+              getDefaultFeatures(),
+
+          });
+
+        }
+
+      }
 
     }
 
-  } catch (error) {
 
-    console.error(
-      "Failed to load Why Choose Me settings:",
-      error
-    );
+    loadSettings();
 
-  }
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
@@ -134,24 +328,41 @@ export default function WhyChooseMe() {
 
         <div className="why-header">
 
-          <span>
-            {settings.label}
-          </span>
 
+          {/* LABEL */}
+
+          {settings.label && (
+
+            <span>
+
+              {
+                settings.label
+              }
+
+            </span>
+
+          )}
+
+
+          {/* HEADING */}
 
           <h2>
 
-            {settings.headingLine1}
+            {
+              settings.headingLine1
+            }
 
 
             {settings.headingLine2 && (
 
               <>
+
                 <br />
 
                 {
                   settings.headingLine2
                 }
+
               </>
 
             )}
@@ -237,4 +448,5 @@ export default function WhyChooseMe() {
     </section>
 
   );
+
 }

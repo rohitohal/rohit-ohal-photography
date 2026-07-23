@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+>
+
+  <!-- =========================
+       MAIN WEBSITE
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/</loc>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio</loc>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/about</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/contact</loc>
+    <priority>0.8</priority>
+  </url>
+
+
+  <!-- =========================
+       PORTFOLIO DISCIPLINES
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/weddings</loc>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/portraits</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/events</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/industrial</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/food-beverage</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/editorial</loc>
+    <priority>0.8</priority>
+  </url>
+
+
+  <!-- =========================
+       WEDDING STORIES
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/weddings/royal-pune-wedding</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/weddings/jaipur-destination</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/weddings/goa-beach-wedding</loc>
+    <priority>0.8</priority>
+  </url>
+
+
+  <!-- =========================
+       PORTRAIT PROJECTS
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/portraits/executive-portrait-session</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/portraits/creative-portrait-study</loc>
+    <priority>0.7</priority>
+  </url>
+
+
+  <!-- =========================
+       EVENT PROJECTS
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/events/tech-conference-pune</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/events/corporate-annual-meet</loc>
+    <priority>0.7</priority>
+  </url>
+
+
+  <!-- =========================
+       INDUSTRIAL PROJECTS
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/industrial/tata-manufacturing-facility</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/industrial/automotive-assembly-line</loc>
+    <priority>0.8</priority>
+  </url>
+
+
+  <!-- =========================
+       FOOD & BEVERAGE PROJECTS
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/food-beverage/marriott-signature-menu</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/food-beverage/artisan-coffee-campaign</loc>
+    <priority>0.7</priority>
+  </url>
+
+
+  <!-- =========================
+       EDITORIAL PROJECTS
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/editorial/monsoon-editorial</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/portfolio/editorial/heritage-pune-story</loc>
+    <priority>0.7</priority>
+  </url>
+
+
+  <!-- =========================
+       JOURNAL POSTS
+  ========================== -->
+
+  <url>
+    <loc>https://rohitohal.com/journal/winter-wedding-pune</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal/industrial-shoot-behind-the-scenes</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal/better-corporate-headshots</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal/documentary-wedding-photography</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal/tadoba-safari-photography-guide</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal/industrial-photography-lens-guide</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal/natural-light-vs-flash</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://rohitohal.com/journal/fine-art-wedding-photography</loc>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>

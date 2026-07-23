@@ -4,10 +4,12 @@ import {
   useState,
 } from "react";
 
-import "../../styles/homepage-settings.css";
+import {
+  getAllPosts,
+  updateHomepageHighlights,
+} from "../../../services/journalService";
 
-const JOURNAL_KEY =
-  "rohit-photography-journal";
+import "../../styles/homepage-settings.css";
 
 
 /* =========================
@@ -17,7 +19,9 @@ const JOURNAL_KEY =
 function getOrderedFeaturedPosts(
   posts
 ) {
+
   return posts
+
     .filter(
       (post) =>
         post.status ===
@@ -25,21 +29,32 @@ function getOrderedFeaturedPosts(
         post.featured ===
           true
     )
-    .sort((a, b) => {
-      const orderA =
-        typeof a.homepageOrder ===
-        "number"
-          ? a.homepageOrder
-          : Number.MAX_SAFE_INTEGER;
 
-      const orderB =
-        typeof b.homepageOrder ===
-        "number"
-          ? b.homepageOrder
-          : Number.MAX_SAFE_INTEGER;
+    .sort(
+      (a, b) => {
 
-      return orderA - orderB;
-    });
+        const orderA =
+          typeof a.homepageOrder ===
+            "number"
+            ? a.homepageOrder
+            : Number.MAX_SAFE_INTEGER;
+
+
+        const orderB =
+          typeof b.homepageOrder ===
+            "number"
+            ? b.homepageOrder
+            : Number.MAX_SAFE_INTEGER;
+
+
+        return (
+          orderA -
+          orderB
+        );
+
+      }
+    );
+
 }
 
 
@@ -51,38 +66,54 @@ function applyHomepageOrder(
   allPosts,
   orderedFeatured
 ) {
+
   const orderMap =
     new Map();
 
+
   orderedFeatured.forEach(
-    (post, index) => {
+    (
+      post,
+      index
+    ) => {
+
       orderMap.set(
         post.id,
         index
       );
+
     }
   );
 
+
   return allPosts.map(
     (post) => {
+
       if (
         !orderMap.has(
           post.id
         )
       ) {
+
         return post;
+
       }
 
+
       return {
+
         ...post,
 
         homepageOrder:
           orderMap.get(
             post.id
           ),
+
       };
+
     }
   );
+
 }
 
 
@@ -93,19 +124,29 @@ function applyHomepageOrder(
 function initializeHomepageOrder(
   posts
 ) {
-  if (!Array.isArray(posts)) {
+
+  if (
+    !Array.isArray(
+      posts
+    )
+  ) {
+
     return [];
+
   }
+
 
   const featured =
     getOrderedFeaturedPosts(
       posts
     );
 
+
   return applyHomepageOrder(
     posts,
     featured
   );
+
 }
 
 
@@ -116,55 +157,171 @@ function initializeHomepageOrder(
 export default function JournalHighlightSettings() {
 
   /* =========================
-     LOAD JOURNAL POSTS
+     POSTS
   ========================= */
 
-  const [posts, setPosts] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            JOURNAL_KEY
-          );
-
-        if (!saved) {
-          return [];
-        }
-
-        const parsed =
-          JSON.parse(saved);
-
-        if (
-          !Array.isArray(parsed)
-        ) {
-          return [];
-        }
-
-        return initializeHomepageOrder(
-          parsed
-        );
-
-      } catch (error) {
-        console.error(
-          "Failed to load journal posts:",
-          error
-        );
-
-        return [];
-      }
-    });
+  const [
+    posts,
+    setPosts,
+  ] =
+    useState([]);
 
 
   /* =========================
-     SAVE JOURNAL POSTS
+     LOADING
+  ========================= */
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     SAVING
+  ========================= */
+
+  const [
+    isSaving,
+    setIsSaving,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     DIRTY STATE
+  ========================= */
+
+  const [
+    hasChanges,
+    setHasChanges,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     MESSAGE
+  ========================= */
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState("");
+
+
+  const [
+    hasError,
+    setHasError,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     LOAD POSTS FROM SUPABASE
   ========================= */
 
   useEffect(() => {
-    localStorage.setItem(
-      JOURNAL_KEY,
-      JSON.stringify(posts)
-    );
-  }, [posts]);
+
+    let isMounted =
+      true;
+
+
+    async function loadPosts() {
+
+      try {
+
+        setIsLoading(
+          true
+        );
+
+
+        setMessage(
+          ""
+        );
+
+
+        setHasError(
+          false
+        );
+
+
+        const loadedPosts =
+          await getAllPosts();
+
+
+        if (
+          !isMounted
+        ) {
+
+          return;
+
+        }
+
+
+        setPosts(
+          initializeHomepageOrder(
+            loadedPosts
+          )
+        );
+
+
+        setHasChanges(
+          false
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Journal highlights:",
+          error
+        );
+
+
+        if (
+          isMounted
+        ) {
+
+          setHasError(
+            true
+          );
+
+
+          setMessage(
+            "Unable to load Journal articles."
+          );
+
+        }
+
+      } finally {
+
+        if (
+          isMounted
+        ) {
+
+          setIsLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadPosts();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
@@ -173,12 +330,16 @@ export default function JournalHighlightSettings() {
 
   const publishedPosts =
     useMemo(() => {
+
       return posts.filter(
         (post) =>
           post.status ===
-          "Published"
+            "Published"
       );
-    }, [posts]);
+
+    }, [
+      posts,
+    ]);
 
 
   /* =========================
@@ -187,10 +348,14 @@ export default function JournalHighlightSettings() {
 
   const featuredPosts =
     useMemo(() => {
+
       return getOrderedFeaturedPosts(
         posts
       );
-    }, [posts]);
+
+    }, [
+      posts,
+    ]);
 
 
   /* =========================
@@ -199,525 +364,781 @@ export default function JournalHighlightSettings() {
 
   const availablePosts =
     useMemo(() => {
+
       return publishedPosts.filter(
         (post) =>
           post.featured !==
-          true
+            true
       );
-    }, [publishedPosts]);
+
+    }, [
+      publishedPosts,
+    ]);
+
+
+  /* =========================
+     MARK CHANGED
+  ========================= */
+
+  const markChanged =
+    () => {
+
+      setHasChanges(
+        true
+      );
+
+
+      setMessage(
+        ""
+      );
+
+
+      setHasError(
+        false
+      );
+
+    };
 
 
   /* =========================
      TOGGLE FEATURED
   ========================= */
 
-  const toggleFeatured = (
-    postId
-  ) => {
-    setPosts((prev) => {
+  const toggleFeatured =
+    (
+      postId
+    ) => {
 
-      const selectedPost =
-        prev.find(
-          (post) =>
-            post.id ===
-            postId
-        );
+      setPosts(
+        (previous) => {
 
-      if (!selectedPost) {
-        return prev;
-      }
+          const selectedPost =
+            previous.find(
+              (post) =>
+                post.id ===
+                postId
+            );
 
 
-      /* =========================
-         REMOVE FROM HOMEPAGE
-      ========================= */
+          if (
+            !selectedPost
+          ) {
 
-      if (
-        selectedPost.featured ===
-        true
-      ) {
+            return previous;
 
-        const updated =
-          prev.map(
+          }
+
+
+          /* =====================
+             REMOVE FROM HOMEPAGE
+          ===================== */
+
+          if (
+            selectedPost.featured ===
+              true
+          ) {
+
+            const updated =
+              previous.map(
+                (post) =>
+                  post.id ===
+                    postId
+                    ? {
+                        ...post,
+
+                        featured:
+                          false,
+
+                        homepageOrder:
+                          null,
+                      }
+                    : post
+              );
+
+
+            const remainingFeatured =
+              getOrderedFeaturedPosts(
+                updated
+              );
+
+
+            return applyHomepageOrder(
+              updated,
+              remainingFeatured
+            );
+
+          }
+
+
+          /* =====================
+             ADD TO HOMEPAGE
+          ===================== */
+
+          const currentFeatured =
+            getOrderedFeaturedPosts(
+              previous
+            );
+
+
+          return previous.map(
             (post) =>
               post.id ===
-              postId
+                postId
                 ? {
                     ...post,
 
                     featured:
-                      false,
+                      true,
 
                     homepageOrder:
-                      undefined,
+                      currentFeatured.length,
                   }
                 : post
           );
 
-        const remainingFeatured =
-          getOrderedFeaturedPosts(
-            updated
-          );
-
-        return applyHomepageOrder(
-          updated,
-          remainingFeatured
-        );
-      }
-
-
-      /* =========================
-         ADD TO HOMEPAGE
-      ========================= */
-
-      const currentFeatured =
-        getOrderedFeaturedPosts(
-          prev
-        );
-
-      return prev.map(
-        (post) =>
-          post.id ===
-          postId
-            ? {
-                ...post,
-
-                featured:
-                  true,
-
-                homepageOrder:
-                  currentFeatured.length,
-              }
-            : post
+        }
       );
-    });
-  };
+
+
+      markChanged();
+
+    };
 
 
   /* =========================
      MOVE UP
   ========================= */
 
-  const handleMoveUp = (
-    postId
-  ) => {
-    setPosts((prev) => {
+  const handleMoveUp =
+    (
+      postId
+    ) => {
 
-      const featured =
-        getOrderedFeaturedPosts(
-          prev
-        );
+      setPosts(
+        (previous) => {
 
-      const index =
-        featured.findIndex(
-          (post) =>
-            post.id ===
-            postId
-        );
+          const featured =
+            getOrderedFeaturedPosts(
+              previous
+            );
 
-      if (index <= 0) {
-        return prev;
-      }
 
-      const reordered = [
-        ...featured,
-      ];
+          const index =
+            featured.findIndex(
+              (post) =>
+                post.id ===
+                  postId
+            );
 
-      [
-        reordered[index - 1],
-        reordered[index],
-      ] = [
-        reordered[index],
-        reordered[index - 1],
-      ];
 
-      return applyHomepageOrder(
-        prev,
-        reordered
+          if (
+            index <= 0
+          ) {
+
+            return previous;
+
+          }
+
+
+          const reordered = [
+            ...featured,
+          ];
+
+
+          [
+            reordered[
+              index - 1
+            ],
+            reordered[
+              index
+            ],
+          ] = [
+            reordered[
+              index
+            ],
+            reordered[
+              index - 1
+            ],
+          ];
+
+
+          return applyHomepageOrder(
+            previous,
+            reordered
+          );
+
+        }
       );
-    });
-  };
+
+
+      markChanged();
+
+    };
 
 
   /* =========================
      MOVE DOWN
   ========================= */
 
-  const handleMoveDown = (
-    postId
-  ) => {
-    setPosts((prev) => {
+  const handleMoveDown =
+    (
+      postId
+    ) => {
 
-      const featured =
-        getOrderedFeaturedPosts(
-          prev
-        );
+      setPosts(
+        (previous) => {
 
-      const index =
-        featured.findIndex(
-          (post) =>
-            post.id ===
-            postId
-        );
+          const featured =
+            getOrderedFeaturedPosts(
+              previous
+            );
+
+
+          const index =
+            featured.findIndex(
+              (post) =>
+                post.id ===
+                  postId
+            );
+
+
+          if (
+            index === -1 ||
+            index ===
+              featured.length - 1
+          ) {
+
+            return previous;
+
+          }
+
+
+          const reordered = [
+            ...featured,
+          ];
+
+
+          [
+            reordered[
+              index
+            ],
+            reordered[
+              index + 1
+            ],
+          ] = [
+            reordered[
+              index + 1
+            ],
+            reordered[
+              index
+            ],
+          ];
+
+
+          return applyHomepageOrder(
+            previous,
+            reordered
+          );
+
+        }
+      );
+
+
+      markChanged();
+
+    };
+
+
+  /* =========================
+     SAVE
+  ========================= */
+
+  const handleSave =
+    async () => {
 
       if (
-        index === -1 ||
-        index ===
-          featured.length - 1
+        isSaving ||
+        !hasChanges
       ) {
-        return prev;
+
+        return;
+
       }
 
-      const reordered = [
-        ...featured,
-      ];
 
-      [
-        reordered[index],
-        reordered[index + 1],
-      ] = [
-        reordered[index + 1],
-        reordered[index],
-      ];
+      try {
 
-      return applyHomepageOrder(
-        prev,
-        reordered
-      );
-    });
-  };
+        setIsSaving(
+          true
+        );
+
+
+        setMessage(
+          ""
+        );
+
+
+        setHasError(
+          false
+        );
+
+
+        const savedPosts =
+          await updateHomepageHighlights(
+            posts
+          );
+
+
+        setPosts(
+          initializeHomepageOrder(
+            savedPosts
+          )
+        );
+
+
+        setHasChanges(
+          false
+        );
+
+
+        setMessage(
+          "Homepage Journal highlights saved successfully."
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to save Journal highlights:",
+          error
+        );
+
+
+        setHasError(
+          true
+        );
+
+
+        setMessage(
+          error?.message ||
+          "Unable to save Journal highlights."
+        );
+
+      } finally {
+
+        setIsSaving(
+          false
+        );
+
+      }
+
+    };
 
 
   /* =========================
      RENDER POST CARD
   ========================= */
 
-  const renderPostCard = (
-    post,
-    isFeatured,
-    featuredIndex = -1
-  ) => {
+  const renderPostCard =
+    (
+      post,
+      isFeatured,
+      featuredIndex = -1
+    ) => {
 
-    return (
-      <div
-        key={
-          post.id ||
-          post.slug
-        }
-        style={{
-          border:
-            isFeatured
-              ? "2px solid #b58b43"
-              : "1px solid #ece8df",
-
-          borderRadius:
-            "16px",
-
-          overflow:
-            "hidden",
-
-          background:
-            "#fff",
-        }}
-      >
-
-        {/* COVER */}
-
-        {post.cover ? (
-
-          <img
-            src={
-              post.cover
-            }
-            alt={
-              post.title
-            }
-            style={{
-              display:
-                "block",
-
-              width:
-                "100%",
-
-              height:
-                "160px",
-
-              objectFit:
-                "cover",
-            }}
-          />
-
-        ) : (
-
-          <div
-            style={{
-              width:
-                "100%",
-
-              height:
-                "160px",
-
-              background:
-                "#f3f1ec",
-
-              display:
-                "flex",
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
-
-              color:
-                "#999",
-            }}
-          >
-            No Cover Image
-          </div>
-
-        )}
-
-
-        {/* CONTENT */}
+      return (
 
         <div
+          key={
+            post.id ||
+            post.slug
+          }
           style={{
-            padding:
+            border:
+              isFeatured
+                ? "2px solid #b58b43"
+                : "1px solid #ece8df",
+
+            borderRadius:
               "16px",
+
+            overflow:
+              "hidden",
+
+            background:
+              "#fff",
           }}
         >
 
-          <span
-            style={{
-              color:
-                "#b58b43",
 
-              fontSize:
-                "11px",
+          {/* COVER */}
 
-              letterSpacing:
-                "1px",
+          {post.cover ? (
 
-              textTransform:
-                "uppercase",
-            }}
-          >
-            {post.category ||
-              "Journal"}
-          </span>
-
-
-          <h3
-            style={{
-              margin:
-                "8px 0 15px",
-
-              fontSize:
-                "18px",
-            }}
-          >
-            {post.title ||
-              "Untitled Article"}
-          </h3>
-
-
-          {/* =========================
-              HOMEPAGE POSITION
-          ========================= */}
-
-          {isFeatured && (
-
-            <p
+            <img
+              src={
+                post.cover
+              }
+              alt={
+                post.title
+              }
               style={{
-                margin:
-                  "0 0 10px",
+                display:
+                  "block",
 
-                color:
-                  "#777",
+                width:
+                  "100%",
 
-                fontSize:
-                  "13px",
+                height:
+                  "160px",
+
+                objectFit:
+                  "cover",
               }}
-            >
-              Homepage position:{" "}
-              {featuredIndex + 1}
-            </p>
+            />
 
-          )}
-
-
-          {/* =========================
-              ORDER CONTROLS
-          ========================= */}
-
-          {isFeatured && (
+          ) : (
 
             <div
               style={{
+                width:
+                  "100%",
+
+                height:
+                  "160px",
+
+                background:
+                  "#f3f1ec",
+
                 display:
                   "flex",
 
-                gap:
-                  "8px",
+                alignItems:
+                  "center",
 
-                marginBottom:
-                  "10px",
+                justifyContent:
+                  "center",
+
+                color:
+                  "#999",
               }}
             >
 
-              {/* MOVE UP */}
-
-              <button
-                type="button"
-                disabled={
-                  featuredIndex ===
-                  0
-                }
-                onClick={() =>
-                  handleMoveUp(
-                    post.id
-                  )
-                }
-                style={{
-                  flex:
-                    1,
-
-                  padding:
-                    "10px",
-
-                  border:
-                    "1px solid #ddd",
-
-                  borderRadius:
-                    "8px",
-
-                  background:
-                    "#fff",
-
-                  cursor:
-                    featuredIndex ===
-                    0
-                      ? "not-allowed"
-                      : "pointer",
-
-                  opacity:
-                    featuredIndex ===
-                    0
-                      ? 0.4
-                      : 1,
-                }}
-              >
-                ↑ Move Up
-              </button>
-
-
-              {/* MOVE DOWN */}
-
-              <button
-                type="button"
-                disabled={
-                  featuredIndex ===
-                  featuredPosts.length -
-                    1
-                }
-                onClick={() =>
-                  handleMoveDown(
-                    post.id
-                  )
-                }
-                style={{
-                  flex:
-                    1,
-
-                  padding:
-                    "10px",
-
-                  border:
-                    "1px solid #ddd",
-
-                  borderRadius:
-                    "8px",
-
-                  background:
-                    "#fff",
-
-                  cursor:
-                    featuredIndex ===
-                    featuredPosts.length -
-                      1
-                      ? "not-allowed"
-                      : "pointer",
-
-                  opacity:
-                    featuredIndex ===
-                    featuredPosts.length -
-                      1
-                      ? 0.4
-                      : 1,
-                }}
-              >
-                ↓ Move Down
-              </button>
+              No Cover Image
 
             </div>
 
           )}
 
 
-          {/* =========================
-              FEATURE BUTTON
-          ========================= */}
+          {/* CONTENT */}
 
-          <button
-            type="button"
-            onClick={() =>
-              toggleFeatured(
-                post.id
-              )
-            }
+          <div
             style={{
-              width:
-                "100%",
-
               padding:
-                "11px 14px",
-
-              border:
-                isFeatured
-                  ? "1px solid #b58b43"
-                  : "1px solid #ddd",
-
-              borderRadius:
-                "10px",
-
-              background:
-                isFeatured
-                  ? "#f8f3e9"
-                  : "#fff",
-
-              color:
-                isFeatured
-                  ? "#8a672f"
-                  : "#222",
-
-              cursor:
-                "pointer",
-
-              fontWeight:
-                "500",
+                "16px",
             }}
           >
-            {isFeatured
-              ? "✓ Featured"
-              : "Feature on Homepage"}
-          </button>
+
+            <span
+              style={{
+                color:
+                  "#b58b43",
+
+                fontSize:
+                  "11px",
+
+                letterSpacing:
+                  "1px",
+
+                textTransform:
+                  "uppercase",
+              }}
+            >
+
+              {
+                post.category ||
+                "Journal"
+              }
+
+            </span>
+
+
+            <h3
+              style={{
+                margin:
+                  "8px 0 15px",
+
+                fontSize:
+                  "18px",
+              }}
+            >
+
+              {
+                post.title ||
+                "Untitled Article"
+              }
+
+            </h3>
+
+
+            {/* =====================
+                HOMEPAGE POSITION
+            ===================== */}
+
+            {isFeatured && (
+
+              <p
+                style={{
+                  margin:
+                    "0 0 10px",
+
+                  color:
+                    "#777",
+
+                  fontSize:
+                    "13px",
+                }}
+              >
+
+                Homepage position:{" "}
+                {
+                  featuredIndex +
+                  1
+                }
+
+              </p>
+
+            )}
+
+
+            {/* =====================
+                ORDER CONTROLS
+            ===================== */}
+
+            {isFeatured && (
+
+              <div
+                style={{
+                  display:
+                    "flex",
+
+                  gap:
+                    "8px",
+
+                  marginBottom:
+                    "10px",
+                }}
+              >
+
+                <button
+                  type="button"
+                  disabled={
+                    isSaving ||
+                    featuredIndex ===
+                      0
+                  }
+                  onClick={() =>
+                    handleMoveUp(
+                      post.id
+                    )
+                  }
+                  style={{
+                    flex:
+                      1,
+
+                    padding:
+                      "10px",
+
+                    border:
+                      "1px solid #ddd",
+
+                    borderRadius:
+                      "8px",
+
+                    background:
+                      "#fff",
+
+                    cursor:
+                      isSaving ||
+                      featuredIndex ===
+                        0
+                        ? "not-allowed"
+                        : "pointer",
+
+                    opacity:
+                      isSaving ||
+                      featuredIndex ===
+                        0
+                        ? 0.4
+                        : 1,
+                  }}
+                >
+
+                  ↑ Move Up
+
+                </button>
+
+
+                <button
+                  type="button"
+                  disabled={
+                    isSaving ||
+                    featuredIndex ===
+                      featuredPosts.length -
+                        1
+                  }
+                  onClick={() =>
+                    handleMoveDown(
+                      post.id
+                    )
+                  }
+                  style={{
+                    flex:
+                      1,
+
+                    padding:
+                      "10px",
+
+                    border:
+                      "1px solid #ddd",
+
+                    borderRadius:
+                      "8px",
+
+                    background:
+                      "#fff",
+
+                    cursor:
+                      isSaving ||
+                      featuredIndex ===
+                        featuredPosts.length -
+                          1
+                        ? "not-allowed"
+                        : "pointer",
+
+                    opacity:
+                      isSaving ||
+                      featuredIndex ===
+                        featuredPosts.length -
+                          1
+                        ? 0.4
+                        : 1,
+                  }}
+                >
+
+                  ↓ Move Down
+
+                </button>
+
+              </div>
+
+            )}
+
+
+            {/* =====================
+                FEATURE BUTTON
+            ===================== */}
+
+            <button
+              type="button"
+              disabled={
+                isSaving
+              }
+              onClick={() =>
+                toggleFeatured(
+                  post.id
+                )
+              }
+              style={{
+                width:
+                  "100%",
+
+                padding:
+                  "11px 14px",
+
+                border:
+                  isFeatured
+                    ? "1px solid #b58b43"
+                    : "1px solid #ddd",
+
+                borderRadius:
+                  "10px",
+
+                background:
+                  isFeatured
+                    ? "#f8f3e9"
+                    : "#fff",
+
+                color:
+                  isFeatured
+                    ? "#8a672f"
+                    : "#222",
+
+                cursor:
+                  isSaving
+                    ? "not-allowed"
+                    : "pointer",
+
+                opacity:
+                  isSaving
+                    ? 0.6
+                    : 1,
+
+                fontWeight:
+                  "500",
+              }}
+            >
+
+              {
+                isFeatured
+                  ? "✓ Featured"
+                  : "Feature on Homepage"
+              }
+
+            </button>
+
+          </div>
+
+        </div>
+
+      );
+
+    };
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    isLoading
+  ) {
+
+    return (
+
+      <div className="homepage-settings-card">
+
+        <div className="homepage-settings-header">
+
+          <span className="homepage-overline">
+            FROM THE JOURNAL
+          </span>
+
+          <h2>
+            Journal Highlights
+          </h2>
+
+          <p>
+            Loading Journal articles...
+          </p>
 
         </div>
 
       </div>
+
     );
-  };
+
+  }
 
 
   /* =========================
@@ -725,7 +1146,9 @@ export default function JournalHighlightSettings() {
   ========================= */
 
   return (
+
     <div className="homepage-settings-card">
+
 
       {/* HEADER */}
 
@@ -735,9 +1158,11 @@ export default function JournalHighlightSettings() {
           FROM THE JOURNAL
         </span>
 
+
         <h2>
           Journal Highlights
         </h2>
+
 
         <p>
           Select which published
@@ -745,6 +1170,7 @@ export default function JournalHighlightSettings() {
           your homepage and control
           their display order.
         </p>
+
 
         <p
           style={{
@@ -758,16 +1184,61 @@ export default function JournalHighlightSettings() {
               "14px",
           }}
         >
-          {featuredPosts.length}{" "}
+
+          {
+            featuredPosts.length
+          }{" "}
           articles currently featured
+
         </p>
 
       </div>
 
 
-      {/* =========================
+      {/* =====================
+          STATUS
+      ===================== */}
+
+      {message && (
+
+        <div
+          style={{
+            marginBottom:
+              "24px",
+
+            padding:
+              "12px 16px",
+
+            borderRadius:
+              "8px",
+
+            background:
+              hasError
+                ? "#fff3f3"
+                : "#f3f8f3",
+
+            color:
+              hasError
+                ? "#a33"
+                : "#35633a",
+
+            fontSize:
+              "14px",
+          }}
+        >
+
+          {
+            message
+          }
+
+        </div>
+
+      )}
+
+
+      {/* =====================
           EMPTY STATE
-      ========================= */}
+      ===================== */}
 
       {publishedPosts.length ===
         0 && (
@@ -792,6 +1263,7 @@ export default function JournalHighlightSettings() {
             No Published Articles
           </h3>
 
+
           <p>
             Publish a journal post
             first before featuring
@@ -803,9 +1275,9 @@ export default function JournalHighlightSettings() {
       )}
 
 
-      {/* =========================
+      {/* =====================
           HOMEPAGE ORDER
-      ========================= */}
+      ===================== */}
 
       {featuredPosts.length >
         0 && (
@@ -826,7 +1298,9 @@ export default function JournalHighlightSettings() {
                 "20px",
             }}
           >
+
             Homepage Order
+
           </h3>
 
 
@@ -842,10 +1316,12 @@ export default function JournalHighlightSettings() {
                 "14px",
             }}
           >
+
             Use Move Up and Move Down
             to control the order of
             journal articles shown on
             your homepage.
+
           </p>
 
 
@@ -881,9 +1357,9 @@ export default function JournalHighlightSettings() {
       )}
 
 
-      {/* =========================
+      {/* =====================
           AVAILABLE ARTICLES
-      ========================= */}
+      ===================== */}
 
       {availablePosts.length >
         0 && (
@@ -899,7 +1375,9 @@ export default function JournalHighlightSettings() {
                 "20px",
             }}
           >
+
             Available Articles
+
           </h3>
 
 
@@ -930,6 +1408,55 @@ export default function JournalHighlightSettings() {
 
       )}
 
+
+      {/* =====================
+          SAVE
+      ===================== */}
+
+      {publishedPosts.length >
+        0 && (
+
+        <div
+          style={{
+            marginTop:
+              "32px",
+
+            paddingTop:
+              "24px",
+
+            borderTop:
+              "1px solid #ece8df",
+          }}
+        >
+
+          <button
+            type="button"
+            className="media-button"
+            onClick={
+              handleSave
+            }
+            disabled={
+              isSaving ||
+              !hasChanges
+            }
+          >
+
+            {
+              isSaving
+                ? "Saving..."
+                : hasChanges
+                  ? "Save Homepage Highlights"
+                  : "Homepage Highlights Saved"
+            }
+
+          </button>
+
+        </div>
+
+      )}
+
     </div>
+
   );
+
 }

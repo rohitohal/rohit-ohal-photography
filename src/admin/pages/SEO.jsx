@@ -3,6 +3,10 @@ import {
   useState,
 } from "react";
 
+import {
+  supabase,
+} from "../../lib/supabase";
+
 import ImagePicker from "../components/ImagePicker/ImagePicker";
 
 import "../styles/seo.css";
@@ -14,13 +18,13 @@ import "../styles/seo.css";
 
 const defaultSEO = {
   siteTitle:
-    "Rohit Ohal Photography",
+    "Rohit Ohal Photography | Wedding & Commercial Photographer",
 
   metaDescription:
-    "Fine art wedding, commercial, portrait and editorial photography by Rohit Ohal.",
+    "Rohit Ohal Photography specializes in fine art wedding, commercial, portrait, industrial, food and editorial photography in Pune, India.",
 
   keywords:
-    "Rohit Ohal Photography, Wedding Photographer Pune, Commercial Photographer Pune",
+    "Rohit Ohal Photography, Wedding Photographer Pune, Commercial Photographer Pune, Portrait Photographer Pune",
 
   ogTitle:
     "Rohit Ohal Photography",
@@ -33,89 +37,51 @@ const defaultSEO = {
 
 
 /* =========================
-   STORAGE KEY
+   STORAGE
 ========================= */
 
 const SEO_KEY =
   "rohit-photography-seo";
 
+const SUPABASE_SETTING_KEY =
+  "seo";
+
 
 export default function SEO() {
 
   /* =========================
-     LOAD SEO SETTINGS
+     SEO DATA
   ========================= */
 
   const [
     seoData,
     setSeoData,
-  ] = useState(() => {
-
-    try {
-
-      const saved =
-        localStorage.getItem(
-          SEO_KEY
-        );
+  ] =
+    useState({
+      ...defaultSEO,
+    });
 
 
-      /*
-       * No saved SEO settings.
-       * Use defaults.
-       */
+  /* =========================
+     LOADING
+  ========================= */
 
-      if (!saved) {
-
-        return {
-          ...defaultSEO,
-        };
-
-      }
+  const [
+    isLoading,
+    setIsLoading,
+  ] =
+    useState(true);
 
 
-      /*
-       * Merge saved settings
-       * with default settings.
-       */
+  /* =========================
+     SAVING
+  ========================= */
 
-      const parsed =
-        JSON.parse(saved);
-
-
-      if (
-        !parsed ||
-        typeof parsed !==
-          "object" ||
-        Array.isArray(parsed)
-      ) {
-
-        return {
-          ...defaultSEO,
-        };
-
-      }
-
-
-      return {
-        ...defaultSEO,
-        ...parsed,
-      };
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load SEO settings:",
-        error
-      );
-
-
-      return {
-        ...defaultSEO,
-      };
-
-    }
-
-  });
+  const [
+    isSaving,
+    setIsSaving,
+  ] =
+    useState(false);
 
 
   /* =========================
@@ -125,36 +91,315 @@ export default function SEO() {
   const [
     isImagePickerOpen,
     setIsImagePickerOpen,
-  ] = useState(false);
+  ] =
+    useState(false);
 
 
   /* =========================
-     SAVED MESSAGE
+     STATUS MESSAGE
   ========================= */
 
   const [
     savedMessage,
     setSavedMessage,
-  ] = useState("");
+  ] =
+    useState("");
 
 
   /* =========================
-     CLEAR SAVED MESSAGE
+     LOAD LOCAL FALLBACK
+  ========================= */
+
+  const loadLocalSEO =
+    () => {
+
+      try {
+
+        const saved =
+          localStorage.getItem(
+            SEO_KEY
+          );
+
+
+        if (!saved) {
+
+          return {
+            ...defaultSEO,
+          };
+
+        }
+
+
+        const parsed =
+          JSON.parse(
+            saved
+          );
+
+
+        if (
+          !parsed ||
+          typeof parsed !==
+            "object" ||
+          Array.isArray(
+            parsed
+          )
+        ) {
+
+          return {
+            ...defaultSEO,
+          };
+
+        }
+
+
+        return {
+          ...defaultSEO,
+          ...parsed,
+        };
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load local SEO settings:",
+          error
+        );
+
+
+        return {
+          ...defaultSEO,
+        };
+
+      }
+
+    };
+
+
+  /* =========================
+     SAVE LOCAL CACHE
+  ========================= */
+
+  const saveLocalSEO =
+    (
+      data
+    ) => {
+
+      try {
+
+        localStorage.setItem(
+          SEO_KEY,
+          JSON.stringify(
+            data
+          )
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to cache SEO settings locally:",
+          error
+        );
+
+      }
+
+    };
+
+
+  /* =========================
+     LOAD SEO FROM SUPABASE
   ========================= */
 
   useEffect(() => {
 
-    if (!savedMessage) {
+    let isMounted =
+      true;
+
+
+    const loadSEO =
+      async () => {
+
+        setIsLoading(
+          true
+        );
+
+
+        try {
+
+          const {
+            data,
+            error,
+          } =
+            await supabase
+              .from(
+                "site_settings"
+              )
+              .select(
+                "setting_value"
+              )
+              .eq(
+                "setting_key",
+                SUPABASE_SETTING_KEY
+              )
+              .single();
+
+
+          if (error) {
+
+            throw error;
+
+          }
+
+
+          const remoteSEO =
+            data?.setting_value;
+
+
+          if (
+            remoteSEO &&
+            typeof remoteSEO ===
+              "object" &&
+            !Array.isArray(
+              remoteSEO
+            )
+          ) {
+
+            const mergedSEO = {
+              ...defaultSEO,
+              ...remoteSEO,
+            };
+
+
+            if (
+              isMounted
+            ) {
+
+              setSeoData(
+                mergedSEO
+              );
+
+            }
+
+
+            /*
+             * Keep localStorage as
+             * an offline/cache fallback.
+             */
+
+            saveLocalSEO(
+              mergedSEO
+            );
+
+
+            return;
+
+          }
+
+
+          /*
+           * Supabase returned no valid
+           * SEO object.
+           */
+
+          const localSEO =
+            loadLocalSEO();
+
+
+          if (
+            isMounted
+          ) {
+
+            setSeoData(
+              localSEO
+            );
+
+          }
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load SEO settings from Supabase:",
+            error
+          );
+
+
+          /*
+           * FALLBACK:
+           * use browser cache.
+           */
+
+          const localSEO =
+            loadLocalSEO();
+
+
+          if (
+            isMounted
+          ) {
+
+            setSeoData(
+              localSEO
+            );
+
+            setSavedMessage(
+              "Using locally cached SEO settings."
+            );
+
+          }
+
+        } finally {
+
+          if (
+            isMounted
+          ) {
+
+            setIsLoading(
+              false
+            );
+
+          }
+
+        }
+
+      };
+
+
+    loadSEO();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
+
+
+  /* =========================
+     CLEAR STATUS MESSAGE
+  ========================= */
+
+  useEffect(() => {
+
+    if (
+      !savedMessage
+    ) {
+
       return;
+
     }
 
 
     const timer =
-      setTimeout(() => {
+      setTimeout(
+        () => {
 
-        setSavedMessage("");
+          setSavedMessage(
+            ""
+          );
 
-      }, 3000);
+        },
+        3000
+      );
 
 
     return () =>
@@ -171,66 +416,81 @@ export default function SEO() {
      HANDLE FORM CHANGE
   ========================= */
 
-  const handleChange = (
-    event
-  ) => {
+  const handleChange =
+    (
+      event
+    ) => {
 
-    const {
-      name,
-      value,
-    } = event.target;
-
-
-    setSeoData(
-      (prev) => ({
-
-        ...prev,
-
-        [name]:
-          value,
-
-      })
-    );
+      const {
+        name,
+        value,
+      } =
+        event.target;
 
 
-    setSavedMessage("");
+      setSeoData(
+        (
+          prev
+        ) => ({
 
-  };
+          ...prev,
+
+          [name]:
+            value,
+
+        })
+      );
+
+
+      setSavedMessage(
+        ""
+      );
+
+    };
 
 
   /* =========================
      SELECT SOCIAL IMAGE
   ========================= */
 
-  const handleSelectImage = (
-    imageUrl
-  ) => {
+  const handleSelectImage =
+    (
+      imageUrl
+    ) => {
 
-    if (!imageUrl) {
-      return;
-    }
+      if (
+        !imageUrl
+      ) {
 
+        return;
 
-    setSeoData(
-      (prev) => ({
-
-        ...prev,
-
-        ogImage:
-          imageUrl,
-
-      })
-    );
+      }
 
 
-    setIsImagePickerOpen(
-      false
-    );
+      setSeoData(
+        (
+          prev
+        ) => ({
+
+          ...prev,
+
+          ogImage:
+            imageUrl,
+
+        })
+      );
 
 
-    setSavedMessage("");
+      setIsImagePickerOpen(
+        false
+      );
 
-  };
+
+      setSavedMessage(
+        ""
+      );
+
+    };
 
 
   /* =========================
@@ -241,7 +501,9 @@ export default function SEO() {
     () => {
 
       setSeoData(
-        (prev) => ({
+        (
+          prev
+        ) => ({
 
           ...prev,
 
@@ -251,46 +513,115 @@ export default function SEO() {
       );
 
 
-      setSavedMessage("");
+      setSavedMessage(
+        ""
+      );
 
     };
 
 
   /* =========================
-     SAVE SEO SETTINGS
+     SAVE SEO TO SUPABASE
   ========================= */
 
-  const handleSave = () => {
+  const handleSave =
+    async () => {
 
-    try {
+      if (
+        isSaving
+      ) {
 
-      localStorage.setItem(
-        SEO_KEY,
-        JSON.stringify(
+        return;
+
+      }
+
+
+      setIsSaving(
+        true
+      );
+
+      setSavedMessage(
+        ""
+      );
+
+
+      try {
+
+        const {
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .update({
+              setting_value:
+                seoData,
+
+              updated_at:
+                new Date()
+                  .toISOString(),
+            })
+            .eq(
+              "setting_key",
+              SUPABASE_SETTING_KEY
+            );
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        /*
+         * Keep localStorage synchronized
+         * as an offline/cache fallback.
+         */
+
+        saveLocalSEO(
           seoData
-        )
-      );
+        );
 
 
-      setSavedMessage(
-        "SEO settings saved successfully."
-      );
+        setSavedMessage(
+          "SEO settings saved successfully."
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.error(
-        "Failed to save SEO settings:",
-        error
-      );
+        console.error(
+          "Failed to save SEO settings to Supabase:",
+          error
+        );
 
 
-      setSavedMessage(
-        "Unable to save SEO settings."
-      );
+        /*
+         * Keep a local copy even if
+         * Supabase temporarily fails.
+         */
 
-    }
+        saveLocalSEO(
+          seoData
+        );
 
-  };
+
+        setSavedMessage(
+          "Unable to save SEO settings online. A local copy was saved."
+        );
+
+      } finally {
+
+        setIsSaving(
+          false
+        );
+
+      }
+
+    };
 
 
   /* =========================
@@ -336,15 +667,23 @@ export default function SEO() {
             onClick={
               handleSave
             }
+            disabled={
+              isLoading ||
+              isSaving
+            }
           >
-            Save Changes
+
+            {isSaving
+              ? "Saving..."
+              : "Save Changes"}
+
           </button>
 
         </div>
 
 
         {/* =========================
-            SAVED MESSAGE
+            STATUS MESSAGE
         ========================= */}
 
         {savedMessage && (
@@ -414,6 +753,9 @@ export default function SEO() {
                     handleChange
                   }
                   placeholder="Rohit Ohal Photography"
+                  disabled={
+                    isLoading
+                  }
                 />
 
 
@@ -453,6 +795,9 @@ export default function SEO() {
                     handleChange
                   }
                   placeholder="Describe your photography business..."
+                  disabled={
+                    isLoading
+                  }
                 />
 
 
@@ -491,6 +836,9 @@ export default function SEO() {
                     handleChange
                   }
                   placeholder="Wedding Photographer Pune, Commercial Photography..."
+                  disabled={
+                    isLoading
+                  }
                 />
 
 
@@ -557,6 +905,9 @@ export default function SEO() {
                     handleChange
                   }
                   placeholder="Rohit Ohal Photography"
+                  disabled={
+                    isLoading
+                  }
                 />
 
               </div>
@@ -584,6 +935,9 @@ export default function SEO() {
                     handleChange
                   }
                   placeholder="Fine art wedding and commercial photography."
+                  disabled={
+                    isLoading
+                  }
                 />
 
               </div>
@@ -619,6 +973,9 @@ export default function SEO() {
                 <button
                   type="button"
                   className="seo-save-button"
+                  disabled={
+                    isLoading
+                  }
                   onClick={() =>
                     setIsImagePickerOpen(
                       true
@@ -659,6 +1016,9 @@ export default function SEO() {
                       type="button"
                       onClick={
                         handleRemoveImage
+                      }
+                      disabled={
+                        isLoading
                       }
                       style={{
                         display:

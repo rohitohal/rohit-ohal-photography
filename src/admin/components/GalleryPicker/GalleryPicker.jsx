@@ -1,15 +1,16 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
 
+import {
+  getAllMedia,
+  getMediaFolders,
+} from "../../../services/mediaService";
+
 import "../../styles/gallery-picker.css";
 
-const MEDIA_KEY =
-  "rohit-photography-media";
-
-const FOLDERS_KEY =
-  "rohit-photography-media-folders";
 
 export default function GalleryPicker({
   isOpen,
@@ -17,6 +18,29 @@ export default function GalleryPicker({
   selectedImages = [],
   onSelect,
 }) {
+
+  /* =========================
+     MEDIA
+  ========================= */
+
+  const [
+    mediaItems,
+    setMediaItems,
+  ] =
+    useState([]);
+
+
+  /* =========================
+     FOLDERS
+  ========================= */
+
+  const [
+    folders,
+    setFolders,
+  ] =
+    useState([]);
+
+
   /* =========================
      SEARCH
   ========================= */
@@ -24,7 +48,9 @@ export default function GalleryPicker({
   const [
     searchQuery,
     setSearchQuery,
-  ] = useState("");
+  ] =
+    useState("");
+
 
   /* =========================
      ACTIVE FOLDER
@@ -33,83 +59,143 @@ export default function GalleryPicker({
   const [
     activeFolder,
     setActiveFolder,
-  ] = useState("all");
+  ] =
+    useState("all");
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     ERROR
+  ========================= */
+
+  const [
+    loadError,
+    setLoadError,
+  ] =
+    useState("");
+
 
   /* =========================
      LOAD MEDIA LIBRARY
+     FROM SUPABASE
   ========================= */
 
-  const mediaItems =
-    useMemo(() => {
-      if (!isOpen) {
-        return [];
-      }
+  useEffect(() => {
+
+    if (!isOpen) {
+      return;
+    }
+
+
+    let mounted =
+      true;
+
+
+    async function loadMediaLibrary() {
 
       try {
-        const saved =
-          localStorage.getItem(
-            MEDIA_KEY
-          );
 
-        if (!saved) {
-          return [];
+        setLoading(
+          true
+        );
+
+
+        setLoadError(
+          ""
+        );
+
+
+        const [
+          loadedMedia,
+          loadedFolders,
+        ] =
+          await Promise.all([
+            getAllMedia(),
+            getMediaFolders(),
+          ]);
+
+
+        if (!mounted) {
+          return;
         }
 
-        const parsed =
-          JSON.parse(saved);
 
-        return Array.isArray(
-          parsed
-        )
-          ? parsed
-          : [];
+        setMediaItems(
+          loadedMedia
+        );
+
+
+        setFolders(
+          loadedFolders
+        );
+
+
       } catch (error) {
+
         console.error(
-          "Failed to load Media Library:",
+          "Failed to load Gallery Media Library:",
           error
         );
 
-        return [];
-      }
-    }, [isOpen]);
 
-  /* =========================
-     LOAD MEDIA FOLDERS
-  ========================= */
+        if (mounted) {
 
-  const folders =
-    useMemo(() => {
-      if (!isOpen) {
-        return [];
-      }
-
-      try {
-        const saved =
-          localStorage.getItem(
-            FOLDERS_KEY
+          setMediaItems(
+            []
           );
 
-        if (!saved) {
-          return [];
+
+          setFolders(
+            []
+          );
+
+
+          setLoadError(
+            "Unable to load images from the Media Library."
+          );
+
         }
 
-        const parsed =
-          JSON.parse(saved);
 
-        return Array.isArray(
-          parsed
-        )
-          ? parsed
-          : [];
-      } catch (error) {
-        console.error(
-          "Failed to load Media folders:",
-          error
-        );
+      } finally {
 
-        return [];
+        if (mounted) {
+
+          setLoading(
+            false
+          );
+
+        }
+
       }
-    }, [isOpen]);
+
+    }
+
+
+    loadMediaLibrary();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, [
+    isOpen,
+  ]);
+
 
   /* =========================
      FILTER MEDIA
@@ -117,19 +203,27 @@ export default function GalleryPicker({
 
   const filteredMedia =
     useMemo(() => {
+
       const query =
         searchQuery
           .trim()
           .toLowerCase();
 
+
       return mediaItems.filter(
-        (image) => {
-          /* FOLDER FILTER */
+        (
+          image
+        ) => {
+
+          /* =========================
+             FOLDER FILTER
+          ========================= */
 
           const imageFolder =
             image.folder ||
             image.category ||
             "Uncategorized";
+
 
           const matchesFolder =
             activeFolder ===
@@ -137,85 +231,126 @@ export default function GalleryPicker({
             imageFolder ===
               activeFolder;
 
-          if (!matchesFolder) {
+
+          if (
+            !matchesFolder
+          ) {
+
             return false;
+
           }
 
-          /* SEARCH FILTER */
+
+          /* =========================
+             SEARCH FILTER
+          ========================= */
 
           if (!query) {
+
             return true;
+
           }
+
 
           const filename =
             image.filename ||
             "";
 
+
           const publicId =
             image.publicId ||
             "";
+
 
           const category =
             image.category ||
             "";
 
+
           const folder =
             image.folder ||
             "";
 
+
           return (
             filename
               .toLowerCase()
-              .includes(query) ||
+              .includes(
+                query
+              ) ||
+
             publicId
               .toLowerCase()
-              .includes(query) ||
+              .includes(
+                query
+              ) ||
+
             category
               .toLowerCase()
-              .includes(query) ||
+              .includes(
+                query
+              ) ||
+
             folder
               .toLowerCase()
-              .includes(query)
+              .includes(
+                query
+              )
           );
+
         }
       );
+
     }, [
       mediaItems,
       activeFolder,
       searchQuery,
     ]);
 
+
   /* =========================
      TOGGLE IMAGE
   ========================= */
 
-  const toggleImage = (
-    imageUrl
-  ) => {
-    if (!imageUrl) {
-      return;
-    }
+  const toggleImage =
+    (
+      imageUrl
+    ) => {
 
-    if (
-      selectedImages.includes(
-        imageUrl
-      )
-    ) {
-      onSelect(
-        selectedImages.filter(
-          (item) =>
-            item !== imageUrl
+      if (!imageUrl) {
+        return;
+      }
+
+
+      if (
+        selectedImages.includes(
+          imageUrl
         )
-      );
+      ) {
 
-      return;
-    }
+        onSelect(
+          selectedImages.filter(
+            (
+              item
+            ) =>
+              item !==
+              imageUrl
+          )
+        );
 
-    onSelect([
-      ...selectedImages,
-      imageUrl,
-    ]);
-  };
+
+        return;
+
+      }
+
+
+      onSelect([
+        ...selectedImages,
+        imageUrl,
+      ]);
+
+    };
+
 
   /* =========================
      CLEAR SELECTION
@@ -223,59 +358,90 @@ export default function GalleryPicker({
 
   const clearSelection =
     () => {
+
       const confirmed =
         window.confirm(
           "Clear all selected images?"
         );
 
+
       if (!confirmed) {
         return;
       }
 
-      onSelect([]);
+
+      onSelect(
+        []
+      );
+
     };
+
 
   /* =========================
      CHANGE FOLDER
   ========================= */
 
-  const handleFolderChange = (
-    folder
-  ) => {
-    setActiveFolder(
+  const handleFolderChange =
+    (
       folder
-    );
+    ) => {
 
-    setSearchQuery("");
-  };
+      setActiveFolder(
+        folder
+      );
+
+
+      setSearchQuery(
+        ""
+      );
+
+    };
+
 
   /* =========================
      CLOSE PICKER
   ========================= */
 
-  const handleClose = () => {
-    setSearchQuery("");
+  const handleClose =
+    () => {
 
-    setActiveFolder(
-      "all"
-    );
+      setSearchQuery(
+        ""
+      );
 
-    onClose();
-  };
+
+      setActiveFolder(
+        "all"
+      );
+
+
+      setLoadError(
+        ""
+      );
+
+
+      onClose();
+
+    };
+
 
   /* =========================
      DO NOT RENDER
   ========================= */
 
   if (!isOpen) {
+
     return null;
+
   }
+
 
   /* =========================
      RENDER
   ========================= */
 
   return (
+
     <div
       className="gallery-picker-overlay"
       onClick={
@@ -285,10 +451,13 @@ export default function GalleryPicker({
 
       <div
         className="gallery-picker-modal"
-        onClick={(event) =>
+        onClick={(
+          event
+        ) =>
           event.stopPropagation()
         }
       >
+
 
         {/* =========================
             HEADER
@@ -302,6 +471,7 @@ export default function GalleryPicker({
               Select Images
             </h2>
 
+
             <p>
               {
                 selectedImages.length
@@ -310,6 +480,7 @@ export default function GalleryPicker({
             </p>
 
           </div>
+
 
           <button
             type="button"
@@ -324,13 +495,12 @@ export default function GalleryPicker({
 
         </div>
 
+
         {/* =========================
             FOLDER NAVIGATION
         ========================= */}
 
         <div className="gallery-picker-folders">
-
-          {/* ALL IMAGES */}
 
           <button
             type="button"
@@ -349,10 +519,11 @@ export default function GalleryPicker({
             All Images
           </button>
 
-          {/* FOLDERS */}
 
           {folders.map(
-            (folder) => (
+            (
+              folder
+            ) => (
 
               <button
                 type="button"
@@ -380,6 +551,7 @@ export default function GalleryPicker({
 
         </div>
 
+
         {/* =========================
             SEARCH + CLEAR
         ========================= */}
@@ -397,12 +569,15 @@ export default function GalleryPicker({
             value={
               searchQuery
             }
-            onChange={(event) =>
+            onChange={(
+              event
+            ) =>
               setSearchQuery(
                 event.target.value
               )
             }
           />
+
 
           {selectedImages.length >
             0 && (
@@ -421,108 +596,164 @@ export default function GalleryPicker({
 
         </div>
 
+
+        {/* =========================
+            LOADING
+        ========================= */}
+
+        {loading && (
+
+          <div className="gallery-picker-empty">
+
+            Loading images...
+
+          </div>
+
+        )}
+
+
+        {/* =========================
+            ERROR
+        ========================= */}
+
+        {!loading &&
+          loadError && (
+
+          <div className="gallery-picker-empty">
+
+            {loadError}
+
+          </div>
+
+        )}
+
+
         {/* =========================
             IMAGE GRID
         ========================= */}
 
-        <div className="gallery-picker-grid">
+        {!loading &&
+          !loadError && (
 
-          {filteredMedia.map(
-            (image) => {
-              const imageUrl =
-                image.url;
+          <div className="gallery-picker-grid">
 
-              const isSelected =
-                selectedImages.includes(
-                  imageUrl
+            {filteredMedia.map(
+              (
+                image
+              ) => {
+
+                const imageUrl =
+                  image.url;
+
+
+                const isSelected =
+                  selectedImages.includes(
+                    imageUrl
+                  );
+
+
+                return (
+
+                  <button
+                    type="button"
+                    key={
+                      image.id ||
+                      image.publicId ||
+                      imageUrl
+                    }
+                    className={`gallery-picker-card ${
+                      isSelected
+                        ? "selected"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      toggleImage(
+                        imageUrl
+                      )
+                    }
+                  >
+
+                    <img
+                      src={
+                        imageUrl
+                      }
+                      alt={
+                        image.filename ||
+                        "Media Library Image"
+                      }
+                      loading="lazy"
+                    />
+
+
+                    <span>
+                      {
+                        image.filename ||
+                        image.publicId ||
+                        "Untitled Image"
+                      }
+                    </span>
+
+
+                    {isSelected && (
+
+                      <div className="gallery-selected-badge">
+                        ✓
+                      </div>
+
+                    )}
+
+                  </button>
+
                 );
 
-              return (
-                <button
-                  type="button"
-                  key={
-                    image.id ||
-                    image.publicId ||
-                    imageUrl
-                  }
-                  className={`gallery-picker-card ${
-                    isSelected
-                      ? "selected"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    toggleImage(
-                      imageUrl
-                    )
-                  }
-                >
+              }
+            )}
 
-                  <img
-                    src={
-                      imageUrl
-                    }
-                    alt={
-                      image.filename ||
-                      "Media Library Image"
-                    }
-                    loading="lazy"
-                  />
 
-                  <span>
-                    {image.filename ||
-                      image.publicId ||
-                      "Untitled Image"}
-                  </span>
+            {/* =========================
+                EMPTY MEDIA LIBRARY
+            ========================= */}
 
-                  {isSelected && (
-
-                    <div className="gallery-selected-badge">
-                      ✓
-                    </div>
-
-                  )}
-
-                </button>
-              );
-            }
-          )}
-
-          {/* EMPTY MEDIA LIBRARY */}
-
-          {mediaItems.length ===
-            0 && (
-
-            <div className="gallery-picker-empty">
-
-              No images available.
-
-              <br />
-
-              Upload images first
-              from the Media Library.
-
-            </div>
-
-          )}
-
-          {/* EMPTY FOLDER / SEARCH */}
-
-          {mediaItems.length >
-            0 &&
-            filteredMedia.length ===
+            {mediaItems.length ===
               0 && (
 
               <div className="gallery-picker-empty">
 
-                {searchQuery
-                  ? "No images match your search."
-                  : "No images are available in this folder."}
+                No images available.
+
+                <br />
+
+                Upload images first
+                from the Media Library.
 
               </div>
 
             )}
 
-        </div>
+
+            {/* =========================
+                EMPTY FOLDER / SEARCH
+            ========================= */}
+
+            {mediaItems.length >
+              0 &&
+              filteredMedia.length ===
+                0 && (
+
+                <div className="gallery-picker-empty">
+
+                  {searchQuery
+                    ? "No images match your search."
+                    : "No images are available in this folder."}
+
+                </div>
+
+              )}
+
+          </div>
+
+        )}
+
 
         {/* =========================
             FOOTER
@@ -536,6 +767,7 @@ export default function GalleryPicker({
             }{" "}
             selected
           </span>
+
 
           <button
             type="button"
@@ -552,5 +784,7 @@ export default function GalleryPicker({
       </div>
 
     </div>
+
   );
+
 }

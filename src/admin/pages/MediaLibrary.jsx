@@ -6,79 +6,44 @@ import {
 
 import MediaGrid from "../components/MediaGrid/MediaGrid";
 
+import {
+  getAllMedia,
+  getMediaFolders,
+  saveMediaItem,
+  createMediaFolder,
+  renameMediaFolder,
+  deleteMediaFolder,
+  moveMediaItem,
+  deleteMediaItem,
+} from "../../services/mediaService";
+
 import "../styles/media-library.css";
 import "../styles/media-grid.css";
 
-const MEDIA_KEY =
-  "rohit-photography-media";
-
-const FOLDERS_KEY =
-  "rohit-photography-media-folders";
 
 export default function MediaLibrary() {
+
   /* =========================
-     MEDIA ITEMS
+     MEDIA
   ========================= */
 
-  const [mediaItems, setMediaItems] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            MEDIA_KEY
-          );
+  const [
+    mediaItems,
+    setMediaItems,
+  ] =
+    useState([]);
 
-        if (!saved) {
-          return [];
-        }
-
-        const parsed =
-          JSON.parse(saved);
-
-        return Array.isArray(parsed)
-          ? parsed
-          : [];
-      } catch (error) {
-        console.error(
-          "Failed to load media:",
-          error
-        );
-
-        return [];
-      }
-    });
 
   /* =========================
      FOLDERS
   ========================= */
 
-  const [folders, setFolders] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            FOLDERS_KEY
-          );
+  const [
+    folders,
+    setFolders,
+  ] =
+    useState([]);
 
-        if (!saved) {
-          return [];
-        }
-
-        const parsed =
-          JSON.parse(saved);
-
-        return Array.isArray(parsed)
-          ? parsed
-          : [];
-      } catch (error) {
-        console.error(
-          "Failed to load folders:",
-          error
-        );
-
-        return [];
-      }
-    });
 
   /* =========================
      ACTIVE FOLDER
@@ -87,312 +52,672 @@ export default function MediaLibrary() {
   const [
     activeFolder,
     setActiveFolder,
-  ] = useState("all");
+  ] =
+    useState(
+      "all"
+    );
+
 
   /* =========================
-     SEARCH + SORT
+     SEARCH
   ========================= */
 
   const [
     searchQuery,
     setSearchQuery,
-  ] = useState("");
+  ] =
+    useState(
+      ""
+    );
+
+
+  /* =========================
+     SORT
+  ========================= */
 
   const [
     sortOrder,
     setSortOrder,
-  ] = useState("newest");
+  ] =
+    useState(
+      "newest"
+    );
+
 
   /* =========================
-     SAVE MEDIA
+     LOADING
+  ========================= */
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     ERROR
+  ========================= */
+
+  const [
+    loadError,
+    setLoadError,
+  ] =
+    useState("");
+
+
+  /* =========================
+     ACTION STATE
+
+     Prevents conflicting
+     database operations.
+  ========================= */
+
+  const [
+    processing,
+    setProcessing,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     LOAD MEDIA LIBRARY
+     FROM SUPABASE
   ========================= */
 
   useEffect(() => {
-    localStorage.setItem(
-      MEDIA_KEY,
-      JSON.stringify(mediaItems)
-    );
-  }, [mediaItems]);
 
-  /* =========================
-     SAVE FOLDERS
-  ========================= */
+    let mounted =
+      true;
 
-  useEffect(() => {
-    localStorage.setItem(
-      FOLDERS_KEY,
-      JSON.stringify(folders)
-    );
-  }, [folders]);
+
+    async function loadMediaLibrary() {
+
+      try {
+
+        setLoading(
+          true
+        );
+
+        setLoadError(
+          ""
+        );
+
+
+        const [
+          loadedMedia,
+          loadedFolders,
+        ] =
+          await Promise.all([
+            getAllMedia(),
+            getMediaFolders(),
+          ]);
+
+
+        if (!mounted) {
+          return;
+        }
+
+
+        setMediaItems(
+          loadedMedia
+        );
+
+
+        setFolders(
+          loadedFolders
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Media Library:",
+          error
+        );
+
+
+        if (mounted) {
+
+          setLoadError(
+            "Unable to load the Media Library from Supabase."
+          );
+
+        }
+
+
+      } finally {
+
+        if (mounted) {
+
+          setLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadMediaLibrary();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
+
 
   /* =========================
      CREATE FOLDER
   ========================= */
 
   const handleCreateFolder =
-    () => {
+    async () => {
+
+      if (processing) {
+        return;
+      }
+
+
       const folderName =
         window.prompt(
           "Enter folder name:"
         );
 
+
       if (!folderName) {
         return;
       }
 
+
       const cleanName =
         folderName.trim();
+
 
       if (!cleanName) {
         return;
       }
 
+
       const exists =
         folders.some(
-          (folder) =>
+          (
+            folder
+          ) =>
             folder
               .toLowerCase() ===
             cleanName
               .toLowerCase()
         );
 
+
       if (exists) {
+
         alert(
           "A folder with this name already exists."
         );
 
         return;
+
       }
 
-      setFolders(
-        (prev) => [
-          ...prev,
-          cleanName,
-        ]
-      );
 
-      /*
-       * Automatically open
-       * newly created folder.
-       */
+      try {
 
-      setActiveFolder(
-        cleanName
-      );
+        setProcessing(
+          true
+        );
 
-      setSearchQuery("");
+
+        const createdFolder =
+          await createMediaFolder(
+            cleanName
+          );
+
+
+        setFolders(
+          (
+            prev
+          ) => [
+            ...prev,
+            createdFolder,
+          ]
+        );
+
+
+        setActiveFolder(
+          createdFolder
+        );
+
+
+        setSearchQuery(
+          ""
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to create folder:",
+          error
+        );
+
+
+        alert(
+          `Unable to create folder.
+
+${
+            error?.message ||
+            "Unknown error"
+          }`
+        );
+
+
+      } finally {
+
+        setProcessing(
+          false
+        );
+
+      }
+
     };
+
 
   /* =========================
      OPEN FOLDER
   ========================= */
 
   const handleFolderChange =
-    (folder) => {
+    (
+      folder
+    ) => {
+
       setActiveFolder(
         folder
       );
 
-      setSearchQuery("");
+
+      setSearchQuery(
+        ""
+      );
+
     };
 
-    /* =========================
-   RENAME FOLDER
-========================= */
 
-const handleRenameFolder = (
-  oldFolderName
-) => {
-  if (
-    !oldFolderName ||
-    oldFolderName ===
-      "Uncategorized"
-  ) {
-    return;
-  }
+  /* =========================
+     RENAME FOLDER
+  ========================= */
 
-  const newFolderName =
-    window.prompt(
-      "Enter new folder name:",
+  const handleRenameFolder =
+    async (
       oldFolderName
-    );
-
-  if (!newFolderName) {
-    return;
-  }
-
-  const cleanName =
-    newFolderName.trim();
-
-  if (!cleanName) {
-    return;
-  }
-
-  if (
-    cleanName ===
-    oldFolderName
-  ) {
-    return;
-  }
-
-  const exists =
-    folders.some(
-      (folder) =>
-        folder
-          .toLowerCase() ===
-        cleanName
-          .toLowerCase()
-    );
-
-  if (exists) {
-    alert(
-      "A folder with this name already exists."
-    );
-
-    return;
-  }
-
-  /* Rename folder */
-
-  setFolders((prev) =>
-    prev.map((folder) =>
-      folder ===
-      oldFolderName
-        ? cleanName
-        : folder
-    )
-  );
-
-  /* Move images to renamed folder */
-
-  setMediaItems((prev) =>
-    prev.map((item) => {
-      const itemFolder =
-        item.folder ||
-        item.category ||
-        "Uncategorized";
+    ) => {
 
       if (
-        itemFolder !==
+        processing ||
+        !oldFolderName ||
+        oldFolderName ===
+          "Uncategorized"
+      ) {
+
+        return;
+
+      }
+
+
+      const newFolderName =
+        window.prompt(
+          "Enter new folder name:",
+          oldFolderName
+        );
+
+
+      if (!newFolderName) {
+        return;
+      }
+
+
+      const cleanName =
+        newFolderName.trim();
+
+
+      if (!cleanName) {
+        return;
+      }
+
+
+      if (
+        cleanName ===
         oldFolderName
       ) {
-        return item;
+
+        return;
       }
 
-      return {
-        ...item,
 
-        folder:
-          cleanName,
-
-        category:
-          cleanName,
-      };
-    })
-  );
-
-  /* Keep renamed folder open */
-
-  if (
-    activeFolder ===
-    oldFolderName
-  ) {
-    setActiveFolder(
-      cleanName
-    );
-  }
-};
-
-/* =========================
-   DELETE FOLDER
-========================= */
-
-const handleDeleteFolder = (
-  folderName
-) => {
-  if (
-    !folderName ||
-    folderName ===
-      "Uncategorized"
-  ) {
-    return;
-  }
-
-  const imageCount =
-    mediaItems.filter(
-      (item) => {
-        const itemFolder =
-          item.folder ||
-          item.category ||
-          "Uncategorized";
-
-        return (
-          itemFolder ===
-          folderName
+      const exists =
+        folders.some(
+          (
+            folder
+          ) =>
+            folder
+              .toLowerCase() ===
+            cleanName
+              .toLowerCase()
         );
+
+
+      if (exists) {
+
+        alert(
+          "A folder with this name already exists."
+        );
+
+        return;
+
       }
-    ).length;
 
-  const confirmed =
-    window.confirm(
-      imageCount > 0
-        ? `Delete "${folderName}"? ${imageCount} image(s) will be moved to Uncategorized. The original Cloudinary images will NOT be deleted.`
-        : `Delete "${folderName}"?`
-    );
 
-  if (!confirmed) {
-    return;
-  }
+      try {
 
-  /* Remove folder */
+        setProcessing(
+          true
+        );
 
-  setFolders((prev) =>
-    prev.filter(
-      (folder) =>
-        folder !==
-        folderName
-    )
-  );
 
-  /* Move images to Uncategorized */
+        const renamedFolder =
+          await renameMediaFolder(
+            oldFolderName,
+            cleanName
+          );
 
-  setMediaItems((prev) =>
-    prev.map((item) => {
-      const itemFolder =
-        item.folder ||
-        item.category ||
-        "Uncategorized";
+
+        /*
+         * Supabase succeeded.
+         * Now update React state.
+         */
+
+        setFolders(
+          (
+            prev
+          ) =>
+            prev.map(
+              (
+                folder
+              ) =>
+                folder ===
+                oldFolderName
+                  ? renamedFolder
+                  : folder
+            )
+        );
+
+
+        setMediaItems(
+          (
+            prev
+          ) =>
+            prev.map(
+              (
+                item
+              ) => {
+
+                const itemFolder =
+                  item.folder ||
+                  item.category ||
+                  "Uncategorized";
+
+
+                if (
+                  itemFolder !==
+                  oldFolderName
+                ) {
+
+                  return item;
+
+                }
+
+
+                return {
+
+                  ...item,
+
+                  folder:
+                    renamedFolder,
+
+                  category:
+                    renamedFolder,
+
+                };
+
+              }
+            )
+        );
+
+
+        if (
+          activeFolder ===
+          oldFolderName
+        ) {
+
+          setActiveFolder(
+            renamedFolder
+          );
+
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to rename folder:",
+          error
+        );
+
+
+        alert(
+          `Unable to rename folder.
+
+${
+            error?.message ||
+            "Unknown error"
+          }`
+        );
+
+
+      } finally {
+
+        setProcessing(
+          false
+        );
+
+      }
+
+    };
+
+
+  /* =========================
+     DELETE FOLDER
+  ========================= */
+
+  const handleDeleteFolder =
+    async (
+      folderName
+    ) => {
 
       if (
-        itemFolder !==
-        folderName
+        processing ||
+        !folderName ||
+        folderName ===
+          "Uncategorized"
       ) {
-        return item;
+
+        return;
+
       }
 
-      return {
-        ...item,
 
-        folder:
-          "Uncategorized",
+      const imageCount =
+        mediaItems.filter(
+          (
+            item
+          ) => {
 
-        category:
-          "Uncategorized",
-      };
-    })
-  );
+            const itemFolder =
+              item.folder ||
+              item.category ||
+              "Uncategorized";
 
-  /* Return to All Images */
 
-  if (
-    activeFolder ===
-    folderName
-  ) {
-    setActiveFolder(
-      "all"
-    );
-  }
-};
+            return (
+              itemFolder ===
+              folderName
+            );
+
+          }
+        ).length;
+
+
+      const confirmed =
+        window.confirm(
+          imageCount > 0
+            ? `Delete "${folderName}"? ${imageCount} image(s) will be moved to Uncategorized. The original Cloudinary images will NOT be deleted.`
+            : `Delete "${folderName}"?`
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      try {
+
+        setProcessing(
+          true
+        );
+
+
+        await deleteMediaFolder(
+          folderName
+        );
+
+
+        /*
+         * Database succeeded.
+         * Remove folder locally.
+         */
+
+        setFolders(
+          (
+            prev
+          ) =>
+            prev.filter(
+              (
+                folder
+              ) =>
+                folder !==
+                folderName
+            )
+        );
+
+
+        /*
+         * mediaService moves
+         * affected records to
+         * Uncategorized.
+         */
+
+        setMediaItems(
+          (
+            prev
+          ) =>
+            prev.map(
+              (
+                item
+              ) => {
+
+                const itemFolder =
+                  item.folder ||
+                  item.category ||
+                  "Uncategorized";
+
+
+                if (
+                  itemFolder !==
+                  folderName
+                ) {
+
+                  return item;
+
+                }
+
+
+                return {
+
+                  ...item,
+
+                  folder:
+                    "Uncategorized",
+
+                  category:
+                    "Uncategorized",
+
+                };
+
+              }
+            )
+        );
+
+
+        if (
+          activeFolder ===
+          folderName
+        ) {
+
+          setActiveFolder(
+            "all"
+          );
+
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to delete folder:",
+          error
+        );
+
+
+        alert(
+          `Unable to delete folder.
+
+${
+            error?.message ||
+            "Unknown error"
+          }`
+        );
+
+
+      } finally {
+
+        setProcessing(
+          false
+        );
+
+      }
+
+    };
+
 
   /* =========================
      CLOUDINARY UPLOAD
@@ -400,30 +725,44 @@ const handleDeleteFolder = (
 
   const openUploadWidget =
     () => {
+
+      if (processing) {
+        return;
+      }
+
+
       if (
         !window.cloudinary
       ) {
+
         alert(
           "Cloudinary upload widget is not loaded."
         );
 
         return;
+
       }
 
+
       /*
-       * If All Images is active,
-       * uploads go into Uncategorized.
+       * Admin folder assignment.
+       *
+       * Cloudinary's actual asset
+       * folder remains separate.
        */
 
       const uploadFolder =
-        activeFolder === "all"
+        activeFolder ===
+        "all"
           ? "Uncategorized"
           : activeFolder;
+
 
       const widget =
         window.cloudinary
           .createUploadWidget(
             {
+
               cloudName:
                 "dmwnh8ebd",
 
@@ -432,14 +771,6 @@ const handleDeleteFolder = (
 
               multiple:
                 true,
-
-              /*
-               * Keep your existing
-               * Cloudinary folder.
-               *
-               * Admin folders are
-               * handled separately.
-               */
 
               folder:
                 "rohit-ohal-photography",
@@ -453,375 +784,654 @@ const handleDeleteFolder = (
               resourceType:
                 "image",
 
-              clientAllowedFormats:
-                [
-                  "jpg",
-                  "jpeg",
-                  "png",
-                  "webp",
-                ],
+              clientAllowedFormats: [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp",
+              ],
 
               maxFiles:
                 200,
-            },
 
-            (
+            },
+            async (
               error,
               result
             ) => {
+
               if (error) {
+
                 console.error(
                   "Cloudinary upload error:",
                   error
                 );
 
                 return;
+
               }
 
+
               if (
-                result &&
-                result.event ===
+                !result ||
+                result.event !==
                   "success"
               ) {
-                const info =
-                  result.info;
 
-                const newMedia =
-                  {
-                    id:
-                      info.public_id,
+                return;
 
-                    publicId:
-                      info.public_id,
+              }
 
-                    url:
-                      info.secure_url,
 
-                    width:
-                      info.width,
+              const info =
+                result.info;
 
-                    height:
-                      info.height,
 
-                    format:
-                      info.format,
+              const newMedia = {
 
-                    bytes:
-                      info.bytes,
+                publicId:
+                  info.public_id,
 
-                    createdAt:
-                      info.created_at,
+                url:
+                  info.secure_url,
 
-                    filename:
-                      info.original_filename,
+                width:
+                  info.width,
 
-                    /*
-                     * ADMIN MEDIA
-                     * LIBRARY FOLDER
-                     */
+                height:
+                  info.height,
 
-                    folder:
-                      uploadFolder,
+                format:
+                  info.format,
 
-                    /*
-                     * Keep category
-                     * for compatibility
-                     * with existing code.
-                     */
+                bytes:
+                  info.bytes,
 
-                    category:
-                      uploadFolder,
-                  };
+                createdAt:
+                  info.created_at,
+
+                filename:
+                  info.original_filename,
+
+                folder:
+                  uploadFolder,
+
+                category:
+                  uploadFolder,
+
+              };
+
+
+              try {
+
+                /*
+                 * Cloudinary upload has
+                 * completed.
+
+                 * Now save its metadata
+                 * to Supabase.
+                 */
+
+                const savedMedia =
+                  await saveMediaItem(
+                    newMedia
+                  );
+
 
                 setMediaItems(
-                  (prev) => {
+                  (
+                    prev
+                  ) => {
+
                     const exists =
                       prev.some(
                         (
                           item
                         ) =>
                           item.publicId ===
-                          newMedia.publicId
+                          savedMedia.publicId
                       );
 
-                    if (
-                      exists
-                    ) {
-                      return prev;
+
+                    if (exists) {
+
+                      return prev.map(
+                        (
+                          item
+                        ) =>
+                          item.publicId ===
+                          savedMedia.publicId
+                            ? savedMedia
+                            : item
+                      );
+
                     }
 
+
                     return [
-                      newMedia,
+                      savedMedia,
                       ...prev,
                     ];
+
                   }
                 );
+
+
+              } catch (
+                saveError
+              ) {
+
+                console.error(
+                  "Cloudinary upload succeeded but Supabase metadata save failed:",
+                  saveError
+                );
+
+
+                alert(
+                  `The image uploaded to Cloudinary, but its Media Library record could not be saved to Supabase.
+
+${
+                    saveError?.message ||
+                    "Unknown error"
+                  }`
+                );
+
               }
+
             }
           );
 
+
       widget.open();
+
     };
+
 
   /* =========================
      REMOVE IMAGE
+
+     Removes only the Supabase
+     Media Library record.
+
+     Cloudinary image remains.
   ========================= */
 
-  const handleDelete = (
-    imageId
-  ) => {
-    if (!imageId) {
-      alert(
-        "Unable to remove this image because its ID is missing."
-      );
+  const handleDelete =
+    async (
+      imageId
+    ) => {
 
-      return;
-    }
+      if (
+        processing ||
+        !imageId
+      ) {
 
-    const confirmed =
-      window.confirm(
-        "Remove this image from the Media Library? The original image will remain in Cloudinary."
-      );
+        if (!imageId) {
 
-    if (
-      !confirmed
-    ) {
-      return;
-    }
+          alert(
+            "Unable to remove this image because its ID is missing."
+          );
 
-    setMediaItems(
-      (prev) =>
-        prev.filter(
-          (item) =>
-            (
-              item.id ||
-              item.publicId
-            ) !==
-            imageId
-        )
-    );
-  };
-
-  /* =========================
-     MOVE IMAGE TO FOLDER
-  ========================= */
-
-  const handleMoveImage = (
-    imageId,
-    destinationFolder
-  ) => {
-    if (!imageId || !destinationFolder) {
-      return;
-    }
-
-    setMediaItems((prev) =>
-      prev.map((item) => {
-        const itemId =
-          item.id ||
-          item.publicId;
-
-        if (itemId !== imageId) {
-          return item;
         }
 
-        return {
-          ...item,
-          folder: destinationFolder,
-          category: destinationFolder,
-        };
-      })
-    );
-  };
+
+        return;
+
+      }
+
+
+      const confirmed =
+        window.confirm(
+          "Remove this image from the Media Library? The original image will remain in Cloudinary."
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      try {
+
+        setProcessing(
+          true
+        );
+
+
+        await deleteMediaItem(
+          imageId
+        );
+
+
+        setMediaItems(
+          (
+            prev
+          ) =>
+            prev.filter(
+              (
+                item
+              ) =>
+                item.id !==
+                imageId
+            )
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to remove media:",
+          error
+        );
+
+
+        alert(
+          `Unable to remove image.
+
+${
+            error?.message ||
+            "Unknown error"
+          }`
+        );
+
+
+      } finally {
+
+        setProcessing(
+          false
+        );
+
+      }
+
+    };
+
+
+  /* =========================
+     MOVE IMAGE
+  ========================= */
+
+  const handleMoveImage =
+    async (
+      imageId,
+      destinationFolder
+    ) => {
+
+      if (
+        processing ||
+        !imageId ||
+        !destinationFolder
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        setProcessing(
+          true
+        );
+
+
+        const updatedMedia =
+          await moveMediaItem(
+            imageId,
+            destinationFolder
+          );
+
+
+        setMediaItems(
+          (
+            prev
+          ) =>
+            prev.map(
+              (
+                item
+              ) =>
+                item.id ===
+                imageId
+                  ? updatedMedia
+                  : item
+            )
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to move image:",
+          error
+        );
+
+
+        alert(
+          `Unable to move image.
+
+${
+            error?.message ||
+            "Unknown error"
+          }`
+        );
+
+
+      } finally {
+
+        setProcessing(
+          false
+        );
+
+      }
+
+    };
+
 
   /* =========================
      FILTER + SEARCH + SORT
   ========================= */
 
   const filteredMedia =
-    useMemo(() => {
-      const query =
-        searchQuery
-          .trim()
-          .toLowerCase();
+    useMemo(
+      () => {
 
-      let items =
-        mediaItems.filter(
-          (item) => {
-            /*
-             * FOLDER FILTER
-             */
+        const query =
+          searchQuery
+            .trim()
+            .toLowerCase();
 
-            const itemFolder =
-              item.folder ||
-              item.category ||
-              "Uncategorized";
 
-            const matchesFolder =
-              activeFolder ===
-                "all" ||
-              itemFolder ===
-                activeFolder;
+        let items =
+          mediaItems.filter(
+            (
+              item
+            ) => {
 
-            if (
-              !matchesFolder
-            ) {
-              return false;
+              const itemFolder =
+                item.folder ||
+                item.category ||
+                "Uncategorized";
+
+
+              const matchesFolder =
+                activeFolder ===
+                  "all" ||
+                itemFolder ===
+                  activeFolder;
+
+
+              if (
+                !matchesFolder
+              ) {
+
+                return false;
+
+              }
+
+
+              const filename =
+                item.filename ||
+                "";
+
+              const publicId =
+                item.publicId ||
+                "";
+
+              const category =
+                item.category ||
+                "";
+
+              const folder =
+                item.folder ||
+                "";
+
+
+              return (
+                filename
+                  .toLowerCase()
+                  .includes(
+                    query
+                  ) ||
+
+                publicId
+                  .toLowerCase()
+                  .includes(
+                    query
+                  ) ||
+
+                category
+                  .toLowerCase()
+                  .includes(
+                    query
+                  ) ||
+
+                folder
+                  .toLowerCase()
+                  .includes(
+                    query
+                  )
+              );
+
             }
+          );
 
-            /*
-             * SEARCH FILTER
-             */
 
-            const filename =
-              item.filename ||
-              "";
+        items = [
+          ...items,
+        ];
 
-            const publicId =
-              item.publicId ||
-              "";
 
-            const category =
-              item.category ||
-              "";
+        if (
+          sortOrder ===
+          "newest"
+        ) {
 
-            const folder =
-              item.folder ||
-              "";
-
-            return (
-              filename
-                .toLowerCase()
-                .includes(
-                  query
-                ) ||
-              publicId
-                .toLowerCase()
-                .includes(
-                  query
-                ) ||
-              category
-                .toLowerCase()
-                .includes(
-                  query
-                ) ||
-              folder
-                .toLowerCase()
-                .includes(
-                  query
-                )
-            );
-          }
-        );
-
-      items = [
-        ...items,
-      ];
-
-      /*
-       * SORTING
-       */
-
-      if (
-        sortOrder ===
-        "newest"
-      ) {
-        items.sort(
-          (a, b) =>
-            new Date(
-              b.createdAt ||
-                0
-            ) -
-            new Date(
-              a.createdAt ||
-                0
-            )
-        );
-      }
-
-      if (
-        sortOrder ===
-        "oldest"
-      ) {
-        items.sort(
-          (a, b) =>
-            new Date(
-              a.createdAt ||
-                0
-            ) -
-            new Date(
-              b.createdAt ||
-                0
-            )
-        );
-      }
-
-      if (
-        sortOrder ===
-        "az"
-      ) {
-        items.sort(
-          (a, b) =>
+          items.sort(
             (
-              a.filename ||
-              a.publicId ||
-              ""
-            ).localeCompare(
-              b.filename ||
-                b.publicId ||
-                ""
-            )
-        );
-      }
+              a,
+              b
+            ) =>
+              new Date(
+                b.createdAt ||
+                0
+              ) -
+              new Date(
+                a.createdAt ||
+                0
+              )
+          );
 
-      if (
-        sortOrder ===
-        "za"
-      ) {
-        items.sort(
-          (a, b) =>
+        }
+
+
+        if (
+          sortOrder ===
+          "oldest"
+        ) {
+
+          items.sort(
             (
-              b.filename ||
-              b.publicId ||
-              ""
-            ).localeCompare(
-              a.filename ||
+              a,
+              b
+            ) =>
+              new Date(
+                a.createdAt ||
+                0
+              ) -
+              new Date(
+                b.createdAt ||
+                0
+              )
+          );
+
+        }
+
+
+        if (
+          sortOrder ===
+          "az"
+        ) {
+
+          items.sort(
+            (
+              a,
+              b
+            ) =>
+              (
+                a.filename ||
                 a.publicId ||
                 ""
-            )
-        );
-      }
+              ).localeCompare(
+                b.filename ||
+                b.publicId ||
+                ""
+              )
+          );
 
-      return items;
-    }, [
-      mediaItems,
-      activeFolder,
-      searchQuery,
-      sortOrder,
-    ]);
+        }
+
+
+        if (
+          sortOrder ===
+          "za"
+        ) {
+
+          items.sort(
+            (
+              a,
+              b
+            ) =>
+              (
+                b.filename ||
+                b.publicId ||
+                ""
+              ).localeCompare(
+                a.filename ||
+                a.publicId ||
+                ""
+              )
+          );
+
+        }
+
+
+        return items;
+
+      },
+      [
+        mediaItems,
+        activeFolder,
+        searchQuery,
+        sortOrder,
+      ]
+    );
+
 
   /* =========================
-     FOLDER IMAGE COUNT
+     FOLDER COUNT
   ========================= */
 
-  const getFolderCount = (
-    folder
-  ) => {
-    return mediaItems.filter(
-      (item) =>
+  const getFolderCount =
+    (
+      folder
+    ) => {
+
+      return mediaItems.filter(
         (
-          item.folder ||
-          item.category ||
-          "Uncategorized"
-        ) === folder
-    ).length;
-  };
+          item
+        ) =>
+          (
+            item.folder ||
+            item.category ||
+            "Uncategorized"
+          ) ===
+          folder
+      ).length;
+
+    };
+
+
+  /* =========================
+     LOADING UI
+  ========================= */
+
+  if (loading) {
+
+    return (
+
+      <div className="media-library-page">
+
+        <div className="media-library-header">
+
+          <div>
+
+            <span className="media-overline">
+              MEDIA LIBRARY
+            </span>
+
+            <h1>
+              Manage Your Images
+            </h1>
+
+            <p>
+              Loading Media Library...
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+
+  /* =========================
+     LOAD ERROR
+  ========================= */
+
+  if (loadError) {
+
+    return (
+
+      <div className="media-library-page">
+
+        <div className="media-library-header">
+
+          <div>
+
+            <span className="media-overline">
+              MEDIA LIBRARY
+            </span>
+
+            <h1>
+              Manage Your Images
+            </h1>
+
+            <p>
+              {loadError}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
 
   /* =========================
      RENDER
   ========================= */
 
   return (
+
     <div className="media-library-page">
+
 
       {/* =========================
           HEADER
@@ -835,9 +1445,11 @@ const handleDeleteFolder = (
             MEDIA LIBRARY
           </span>
 
+
           <h1>
             Manage Your Images
           </h1>
+
 
           <p>
             Upload, organize and
@@ -848,9 +1460,8 @@ const handleDeleteFolder = (
 
         </div>
 
-        <div className="media-actions">
 
-          {/* CREATE FOLDER */}
+        <div className="media-actions">
 
           <button
             type="button"
@@ -858,17 +1469,22 @@ const handleDeleteFolder = (
             onClick={
               handleCreateFolder
             }
+            disabled={
+              processing
+            }
           >
             + Create Folder
           </button>
 
-          {/* UPLOAD */}
 
           <button
             type="button"
             className="media-button primary"
             onClick={
               openUploadWidget
+            }
+            disabled={
+              processing
             }
           >
             Upload Images
@@ -878,8 +1494,9 @@ const handleDeleteFolder = (
 
       </div>
 
+
       {/* =========================
-          FOLDER NAVIGATION
+          FOLDERS
       ========================= */}
 
       <div
@@ -897,8 +1514,6 @@ const handleDeleteFolder = (
             "30px",
         }}
       >
-
-        {/* ALL IMAGES */}
 
         <button
           type="button"
@@ -935,149 +1550,165 @@ const handleDeleteFolder = (
           )
         </button>
 
-        {/* FOLDERS */}
 
         {folders.map(
-  (folder) => (
-
-    <div
-      key={folder}
-      style={{
-        display:
-          "flex",
-
-        alignItems:
-          "center",
-
-        border:
-          activeFolder ===
-          folder
-            ? "1px solid #b58b43"
-            : "1px solid #ddd",
-
-        background:
-          activeFolder ===
-          folder
-            ? "#f8f3e9"
-            : "#fff",
-
-        borderRadius:
-          "12px",
-
-        overflow:
-          "hidden",
-      }}
-    >
-
-      {/* OPEN FOLDER */}
-
-      <button
-        type="button"
-        onClick={() =>
-          handleFolderChange(
+          (
             folder
+          ) => (
+
+            <div
+              key={
+                folder
+              }
+              style={{
+                display:
+                  "flex",
+
+                alignItems:
+                  "center",
+
+                border:
+                  activeFolder ===
+                  folder
+                    ? "1px solid #b58b43"
+                    : "1px solid #ddd",
+
+                background:
+                  activeFolder ===
+                  folder
+                    ? "#f8f3e9"
+                    : "#fff",
+
+                borderRadius:
+                  "12px",
+
+                overflow:
+                  "hidden",
+              }}
+            >
+
+              <button
+                type="button"
+                onClick={() =>
+                  handleFolderChange(
+                    folder
+                  )
+                }
+                style={{
+                  padding:
+                    "12px 16px",
+
+                  border:
+                    "none",
+
+                  background:
+                    "transparent",
+
+                  cursor:
+                    "pointer",
+                }}
+              >
+                📁{" "}
+                {folder} (
+                {getFolderCount(
+                  folder
+                )}
+                )
+              </button>
+
+
+              <button
+                type="button"
+                title="Rename Folder"
+                disabled={
+                  processing
+                }
+                onClick={(
+                  event
+                ) => {
+
+                  event
+                    .stopPropagation();
+
+
+                  handleRenameFolder(
+                    folder
+                  );
+
+                }}
+                style={{
+                  padding:
+                    "12px 10px",
+
+                  border:
+                    "none",
+
+                  borderLeft:
+                    "1px solid #ddd",
+
+                  background:
+                    "transparent",
+
+                  cursor:
+                    "pointer",
+
+                  fontSize:
+                    "14px",
+                }}
+              >
+                ✎
+              </button>
+
+
+              <button
+                type="button"
+                title="Delete Folder"
+                disabled={
+                  processing
+                }
+                onClick={(
+                  event
+                ) => {
+
+                  event
+                    .stopPropagation();
+
+
+                  handleDeleteFolder(
+                    folder
+                  );
+
+                }}
+                style={{
+                  padding:
+                    "12px 10px",
+
+                  border:
+                    "none",
+
+                  borderLeft:
+                    "1px solid #ddd",
+
+                  background:
+                    "transparent",
+
+                  cursor:
+                    "pointer",
+
+                  fontSize:
+                    "14px",
+                }}
+              >
+                ×
+              </button>
+
+            </div>
+
           )
-        }
-        style={{
-          padding:
-            "12px 16px",
-
-          border:
-            "none",
-
-          background:
-            "transparent",
-
-          cursor:
-            "pointer",
-        }}
-      >
-        📁{" "}
-        {folder} (
-        {getFolderCount(
-          folder
         )}
-        )
-      </button>
-
-
-      {/* RENAME */}
-
-      <button
-        type="button"
-        title="Rename Folder"
-        onClick={(event) => {
-          event.stopPropagation();
-
-          handleRenameFolder(
-            folder
-          );
-        }}
-        style={{
-          padding:
-            "12px 10px",
-
-          border:
-            "none",
-
-          borderLeft:
-            "1px solid #ddd",
-
-          background:
-            "transparent",
-
-          cursor:
-            "pointer",
-
-          fontSize:
-            "14px",
-        }}
-      >
-        ✎
-      </button>
-
-
-      {/* DELETE */}
-
-      <button
-        type="button"
-        title="Delete Folder"
-        onClick={(event) => {
-          event.stopPropagation();
-
-          handleDeleteFolder(
-            folder
-          );
-        }}
-        style={{
-          padding:
-            "12px 10px",
-
-          border:
-            "none",
-
-          borderLeft:
-            "1px solid #ddd",
-
-          background:
-            "transparent",
-
-          cursor:
-            "pointer",
-
-          fontSize:
-            "14px",
-        }}
-      >
-        ×
-      </button>
-
-    </div>
-
-  )
-)}
 
       </div>
+
 
       {/* =========================
           CURRENT FOLDER
@@ -1108,6 +1739,7 @@ const handleDeleteFolder = (
           Current Folder
         </span>
 
+
         <h2
           style={{
             margin:
@@ -1121,6 +1753,7 @@ const handleDeleteFolder = (
         </h2>
 
       </div>
+
 
       {/* =========================
           TOOLBAR
@@ -1138,11 +1771,11 @@ const handleDeleteFolder = (
             event
           ) =>
             setSearchQuery(
-              event.target
-                .value
+              event.target.value
             )
           }
         />
+
 
         <select
           value={
@@ -1152,8 +1785,7 @@ const handleDeleteFolder = (
             event
           ) =>
             setSortOrder(
-              event.target
-                .value
+              event.target.value
             )
           }
         >
@@ -1178,8 +1810,9 @@ const handleDeleteFolder = (
 
       </div>
 
+
       {/* =========================
-          MEDIA COUNT
+          COUNT
       ========================= */}
 
       <div
@@ -1201,8 +1834,9 @@ const handleDeleteFolder = (
         images
       </div>
 
+
       {/* =========================
-          MEDIA GRID
+          GRID
       ========================= */}
 
       <MediaGrid
@@ -1221,5 +1855,7 @@ const handleDeleteFolder = (
       />
 
     </div>
+
   );
+
 }

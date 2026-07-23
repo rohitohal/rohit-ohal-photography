@@ -4,22 +4,24 @@ import {
   useState,
 } from "react";
 
+import {
+  supabase,
+} from "../../lib/supabase";
+
 import "./Hero.css";
 
 
 /* =========================
-   CONSTANTS
+   SUPABASE SETTING KEY
 ========================= */
 
-const HOMEPAGE_KEY =
-  "rohit-photography-homepage";
+const SETTING_KEY =
+  "homepage_hero";
 
 
-/*
- * Fallback image shown if
- * no Hero images have been
- * selected from Admin.
- */
+/* =========================
+   FALLBACK HERO IMAGE
+========================= */
 
 const fallbackHeroImage =
   "https://images.unsplash.com/photo-1519741497674-611481863552?w=2000&q=85";
@@ -30,6 +32,7 @@ const fallbackHeroImage =
 ========================= */
 
 const defaultSettings = {
+
   heroTitle:
     "Capturing Timeless Stories",
 
@@ -39,11 +42,75 @@ const defaultSettings = {
   heroDescription:
     "Documentary storytelling through timeless imagery, capturing emotion, atmosphere and moments that deserve to be remembered.",
 
-  heroImages: [],
+  heroImages:
+    [],
+
+  buttonText:
+    "View Portfolio",
+
+  buttonLink:
+    "/portfolio",
+
 };
 
 
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+      ...defaultSettings,
+    };
+
+  }
+
+
+  /*
+   * Support old single
+   * heroImage format.
+   */
+
+  const heroImages =
+    Array.isArray(
+      data.heroImages
+    )
+      ? data.heroImages
+      : data.heroImage
+        ? [
+            data.heroImage,
+          ]
+        : [];
+
+
+  return {
+
+    ...defaultSettings,
+
+    ...data,
+
+    heroImages,
+
+  };
+
+}
+
+
+/* =========================
+   HERO
+========================= */
+
 export default function Hero() {
+
   /* =========================
      CURRENT SLIDE
   ========================= */
@@ -51,70 +118,135 @@ export default function Hero() {
   const [
     currentImage,
     setCurrentImage,
-  ] = useState(0);
+  ] =
+    useState(0);
 
 
   /* =========================
-     LOAD HOMEPAGE SETTINGS
+     HOMEPAGE SETTINGS
   ========================= */
 
-  const homepageSettings =
-    useMemo(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            HOMEPAGE_KEY
-          );
+  const [
+    homepageSettings,
+    setHomepageSettings,
+  ] =
+    useState(
+      defaultSettings
+    );
 
-        if (!saved) {
-          return {
-            ...defaultSettings,
-          };
+
+  /* =========================
+     LOAD FROM SUPABASE
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadHomepageHero() {
+
+      try {
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
         }
 
-        const parsed =
-          JSON.parse(
-            saved
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          data?.setting_value
+        ) {
+
+          setHomepageSettings(
+            normalizeSettings(
+              data.setting_value
+            )
           );
+
+
+          return;
+
+        }
 
 
         /*
-         * Support both the new
-         * heroImages array and
-         * the old heroImage field.
+         * No Supabase settings exist.
+         * Use defaults.
          */
 
-        const migratedHeroImages =
-          Array.isArray(
-            parsed.heroImages
-          )
-            ? parsed.heroImages
-            : parsed.heroImage
-            ? [
-                parsed.heroImage,
-              ]
-            : [];
-
-
-        return {
+        setHomepageSettings({
           ...defaultSettings,
-          ...parsed,
+        });
 
-          heroImages:
-            migratedHeroImages,
-        };
 
-      } catch (error) {
+      } catch (
+        error
+      ) {
+
         console.error(
-          "Failed to load homepage settings:",
+          "Failed to load Homepage Hero from Supabase:",
           error
         );
 
-        return {
-          ...defaultSettings,
-        };
+
+        if (
+          mounted
+        ) {
+
+          setHomepageSettings({
+            ...defaultSettings,
+          });
+
+        }
+
       }
-    }, []);
+
+    }
+
+
+    loadHomepageHero();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
@@ -122,99 +254,122 @@ export default function Hero() {
   ========================= */
 
   const heroImages =
-    useMemo(() => {
+    useMemo(
+      () => {
 
-      const savedImages =
-        Array.isArray(
-          homepageSettings.heroImages
-        )
-          ? homepageSettings.heroImages.filter(
-              Boolean
-            )
-          : [];
+        const savedImages =
+          Array.isArray(
+            homepageSettings.heroImages
+          )
+            ? homepageSettings
+                .heroImages
+                .filter(
+                  Boolean
+                )
+            : [];
 
 
-      /*
-       * If Admin has not selected
-       * any Hero images, use the
-       * fallback image.
-       */
+        /*
+         * If Admin has not selected
+         * any Hero images, use the
+         * fallback image.
+         */
 
-      if (
-        savedImages.length ===
-        0
-      ) {
-        return [
-          fallbackHeroImage,
-        ];
-      }
+        if (
+          savedImages.length ===
+          0
+        ) {
 
-      return savedImages;
+          return [
+            fallbackHeroImage,
+          ];
 
-    }, [
-      homepageSettings,
-    ]);
+        }
+
+
+        return savedImages;
+
+      },
+      [
+        homepageSettings
+          .heroImages,
+      ]
+    );
 
 
   /* =========================
      RESET CURRENT IMAGE
   ========================= */
 
-  useEffect(() => {
-    setCurrentImage(
-      0
-    );
-  }, [
-    heroImages,
-  ]);
+  useEffect(
+    () => {
+
+      setCurrentImage(
+        0
+      );
+
+    },
+    [
+      heroImages,
+    ]
+  );
 
 
   /* =========================
      AUTO SLIDESHOW
   ========================= */
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    /*
-     * No slideshow required
-     * when only one image exists.
-     */
+      /*
+       * No slideshow required
+       * when only one image exists.
+       */
 
-    if (
-      heroImages.length <=
-      1
-    ) {
-      return undefined;
-    }
+      if (
+        heroImages.length <=
+        1
+      ) {
+
+        return undefined;
+
+      }
 
 
-    const interval =
-      setInterval(
-        () => {
+      const interval =
+        setInterval(
+          () => {
 
-          setCurrentImage(
-            (prev) =>
+            setCurrentImage(
               (
-                prev +
-                1
-              ) %
-              heroImages.length
-          );
+                previous
+              ) =>
+                (
+                  previous +
+                  1
+                ) %
+                heroImages.length
+            );
 
-        },
-        6000
-      );
+          },
+          6000
+        );
 
 
-    return () => {
-      clearInterval(
-        interval
-      );
-    };
+      return () => {
 
-  }, [
-    heroImages.length,
-  ]);
+        clearInterval(
+          interval
+        );
+
+      };
+
+    },
+    [
+      heroImages.length,
+    ]
+  );
 
 
   /* =========================
@@ -222,6 +377,7 @@ export default function Hero() {
   ========================= */
 
   return (
+
     <section className="hero">
 
 
@@ -236,12 +392,15 @@ export default function Hero() {
         ) => (
 
           <img
-            key={`${image}-${index}`}
+            key={
+              `${image}-${index}`
+            }
             src={
               image
             }
             alt={
-              index === 0
+              index ===
+              0
                 ? "Rohit Ohal Photography"
                 : ""
             }
@@ -301,16 +460,21 @@ export default function Hero() {
           .heroDescription && (
 
           <p>
+
             {
               homepageSettings
                 .heroDescription
             }
+
           </p>
 
         )}
 
+
       </div>
 
     </section>
+
   );
+
 }

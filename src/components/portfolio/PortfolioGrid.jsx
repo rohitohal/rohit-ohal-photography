@@ -1,7 +1,11 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
+
+import { supabase } from
+  "../../lib/supabase";
 
 import PortfolioCard from "./PortfolioCard";
 import PortfolioFilter from "./PortfolioFilter";
@@ -24,10 +28,18 @@ const categoryToDiscipline = {
 };
 
 
+/* =========================
+   PORTFOLIO GRID
+========================= */
+
 export default function PortfolioGrid({
   category,
   enableFilter = false,
 }) {
+
+  /* =========================
+     FILTER
+  ========================= */
 
   const [
     activeFilter,
@@ -38,50 +50,146 @@ export default function PortfolioGrid({
 
 
   /* =========================
-     LOAD CMS PROJECTS
+     PROJECT DATA
   ========================= */
 
-  const cmsProjects =
-    useMemo(() => {
+  const [
+    cmsProjects,
+    setCmsProjects,
+  ] = useState([]);
+
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
+
+
+  const [
+    loadError,
+    setLoadError,
+  ] = useState("");
+
+
+  /* =========================
+     LOAD PROJECTS
+     FROM SUPABASE
+  ========================= */
+
+  useEffect(() => {
+
+    let isMounted =
+      true;
+
+
+    async function loadProjects() {
+
+      setIsLoading(
+        true
+      );
+
+      setLoadError(
+        ""
+      );
+
 
       try {
 
-        const savedProjects =
-          localStorage.getItem(
-            "rohit-photography-projects"
-          );
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "projects"
+            )
+            .select(
+              "*"
+            )
+            .eq(
+              "status",
+              "Published"
+            );
 
-        if (!savedProjects) {
-          return [];
+
+        if (error) {
+
+          throw error;
+
         }
 
-        const parsedProjects =
-          JSON.parse(
-            savedProjects
+
+        if (
+          isMounted
+        ) {
+
+          setCmsProjects(
+            Array.isArray(
+              data
+            )
+              ? data
+              : []
           );
 
-        return Array.isArray(
-          parsedProjects
-        )
-          ? parsedProjects
-          : [];
+        }
+
 
       } catch (error) {
 
         console.error(
-          "Failed to load CMS projects:",
+          "Failed to load portfolio projects:",
           error
         );
 
-        return [];
+
+        if (
+          isMounted
+        ) {
+
+          setCmsProjects(
+            []
+          );
+
+          setLoadError(
+            error?.message ||
+              "Unable to load portfolio projects."
+          );
+
+        }
+
+
+      } finally {
+
+        if (
+          isMounted
+        ) {
+
+          setIsLoading(
+            false
+          );
+
+        }
 
       }
 
-    }, []);
+    }
+
+
+    loadProjects();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
-     MAP + SORT PROJECTS
+     NORMALIZE + SORT PROJECTS
   ========================= */
 
   const allProjects =
@@ -90,7 +198,12 @@ export default function PortfolioGrid({
       return cmsProjects
 
         /* =========================
-           ONLY PUBLISHED PROJECTS
+           SAFETY CHECK
+
+           Supabase already filters
+           Published projects, but
+           keeping this prevents an
+           accidental draft display.
         ========================= */
 
         .filter(
@@ -101,65 +214,133 @@ export default function PortfolioGrid({
 
 
         /* =========================
-           NORMALIZE PROJECT DATA
+           NORMALIZE SUPABASE DATA
         ========================= */
 
         .map(
           (
             project,
             index
-          ) => ({
+          ) => {
 
-            ...project,
-
-            discipline:
-              categoryToDiscipline[
-                project.category
-              ] || "other",
-
-            year:
+            const projectDate =
               project.date
                 ? new Date(
-                    project.date
+                    `${project.date}T00:00:00`
                   )
-                    .getFullYear()
-                    .toString()
-                : new Date()
-                    .getFullYear()
-                    .toString(),
+                : null;
 
-            gallery:
-              Array.isArray(
-                project.gallery
-              )
-                ? project.gallery
-                : [],
 
-            /*
-             * Projects created before
-             * ordering was added may
-             * not have an order value.
-             */
+            const hasValidDate =
+              projectDate &&
+              !Number.isNaN(
+                projectDate.getTime()
+              );
 
-            order:
-              typeof project.order ===
-              "number"
-                ? project.order
-                : index,
 
-          })
+            return {
+
+              ...project,
+
+
+              /* =========================
+                 DISCIPLINE
+              ========================= */
+
+              discipline:
+                categoryToDiscipline[
+                  project.category
+                ] || "other",
+
+
+              /* =========================
+                 YEAR
+              ========================= */
+
+              year:
+                hasValidDate
+                  ? projectDate
+                      .getFullYear()
+                      .toString()
+                  : "",
+
+
+              /* =========================
+                 GALLERY
+              ========================= */
+
+              gallery:
+                Array.isArray(
+                  project.gallery
+                )
+                  ? project.gallery
+                  : Array.isArray(
+                      project.images
+                    )
+                    ? project.images
+                    : [],
+
+
+              /* =========================
+                 FEATURED PORTFOLIO
+
+                 Database:
+                 featured_portfolio
+
+                 React:
+                 featuredPortfolio
+              ========================= */
+
+              featuredPortfolio:
+                Boolean(
+                  project.featured_portfolio
+                ),
+
+
+              /* =========================
+                 PORTFOLIO ORDER
+              ========================= */
+
+              portfolioOrder:
+                typeof project.portfolio_order ===
+                "number"
+                  ? project.portfolio_order
+                  : null,
+
+
+              /* =========================
+                 GENERAL PROJECT ORDER
+              ========================= */
+
+              projectOrder:
+                typeof project.project_order ===
+                "number"
+                  ? project.project_order
+                  : index,
+
+            };
+
+          }
         )
 
 
         /* =========================
            SORT PROJECTS
 
-           1. Featured Portfolio first
-           2. Custom order second
+           1. Featured Portfolio
+           2. Portfolio Order
+           3. Project Order
         ========================= */
 
         .sort(
-          (a, b) => {
+          (
+            a,
+            b
+          ) => {
+
+            /* =========================
+               FEATURED FIRST
+            ========================= */
 
             const aFeatured =
               a.featuredPortfolio
@@ -171,8 +352,6 @@ export default function PortfolioGrid({
                 ? 1
                 : 0;
 
-
-            /* Featured first */
 
             if (
               aFeatured !==
@@ -187,11 +366,51 @@ export default function PortfolioGrid({
             }
 
 
-            /* Custom order */
+            /* =========================
+               FEATURED PORTFOLIO ORDER
+            ========================= */
+
+            if (
+              a.featuredPortfolio &&
+              b.featuredPortfolio
+            ) {
+
+              const aPortfolioOrder =
+                typeof a.portfolioOrder ===
+                "number"
+                  ? a.portfolioOrder
+                  : Number.MAX_SAFE_INTEGER;
+
+
+              const bPortfolioOrder =
+                typeof b.portfolioOrder ===
+                "number"
+                  ? b.portfolioOrder
+                  : Number.MAX_SAFE_INTEGER;
+
+
+              if (
+                aPortfolioOrder !==
+                bPortfolioOrder
+              ) {
+
+                return (
+                  aPortfolioOrder -
+                  bPortfolioOrder
+                );
+
+              }
+
+            }
+
+
+            /* =========================
+               GENERAL PROJECT ORDER
+            ========================= */
 
             return (
-              a.order -
-              b.order
+              a.projectOrder -
+              b.projectOrder
             );
 
           }
@@ -213,7 +432,9 @@ export default function PortfolioGrid({
          DISCIPLINE PAGE
       ========================= */
 
-      if (!enableFilter) {
+      if (
+        !enableFilter
+      ) {
 
         return allProjects.filter(
           (item) =>
@@ -261,6 +482,7 @@ export default function PortfolioGrid({
   ========================= */
 
   return (
+
     <section className="portfolio-grid">
 
 
@@ -288,7 +510,53 @@ export default function PortfolioGrid({
 
       <div className="portfolio-grid-container">
 
-        {projects.length > 0 ? (
+
+        {/* =========================
+            LOADING
+        ========================= */}
+
+        {isLoading ? (
+
+          <div className="portfolio-empty">
+
+            <h3>
+              Loading Portfolio
+            </h3>
+
+            <p>
+              Please wait while the
+              projects are loaded.
+            </p>
+
+          </div>
+
+
+        ) : loadError ? (
+
+
+          /* =========================
+             ERROR
+          ========================= */
+
+          <div className="portfolio-empty">
+
+            <h3>
+              Unable to Load Projects
+            </h3>
+
+            <p>
+              {loadError}
+            </p>
+
+          </div>
+
+
+        ) : projects.length > 0 ? (
+
+
+          /* =========================
+             PROJECTS
+          ========================= */
 
           projects.map(
             (project) => (
@@ -306,7 +574,13 @@ export default function PortfolioGrid({
             )
           )
 
+
         ) : (
+
+
+          /* =========================
+             EMPTY
+          ========================= */
 
           <div className="portfolio-empty">
 
@@ -328,5 +602,7 @@ export default function PortfolioGrid({
       </div>
 
     </section>
+
   );
+
 }

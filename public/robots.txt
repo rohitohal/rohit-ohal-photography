@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Private administration
+Disallow: /admin/
+Disallow: /login
+
+# Sitemap
+Sitemap: https://rohitohal.com/sitemap.xml

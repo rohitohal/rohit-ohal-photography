@@ -4,20 +4,30 @@ import {
   useState,
 } from "react";
 
-import SEOHead from "../components/common/SEOHead";
-import PageHero from "../components/common/PageHero";
-import JournalGrid from "../components/journal/JournalGrid";
+import SEOHead from
+  "../components/common/SEOHead";
+
+import PageHero from
+  "../components/common/PageHero";
+
+import JournalGrid from
+  "../components/journal/JournalGrid";
+
+import {
+  getPublishedPosts,
+} from "../services/journalService";
+
+import {
+  getSettings,
+} from "../services/settingsService";
 
 
 /* =========================
-   STORAGE KEYS
+   SETTINGS KEY
 ========================= */
 
-const JOURNAL_KEY =
-  "rohit-photography-journal";
-
-const JOURNAL_SETTINGS_KEY =
-  "rohit-photography-journal-settings";
+const SETTINGS_KEY =
+  "journal";
 
 
 /* =========================
@@ -51,187 +61,231 @@ export default function Journal() {
   const [
     posts,
     setPosts,
-  ] = useState([]);
+  ] =
+    useState([]);
 
 
   /* =========================
-     LOAD JOURNAL POSTS
+     JOURNAL SETTINGS
+  ========================= */
+
+  const [
+    journalSettings,
+    setJournalSettings,
+  ] =
+    useState({
+      ...defaultJournalSettings,
+    });
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     ERROR
+  ========================= */
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] =
+    useState("");
+
+
+  /* =========================
+     LOAD JOURNAL DATA
+     FROM SUPABASE
   ========================= */
 
   useEffect(() => {
 
-    try {
+    let isMounted =
+      true;
 
-      const savedPosts =
-        localStorage.getItem(
-          JOURNAL_KEY
+
+    async function loadJournal() {
+
+      try {
+
+        setIsLoading(
+          true
         );
 
 
-      if (!savedPosts) {
-
-        setPosts([]);
-
-        return;
-
-      }
-
-
-      const parsedPosts =
-        JSON.parse(
-          savedPosts
+        setErrorMessage(
+          ""
         );
 
 
-      if (
-        Array.isArray(
-          parsedPosts
-        )
-      ) {
+        /*
+         * Load articles and Journal
+         * page settings together.
+         */
+
+        const [
+          publishedPosts,
+          savedSettings,
+        ] =
+          await Promise.all([
+
+            getPublishedPosts(),
+
+            getSettings(
+              SETTINGS_KEY
+            ),
+
+          ]);
+
+
+        if (
+          !isMounted
+        ) {
+
+          return;
+
+        }
+
+
+        /* =====================
+           POSTS
+        ===================== */
 
         setPosts(
-          parsedPosts
+          Array.isArray(
+            publishedPosts
+          )
+            ? publishedPosts
+            : []
         );
 
-      } else {
 
-        setPosts([]);
+        /* =====================
+           SETTINGS
+        ===================== */
+
+        if (
+          savedSettings &&
+          typeof savedSettings ===
+            "object" &&
+          !Array.isArray(
+            savedSettings
+          )
+        ) {
+
+          setJournalSettings({
+
+            ...defaultJournalSettings,
+
+            ...savedSettings,
+
+          });
+
+        } else {
+
+          setJournalSettings({
+            ...defaultJournalSettings,
+          });
+
+        }
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to load Journal:",
+          error
+        );
+
+
+        if (
+          isMounted
+        ) {
+
+          setErrorMessage(
+            "Unable to load Journal content."
+          );
+
+        }
+
+      } finally {
+
+        if (
+          isMounted
+        ) {
+
+          setIsLoading(
+            false
+          );
+
+        }
 
       }
 
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load journal posts:",
-        error
-      );
-
-      setPosts([]);
-
     }
+
+
+    loadJournal();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
 
   }, []);
 
 
   /* =========================
-     LOAD JOURNAL PAGE SETTINGS
-  ========================= */
+     SORT POSTS
 
-  const journalSettings =
-    useMemo(() => {
-
-      try {
-
-        const saved =
-          localStorage.getItem(
-            JOURNAL_SETTINGS_KEY
-          );
-
-
-        if (!saved) {
-
-          return {
-            ...defaultJournalSettings,
-          };
-
-        }
-
-
-        const parsed =
-          JSON.parse(
-            saved
-          );
-
-
-        if (
-          !parsed ||
-          typeof parsed !==
-            "object"
-        ) {
-
-          return {
-            ...defaultJournalSettings,
-          };
-
-        }
-
-
-        return {
-          ...defaultJournalSettings,
-          ...parsed,
-        };
-
-
-      } catch (error) {
-
-        console.error(
-          "Failed to load Journal page settings:",
-          error
-        );
-
-
-        return {
-          ...defaultJournalSettings,
-        };
-
-      }
-
-    }, []);
-
-
-  /* =========================
-     PUBLISHED JOURNAL POSTS
+     Supabase already sorts
+     newest first, but we keep
+     this as a UI safeguard.
   ========================= */
 
   const publishedPosts =
     useMemo(() => {
 
-      return [...posts]
+      return [
+        ...posts,
+      ].sort(
+        (
+          a,
+          b
+        ) => {
 
-        .filter(
-          (
-            post
-          ) =>
-            post &&
-            post.status ===
-              "Published"
-        )
-
-
-        /* =========================
-           NEWEST FIRST
-        ========================= */
-
-        .sort(
-          (
-            a,
-            b
-          ) => {
-
-            const dateA =
-              new Date(
-                a.createdAt ||
-                a.date ||
-                0
-              ).getTime();
+          const dateA =
+            new Date(
+              a.createdAt ||
+              0
+            ).getTime();
 
 
-            const dateB =
-              new Date(
-                b.createdAt ||
-                b.date ||
-                0
-              ).getTime();
+          const dateB =
+            new Date(
+              b.createdAt ||
+              0
+            ).getTime();
 
 
-            return (
-              dateB -
-              dateA
-            );
+          return (
+            dateB -
+            dateA
+          );
 
-          }
-        );
+        }
+      );
 
     }, [
       posts,
@@ -253,13 +307,11 @@ export default function Journal() {
 
 
   /*
-   * Journal Hero now comes
-   * directly from Admin.
+   * Priority:
    *
-   * If no Journal Hero has been
-   * selected yet, use the first
-   * available published article
-   * cover as a temporary fallback.
+   * 1. Hero selected in Admin
+   * 2. First article with cover
+   * 3. Empty image
    */
 
   const heroImage =
@@ -281,22 +333,30 @@ export default function Journal() {
 
     <>
 
-      {/* =========================
+      {/* =====================
           SEO
-      ========================= */}
+      ===================== */}
 
       <SEOHead
         title="Photography Journal | Rohit Ohal Photography"
+
         description="Explore photography stories, behind-the-scenes moments, creative insights and experiences from weddings, commercial assignments and photography adventures by Rohit Ohal."
+
         image={
           heroImage
         }
+
+        canonical="/journal"
+
+        type="website"
+
+        robots="index, follow"
       />
 
 
-      {/* =========================
+      {/* =====================
           PAGE HERO
-      ========================= */}
+      ===================== */}
 
       <PageHero
         title={
@@ -319,15 +379,73 @@ export default function Journal() {
       />
 
 
-      {/* =========================
-          JOURNAL ARTICLES
-      ========================= */}
+      {/* =====================
+          LOADING
+      ===================== */}
 
-      <JournalGrid
-        posts={
-          publishedPosts
-        }
-      />
+      {isLoading && (
+
+        <section
+          style={{
+            padding:
+              "80px 20px",
+
+            textAlign:
+              "center",
+          }}
+        >
+
+          <p>
+            Loading journal...
+          </p>
+
+        </section>
+
+      )}
+
+
+      {/* =====================
+          ERROR
+      ===================== */}
+
+      {!isLoading &&
+        errorMessage && (
+
+        <section
+          style={{
+            padding:
+              "80px 20px",
+
+            textAlign:
+              "center",
+          }}
+        >
+
+          <p>
+            {
+              errorMessage
+            }
+          </p>
+
+        </section>
+
+      )}
+
+
+      {/* =====================
+          JOURNAL ARTICLES
+      ===================== */}
+
+      {!isLoading &&
+        !errorMessage && (
+
+        <JournalGrid
+          posts={
+            publishedPosts
+          }
+        />
+
+      )}
 
     </>
 

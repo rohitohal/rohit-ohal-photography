@@ -8,20 +8,40 @@ import {
   disciplines as defaultDisciplines,
 } from "../../data/disciplines";
 
+import {
+  supabase,
+} from "../../lib/supabase";
+
+import {
+  getAllMedia,
+} from "../../services/mediaService";
+
 import PortfolioSettings from "../components/PortfolioSettings/PortfolioSettings";
 
 import "../styles/disciplines.css";
 
 
 /* =========================
-   STORAGE KEYS
+   SUPABASE SETTING KEY
 ========================= */
 
-const DISCIPLINES_KEY =
-  "rohit-photography-disciplines";
+const DISCIPLINES_SETTING_KEY =
+  "portfolio_disciplines";
 
-const MEDIA_KEY =
-  "rohit-photography-media";
+
+/* =========================
+   LEGACY STORAGE KEY
+
+   Kept temporarily only as
+   fallback for old discipline
+   settings.
+
+   Media Library no longer
+   uses localStorage.
+========================= */
+
+const LEGACY_DISCIPLINES_KEY =
+  "rohit-photography-disciplines";
 
 
 /* =========================
@@ -31,109 +51,65 @@ const MEDIA_KEY =
 export default function Disciplines() {
 
   /* =========================
-     DISCIPLINES STATE
+     DISCIPLINES
   ========================= */
 
   const [
     disciplines,
     setDisciplines,
-  ] = useState(() => {
-
-    try {
-
-      const saved =
-        localStorage.getItem(
-          DISCIPLINES_KEY
-        );
-
-
-      if (!saved) {
-
-        return defaultDisciplines.map(
-          (discipline) => ({
+  ] =
+    useState(
+      () =>
+        defaultDisciplines.map(
+          (
+            discipline
+          ) => ({
             ...discipline,
           })
-        );
-
-      }
-
-
-      const parsed =
-        JSON.parse(
-          saved
-        );
-
-
-      if (
-        !Array.isArray(
-          parsed
         )
-      ) {
-
-        return defaultDisciplines.map(
-          (discipline) => ({
-            ...discipline,
-          })
-        );
-
-      }
+    );
 
 
-      /*
-       * Merge saved settings with
-       * default discipline data.
-       *
-       * This ensures newly added
-       * disciplines still appear.
-       */
+  /* =========================
+     DISCIPLINES LOADING
+  ========================= */
 
-      return defaultDisciplines.map(
-        (defaultDiscipline) => {
-
-          const savedDiscipline =
-            parsed.find(
-              (item) =>
-                item.id ===
-                defaultDiscipline.id
-            );
-
-
-          return {
-            ...defaultDiscipline,
-            ...savedDiscipline,
-          };
-
-        }
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load disciplines:",
-        error
-      );
-
-
-      return defaultDisciplines.map(
-        (discipline) => ({
-          ...discipline,
-        })
-      );
-
-    }
-
-  });
+  const [
+    disciplinesLoading,
+    setDisciplinesLoading,
+  ] =
+    useState(true);
 
 
   /* =========================
      MEDIA LIBRARY
+
+     Metadata comes from
+     Supabase.
+
+     Actual image files remain
+     stored in Cloudinary.
   ========================= */
 
   const [
     mediaItems,
     setMediaItems,
-  ] = useState([]);
+  ] =
+    useState([]);
+
+
+  const [
+    mediaLoading,
+    setMediaLoading,
+  ] =
+    useState(true);
+
+
+  const [
+    mediaError,
+    setMediaError,
+  ] =
+    useState("");
 
 
   /* =========================
@@ -143,13 +119,15 @@ export default function Disciplines() {
   const [
     selectedDisciplineId,
     setSelectedDisciplineId,
-  ] = useState(null);
+  ] =
+    useState(null);
 
 
   const [
     imagePickerOpen,
     setImagePickerOpen,
-  ] = useState(false);
+  ] =
+    useState(false);
 
 
   /* =========================
@@ -159,7 +137,8 @@ export default function Disciplines() {
   const [
     searchQuery,
     setSearchQuery,
-  ] = useState("");
+  ] =
+    useState("");
 
 
   /* =========================
@@ -169,65 +148,357 @@ export default function Disciplines() {
   const [
     savedMessage,
     setSavedMessage,
-  ] = useState("");
+  ] =
+    useState("");
 
 
   /* =========================
-     LOAD MEDIA LIBRARY
+     LOAD DISCIPLINES
+     FROM SUPABASE
   ========================= */
 
   useEffect(() => {
 
-    try {
+    let mounted =
+      true;
 
-      const savedMedia =
-        localStorage.getItem(
-          MEDIA_KEY
+
+    async function loadDisciplines() {
+
+      try {
+
+        setDisciplinesLoading(
+          true
         );
 
 
-      if (!savedMedia) {
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              DISCIPLINES_SETTING_KEY
+            )
+            .maybeSingle();
 
-        setMediaItems([]);
 
-        return;
+        if (error) {
+
+          throw error;
+
+        }
+
+
+        if (!mounted) {
+
+          return;
+
+        }
+
+
+        /* =========================
+           SUPABASE DATA EXISTS
+        ========================= */
+
+        if (
+          data &&
+          Array.isArray(
+            data.setting_value
+          )
+        ) {
+
+          const savedDisciplines =
+            data.setting_value;
+
+
+          const mergedDisciplines =
+            defaultDisciplines.map(
+              (
+                defaultDiscipline
+              ) => {
+
+                const savedDiscipline =
+                  savedDisciplines.find(
+                    (
+                      item
+                    ) =>
+                      item.id ===
+                      defaultDiscipline.id
+                  );
+
+
+                return {
+
+                  ...defaultDiscipline,
+
+                  ...savedDiscipline,
+
+                };
+
+              }
+            );
+
+
+          setDisciplines(
+            mergedDisciplines
+          );
+
+
+          return;
+
+        }
+
+
+        /* =========================
+           LEGACY FALLBACK
+
+           Only discipline settings
+           use this fallback.
+
+           Media Library does NOT.
+        ========================= */
+
+        const legacySaved =
+          localStorage.getItem(
+            LEGACY_DISCIPLINES_KEY
+          );
+
+
+        if (legacySaved) {
+
+          const parsed =
+            JSON.parse(
+              legacySaved
+            );
+
+
+          if (
+            Array.isArray(
+              parsed
+            )
+          ) {
+
+            const mergedDisciplines =
+              defaultDisciplines.map(
+                (
+                  defaultDiscipline
+                ) => {
+
+                  const savedDiscipline =
+                    parsed.find(
+                      (
+                        item
+                      ) =>
+                        item.id ===
+                        defaultDiscipline.id
+                    );
+
+
+                  return {
+
+                    ...defaultDiscipline,
+
+                    ...savedDiscipline,
+
+                  };
+
+                }
+              );
+
+
+            setDisciplines(
+              mergedDisciplines
+            );
+
+
+            setSavedMessage(
+              "Existing disciplines loaded. Click Save Changes to migrate them to Supabase."
+            );
+
+
+            return;
+
+          }
+
+        }
+
+
+        /* =========================
+           NOTHING SAVED
+        ========================= */
+
+        setDisciplines(
+          defaultDisciplines.map(
+            (
+              discipline
+            ) => ({
+
+              ...discipline,
+
+            })
+          )
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load disciplines from Supabase:",
+          error
+        );
+
+
+        if (mounted) {
+
+          setDisciplines(
+            defaultDisciplines.map(
+              (
+                discipline
+              ) => ({
+
+                ...discipline,
+
+              })
+            )
+          );
+
+        }
+
+
+      } finally {
+
+        if (mounted) {
+
+          setDisciplinesLoading(
+            false
+          );
+
+        }
 
       }
-
-
-      const parsedMedia =
-        JSON.parse(
-          savedMedia
-        );
-
-
-      if (
-        Array.isArray(
-          parsedMedia
-        )
-      ) {
-
-        setMediaItems(
-          parsedMedia
-        );
-
-      } else {
-
-        setMediaItems([]);
-
-      }
-
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load Media Library:",
-        error
-      );
-
-      setMediaItems([]);
 
     }
+
+
+    loadDisciplines();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
+
+
+  /* =========================
+     LOAD MEDIA LIBRARY
+     FROM SUPABASE
+
+     IMPORTANT:
+     Supabase stores metadata
+     and Cloudinary URLs only.
+
+     The actual photographs
+     remain in Cloudinary.
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadMediaLibrary() {
+
+      try {
+
+        setMediaLoading(
+          true
+        );
+
+
+        setMediaError(
+          ""
+        );
+
+
+        const mediaData =
+          await getAllMedia();
+
+
+        if (!mounted) {
+
+          return;
+
+        }
+
+
+        setMediaItems(
+          Array.isArray(
+            mediaData
+          )
+            ? mediaData
+            : []
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Media Library from Supabase:",
+          error
+        );
+
+
+        if (mounted) {
+
+          setMediaItems(
+            []
+          );
+
+
+          setMediaError(
+            "Unable to load the Media Library."
+          );
+
+        }
+
+
+      } finally {
+
+        if (mounted) {
+
+          setMediaLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadMediaLibrary();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
 
   }, []);
 
@@ -253,15 +524,19 @@ export default function Disciplines() {
 
 
       return mediaItems.filter(
-        (item) => {
+        (
+          item
+        ) => {
 
           const filename =
             item.filename ||
             "";
 
+
           const publicId =
             item.publicId ||
             "";
+
 
           const folder =
             item.folder ||
@@ -270,6 +545,7 @@ export default function Disciplines() {
 
 
           return (
+
             filename
               .toLowerCase()
               .includes(
@@ -287,6 +563,7 @@ export default function Disciplines() {
               .includes(
                 query
               )
+
           );
 
         }
@@ -311,7 +588,11 @@ export default function Disciplines() {
         disciplineId
       );
 
-      setSearchQuery("");
+
+      setSearchQuery(
+        ""
+      );
+
 
       setImagePickerOpen(
         true
@@ -331,11 +612,15 @@ export default function Disciplines() {
         false
       );
 
+
       setSelectedDisciplineId(
         null
       );
 
-      setSearchQuery("");
+
+      setSearchQuery(
+        ""
+      );
 
     };
 
@@ -370,16 +655,21 @@ export default function Disciplines() {
           "This Media Library item does not contain a valid image URL."
         );
 
+
         return;
 
       }
 
 
       setDisciplines(
-        (currentDisciplines) =>
+        (
+          currentDisciplines
+        ) =>
 
           currentDisciplines.map(
-            (discipline) => {
+            (
+              discipline
+            ) => {
 
               if (
                 discipline.id !==
@@ -392,6 +682,7 @@ export default function Disciplines() {
 
 
               return {
+
                 ...discipline,
 
                 image:
@@ -401,11 +692,11 @@ export default function Disciplines() {
                   mediaItem.publicId ||
                   mediaItem.id ||
                   "",
+
               };
 
             }
           )
-
       );
 
 
@@ -425,7 +716,9 @@ export default function Disciplines() {
 
       const defaultDiscipline =
         defaultDisciplines.find(
-          (discipline) =>
+          (
+            discipline
+          ) =>
             discipline.id ===
             disciplineId
         );
@@ -439,10 +732,14 @@ export default function Disciplines() {
 
 
       setDisciplines(
-        (currentDisciplines) =>
+        (
+          currentDisciplines
+        ) =>
 
           currentDisciplines.map(
-            (discipline) => {
+            (
+              discipline
+            ) => {
 
               if (
                 discipline.id !==
@@ -455,6 +752,7 @@ export default function Disciplines() {
 
 
               return {
+
                 ...discipline,
 
                 image:
@@ -462,11 +760,11 @@ export default function Disciplines() {
 
                 imagePublicId:
                   "",
+
               };
 
             }
           )
-
       );
 
     };
@@ -474,19 +772,54 @@ export default function Disciplines() {
 
   /* =========================
      SAVE DISCIPLINES
+     TO SUPABASE
   ========================= */
 
   const handleSave =
-    () => {
+    async () => {
 
       try {
 
-        localStorage.setItem(
-          DISCIPLINES_KEY,
-          JSON.stringify(
-            disciplines
-          )
+        setSavedMessage(
+          "Saving..."
         );
+
+
+        const {
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .upsert(
+              {
+
+                setting_key:
+                  DISCIPLINES_SETTING_KEY,
+
+                setting_value:
+                  disciplines,
+
+                updated_at:
+                  new Date()
+                    .toISOString(),
+
+              },
+              {
+
+                onConflict:
+                  "setting_key",
+
+              }
+            );
+
+
+        if (error) {
+
+          throw error;
+
+        }
 
 
         setSavedMessage(
@@ -509,18 +842,63 @@ export default function Disciplines() {
       } catch (error) {
 
         console.error(
-          "Failed to save disciplines:",
+          "Failed to save disciplines to Supabase:",
           error
         );
 
 
+        setSavedMessage(
+          ""
+        );
+
+
         alert(
+          error?.message ||
           "Unable to save disciplines."
         );
 
       }
 
     };
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (disciplinesLoading) {
+
+    return (
+
+      <div className="disciplines-admin-page">
+
+        <div className="disciplines-admin-header">
+
+          <div>
+
+            <span className="disciplines-admin-overline">
+              PORTFOLIO
+            </span>
+
+
+            <h1>
+              Portfolio Disciplines
+            </h1>
+
+
+            <p>
+              Loading disciplines...
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
 
 
   /* =========================
@@ -544,9 +922,11 @@ export default function Disciplines() {
             PORTFOLIO
           </span>
 
+
           <h1>
             Portfolio Disciplines
           </h1>
+
 
           <p>
             Manage the images used for
@@ -623,9 +1003,7 @@ export default function Disciplines() {
             >
 
 
-              {/* =========================
-                  IMAGE
-              ========================= */}
+              {/* IMAGE */}
 
               <div className="discipline-admin-image">
 
@@ -641,9 +1019,7 @@ export default function Disciplines() {
               </div>
 
 
-              {/* =========================
-                  CONTENT
-              ========================= */}
+              {/* CONTENT */}
 
               <div className="discipline-admin-content">
 
@@ -675,9 +1051,7 @@ export default function Disciplines() {
                 </p>
 
 
-                {/* =========================
-                    ACTIONS
-                ========================= */}
+                {/* ACTIONS */}
 
                 <div className="discipline-admin-buttons">
 
@@ -723,7 +1097,7 @@ export default function Disciplines() {
 
 
       {/* =========================
-          IMAGE PICKER MODAL
+          IMAGE PICKER
       ========================= */}
 
       {imagePickerOpen && (
@@ -733,9 +1107,7 @@ export default function Disciplines() {
           <div className="discipline-picker-modal">
 
 
-            {/* =========================
-                PICKER HEADER
-            ========================= */}
+            {/* PICKER HEADER */}
 
             <div className="discipline-picker-header">
 
@@ -744,6 +1116,7 @@ export default function Disciplines() {
                 <span>
                   MEDIA LIBRARY
                 </span>
+
 
                 <h2>
                   Choose an Image
@@ -768,9 +1141,7 @@ export default function Disciplines() {
             </div>
 
 
-            {/* =========================
-                SEARCH
-            ========================= */}
+            {/* SEARCH */}
 
             <div className="discipline-picker-search">
 
@@ -792,12 +1163,54 @@ export default function Disciplines() {
             </div>
 
 
-            {/* =========================
-                MEDIA
-            ========================= */}
+            {/* MEDIA LOADING */}
 
-            {filteredMedia.length >
-            0 ? (
+            {mediaLoading && (
+
+              <div className="discipline-picker-empty">
+
+                <h3>
+                  Loading Images...
+                </h3>
+
+
+                <p>
+                  Loading your Media
+                  Library from Supabase.
+                </p>
+
+              </div>
+
+            )}
+
+
+            {/* MEDIA ERROR */}
+
+            {!mediaLoading &&
+              mediaError && (
+
+              <div className="discipline-picker-empty">
+
+                <h3>
+                  Unable to Load Images
+                </h3>
+
+
+                <p>
+                  {mediaError}
+                </p>
+
+              </div>
+
+            )}
+
+
+            {/* MEDIA GRID */}
+
+            {!mediaLoading &&
+              !mediaError &&
+              filteredMedia.length >
+                0 && (
 
               <div className="discipline-picker-grid">
 
@@ -824,7 +1237,8 @@ export default function Disciplines() {
                         type="button"
                         key={
                           mediaItem.id ||
-                          mediaItem.publicId
+                          mediaItem.publicId ||
+                          imageUrl
                         }
                         className="discipline-picker-item"
                         onClick={() =>
@@ -845,6 +1259,7 @@ export default function Disciplines() {
                           loading="lazy"
                         />
 
+
                         <span>
 
                           {
@@ -864,7 +1279,15 @@ export default function Disciplines() {
 
               </div>
 
-            ) : (
+            )}
+
+
+            {/* EMPTY MEDIA */}
+
+            {!mediaLoading &&
+              !mediaError &&
+              filteredMedia.length ===
+                0 && (
 
               <div className="discipline-picker-empty">
 
@@ -872,10 +1295,13 @@ export default function Disciplines() {
                   No Images Found
                 </h3>
 
+
                 <p>
-                  Upload images to your
-                  Media Library first,
-                  then select them here.
+
+                  {searchQuery
+                    ? "No images match your search."
+                    : "Upload images to your Media Library first, then select them here."}
+
                 </p>
 
               </div>
@@ -891,4 +1317,5 @@ export default function Disciplines() {
     </div>
 
   );
+
 }

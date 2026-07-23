@@ -1,15 +1,28 @@
 import {
+  useEffect,
   useState,
 } from "react";
+
+import {
+  supabase,
+} from "../../../lib/supabase";
 
 import "../../styles/homepage-settings.css";
 
 
 /* =========================
-   STORAGE KEY
+   SUPABASE SETTING KEY
 ========================= */
 
-const STORAGE_KEY =
+const SETTING_KEY =
+  "homepage_testimonials";
+
+
+/* =========================
+   LEGACY STORAGE KEY
+========================= */
+
+const LEGACY_KEY =
   "rohit-photography-homepage-testimonials";
 
 
@@ -18,6 +31,7 @@ const STORAGE_KEY =
 ========================= */
 
 const defaultSettings = {
+
   label:
     "KIND WORDS",
 
@@ -28,6 +42,7 @@ const defaultSettings = {
     "Wonderful People",
 
   testimonials: [
+
     {
       id: 1,
 
@@ -66,141 +81,461 @@ const defaultSettings = {
       review:
         "His eye for light and composition transformed our menu and social media presence completely.",
     },
+
   ],
+
 };
 
+
+/* =========================
+   CLONE DEFAULT TESTIMONIALS
+========================= */
+
+function getDefaultTestimonials() {
+
+  return defaultSettings.testimonials.map(
+    (
+      testimonial
+    ) => ({
+
+      ...testimonial,
+
+    })
+  );
+
+}
+
+
+/* =========================
+   NORMALIZE SETTINGS
+========================= */
+
+function normalizeSettings(
+  data
+) {
+
+  if (
+    !data ||
+    typeof data !==
+      "object"
+  ) {
+
+    return {
+
+      ...defaultSettings,
+
+      testimonials:
+        getDefaultTestimonials(),
+
+    };
+
+  }
+
+
+  return {
+
+    ...defaultSettings,
+
+    ...data,
+
+    testimonials:
+      Array.isArray(
+        data.testimonials
+      )
+        ? data.testimonials.map(
+            (
+              testimonial,
+              index
+            ) => ({
+
+              id:
+                testimonial.id ||
+                `testimonial-${index}-${Date.now()}`,
+
+              name:
+                testimonial.name ||
+                "",
+
+              location:
+                testimonial.location ||
+                "",
+
+              review:
+                testimonial.review ||
+                "",
+
+            })
+          )
+        : getDefaultTestimonials(),
+
+  };
+
+}
+
+
+/* =========================
+   LOAD LEGACY SETTINGS
+========================= */
+
+function getLegacySettings() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        LEGACY_KEY
+      );
+
+
+    if (
+      !saved
+    ) {
+
+      return null;
+
+    }
+
+
+    return normalizeSettings(
+      JSON.parse(
+        saved
+      )
+    );
+
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "Failed to load legacy Testimonials settings:",
+      error
+    );
+
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================
+   TESTIMONIAL SETTINGS
+========================= */
 
 export default function TestimonialsSettings() {
 
   /* =========================
-     LOAD SETTINGS
+     SETTINGS
   ========================= */
 
   const [
     settings,
     setSettings,
-  ] = useState(() => {
+  ] =
+    useState({
 
-    try {
+      ...defaultSettings,
 
-      const saved =
-        localStorage.getItem(
-          STORAGE_KEY
-        );
+      testimonials:
+        getDefaultTestimonials(),
 
-
-      if (!saved) {
-
-        return {
-          ...defaultSettings,
-
-          testimonials:
-            defaultSettings.testimonials.map(
-              (item) => ({
-                ...item,
-              })
-            ),
-        };
-
-      }
-
-
-      const parsed =
-        JSON.parse(
-          saved
-        );
-
-
-      return {
-        ...defaultSettings,
-        ...parsed,
-
-        testimonials:
-          Array.isArray(
-            parsed.testimonials
-          )
-            ? parsed.testimonials
-            : defaultSettings.testimonials,
-      };
-
-    } catch (error) {
-
-      console.error(
-        "Failed to load Testimonials settings:",
-        error
-      );
-
-
-      return {
-        ...defaultSettings,
-
-        testimonials:
-          defaultSettings.testimonials.map(
-            (item) => ({
-              ...item,
-            })
-          ),
-      };
-
-    }
-
-  });
+    });
 
 
   /* =========================
-     SAVED MESSAGE
+     LOADING
   ========================= */
 
   const [
-    saved,
-    setSaved,
-  ] = useState(false);
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     SAVING
+  ========================= */
+
+  const [
+    saving,
+    setSaving,
+  ] =
+    useState(false);
+
+
+  /* =========================
+     MESSAGE
+  ========================= */
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState({
+
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+
+  /* =========================
+     LOAD SETTINGS
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadSettings() {
+
+      try {
+
+        setLoading(
+          true
+        );
+
+
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              SETTING_KEY
+            )
+            .maybeSingle();
+
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        /*
+         * Supabase record exists.
+         */
+
+        if (
+          data?.setting_value
+        ) {
+
+          setSettings(
+            normalizeSettings(
+              data.setting_value
+            )
+          );
+
+
+          return;
+
+        }
+
+
+        /*
+         * No Supabase record yet.
+         * Load old localStorage
+         * settings for migration.
+         */
+
+        const legacySettings =
+          getLegacySettings();
+
+
+        if (
+          legacySettings
+        ) {
+
+          setSettings(
+            legacySettings
+          );
+
+
+          setMessage({
+
+            type:
+              "info",
+
+            text:
+              "Existing Testimonials settings were loaded. Click Save Testimonials to migrate them to Supabase.",
+
+          });
+
+
+          return;
+
+        }
+
+
+        setSettings({
+
+          ...defaultSettings,
+
+          testimonials:
+            getDefaultTestimonials(),
+
+        });
+
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "Failed to load Testimonials settings:",
+          error
+        );
+
+
+        if (
+          mounted
+        ) {
+
+          const legacySettings =
+            getLegacySettings();
+
+
+          if (
+            legacySettings
+          ) {
+
+            setSettings(
+              legacySettings
+            );
+
+          }
+
+
+          setMessage({
+
+            type:
+              "error",
+
+            text:
+              "Unable to load Testimonials settings from Supabase.",
+
+          });
+
+        }
+
+
+      } finally {
+
+        if (
+          mounted
+        ) {
+
+          setLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadSettings();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
      HANDLE GENERAL CHANGE
   ========================= */
 
-  const handleChange = (
+  function handleChange(
     event
-  ) => {
+  ) {
 
     const {
       name,
       value,
-    } = event.target;
+    } =
+      event.target;
 
 
     setSettings(
-      (prev) => ({
-        ...prev,
+      (
+        previous
+      ) => ({
+
+        ...previous,
 
         [name]:
           value,
+
       })
     );
 
 
-    setSaved(false);
+    setMessage({
 
-  };
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
 
 
   /* =========================
      HANDLE TESTIMONIAL CHANGE
   ========================= */
 
-  const handleTestimonialChange = (
+  function handleTestimonialChange(
     index,
     field,
     value
-  ) => {
+  ) {
 
     setSettings(
-      (prev) => {
+      (
+        previous
+      ) => {
 
         const updatedTestimonials =
-          prev.testimonials.map(
+          previous.testimonials.map(
             (
               testimonial,
               testimonialIndex
@@ -208,75 +543,100 @@ export default function TestimonialsSettings() {
               testimonialIndex ===
               index
                 ? {
+
                     ...testimonial,
 
                     [field]:
                       value,
+
                   }
                 : testimonial
           );
 
 
         return {
-          ...prev,
+
+          ...previous,
 
           testimonials:
             updatedTestimonials,
+
         };
 
       }
     );
 
 
-    setSaved(false);
+    setMessage({
 
-  };
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
 
 
   /* =========================
      ADD TESTIMONIAL
   ========================= */
 
-  const handleAddTestimonial =
-    () => {
+  function handleAddTestimonial() {
 
-      setSettings(
-        (prev) => ({
-          ...prev,
+    setSettings(
+      (
+        previous
+      ) => ({
 
-          testimonials: [
-            ...prev.testimonials,
+        ...previous,
 
-            {
-              id:
-                Date.now(),
+        testimonials: [
 
-              name:
-                "",
+          ...previous.testimonials,
 
-              location:
-                "",
+          {
+            id:
+              `testimonial-${Date.now()}`,
 
-              review:
-                "",
-            },
-          ],
-        })
-      );
+            name:
+              "",
+
+            location:
+              "",
+
+            review:
+              "",
+          },
+
+        ],
+
+      })
+    );
 
 
-      setSaved(false);
+    setMessage({
 
-    };
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
 
 
   /* =========================
      REMOVE TESTIMONIAL
   ========================= */
 
-  const handleRemoveTestimonial = (
+  function handleRemoveTestimonial(
     index
-  ) => {
+  ) {
 
     const confirmed =
       window.confirm(
@@ -284,17 +644,24 @@ export default function TestimonialsSettings() {
       );
 
 
-    if (!confirmed) {
+    if (
+      !confirmed
+    ) {
+
       return;
+
     }
 
 
     setSettings(
-      (prev) => ({
-        ...prev,
+      (
+        previous
+      ) => ({
+
+        ...previous,
 
         testimonials:
-          prev.testimonials.filter(
+          previous.testimonials.filter(
             (
               _,
               testimonialIndex
@@ -302,54 +669,225 @@ export default function TestimonialsSettings() {
               testimonialIndex !==
               index
           ),
+
       })
     );
 
 
-    setSaved(false);
+    setMessage({
 
-  };
+      type:
+        "",
+
+      text:
+        "",
+
+    });
+
+  }
 
 
   /* =========================
      SAVE SETTINGS
   ========================= */
 
-  const handleSave =
-    () => {
+  async function handleSave() {
 
-      try {
+    if (
+      saving
+    ) {
 
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(
-            settings
+      return;
+
+    }
+
+
+    try {
+
+      setSaving(
+        true
+      );
+
+
+      setMessage({
+
+        type:
+          "",
+
+        text:
+          "",
+
+      });
+
+
+      const payload = {
+
+        label:
+          settings.label?.trim() ||
+          "",
+
+        headingLine1:
+          settings.headingLine1?.trim() ||
+          "",
+
+        headingLine2:
+          settings.headingLine2?.trim() ||
+          "",
+
+        testimonials:
+          settings.testimonials.map(
+            (
+              testimonial,
+              index
+            ) => ({
+
+              id:
+                testimonial.id ||
+                `testimonial-${Date.now()}-${index}`,
+
+              name:
+                testimonial.name?.trim() ||
+                "",
+
+              location:
+                testimonial.location?.trim() ||
+                "",
+
+              review:
+                testimonial.review?.trim() ||
+                "",
+
+            })
+          ),
+
+      };
+
+
+      const {
+        error,
+      } =
+        await supabase
+          .from(
+            "site_settings"
           )
-        );
+          .upsert(
+            {
+
+              setting_key:
+                SETTING_KEY,
+
+              setting_value:
+                payload,
+
+              updated_at:
+                new Date()
+                  .toISOString(),
+
+            },
+            {
+
+              onConflict:
+                "setting_key",
+
+            }
+          );
 
 
-        setSaved(true);
+      if (
+        error
+      ) {
 
-
-        setTimeout(
-          () => {
-
-            setSaved(false);
-
-          },
-          3000
-        );
-
-      } catch (error) {
-
-        console.error(
-          "Failed to save Testimonials settings:",
-          error
-        );
+        throw error;
 
       }
 
-    };
+
+      setSettings(
+        normalizeSettings(
+          payload
+        )
+      );
+
+
+      setMessage({
+
+        type:
+          "success",
+
+        text:
+          "Testimonials saved successfully.",
+
+      });
+
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Failed to save Testimonials settings:",
+        error
+      );
+
+
+      setMessage({
+
+        type:
+          "error",
+
+        text:
+          error?.message ||
+          "Unable to save Testimonials settings.",
+
+      });
+
+
+    } finally {
+
+      setSaving(
+        false
+      );
+
+    }
+
+  }
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    loading
+  ) {
+
+    return (
+
+      <div className="homepage-settings-card">
+
+        <div className="homepage-settings-header">
+
+          <span className="homepage-overline">
+            TESTIMONIALS
+          </span>
+
+
+          <h2>
+            Testimonials Section
+          </h2>
+
+
+          <p>
+            Loading Testimonials settings...
+          </p>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
 
 
   /* =========================
@@ -383,6 +921,58 @@ export default function TestimonialsSettings() {
         </p>
 
       </div>
+
+
+      {/* =========================
+          MESSAGE
+      ========================= */}
+
+      {message.text && (
+
+        <div
+          style={{
+            marginBottom:
+              "24px",
+
+            padding:
+              "12px 16px",
+
+            borderRadius:
+              "8px",
+
+            fontSize:
+              "14px",
+
+            lineHeight:
+              "1.5",
+
+            background:
+              message.type ===
+              "success"
+                ? "#f3faf4"
+                : message.type ===
+                  "error"
+                  ? "#fff4f4"
+                  : "#f7f7f7",
+
+            color:
+              message.type ===
+              "success"
+                ? "#347342"
+                : message.type ===
+                  "error"
+                  ? "#b33a3a"
+                  : "#555",
+          }}
+        >
+
+          {
+            message.text
+          }
+
+        </div>
+
+      )}
 
 
       {/* =========================
@@ -494,7 +1084,6 @@ export default function TestimonialsSettings() {
               }}
             >
 
-
               <h3
                 style={{
                   marginTop:
@@ -504,8 +1093,12 @@ export default function TestimonialsSettings() {
                     "20px",
                 }}
               >
+
                 Testimonial{" "}
-                {index + 1}
+                {
+                  index + 1
+                }
+
               </h3>
 
 
@@ -625,7 +1218,9 @@ export default function TestimonialsSettings() {
                     "pointer",
                 }}
               >
+
                 Remove Testimonial
+
               </button>
 
             </div>
@@ -649,7 +1244,9 @@ export default function TestimonialsSettings() {
               "30px",
           }}
         >
+
           + Add Testimonial
+
         </button>
 
 
@@ -663,33 +1260,27 @@ export default function TestimonialsSettings() {
           onClick={
             handleSave
           }
+          disabled={
+            saving
+          }
           style={{
             marginTop:
               "16px",
           }}
         >
-          Save Testimonials
+
+          {
+            saving
+              ? "Saving..."
+              : "Save Testimonials"
+          }
+
         </button>
-
-
-        {/* =========================
-            SUCCESS MESSAGE
-        ========================= */}
-
-        {saved && (
-
-          <div className="settings-success-message">
-
-            Testimonials saved
-            successfully.
-
-          </div>
-
-        )}
 
       </div>
 
     </div>
 
   );
+
 }

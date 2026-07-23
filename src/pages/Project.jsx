@@ -4,8 +4,13 @@ import {
 } from "react-router-dom";
 
 import {
+  useEffect,
+  useMemo,
   useState,
 } from "react";
+
+import { supabase } from
+  "../lib/supabase";
 
 import SEOHead from "../components/common/SEOHead";
 import PageHero from "../components/common/PageHero";
@@ -88,6 +93,28 @@ export default function Project() {
 
 
   /* =========================
+     PROJECT DATA
+  ========================= */
+
+  const [
+    cmsProjects,
+    setCmsProjects,
+  ] = useState([]);
+
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
+
+
+  const [
+    loadError,
+    setLoadError,
+  ] = useState("");
+
+
+  /* =========================
      LIGHTBOX INDEX
 
      -1 = CLOSED
@@ -102,149 +129,272 @@ export default function Project() {
 
 
   /* =========================
-     LOAD CMS PROJECTS
+     LOAD PUBLISHED PROJECTS
+     FROM SUPABASE
   ========================= */
 
-  let cmsProjects = [];
+  useEffect(() => {
+
+    let isMounted =
+      true;
 
 
-  try {
+    async function loadProjects() {
 
-    const savedProjects =
-      localStorage.getItem(
-        "rohit-photography-projects"
-      );
+      try {
 
+        setIsLoading(
+          true
+        );
 
-    if (
-      savedProjects
-    ) {
-
-      const parsedProjects =
-        JSON.parse(
-          savedProjects
+        setLoadError(
+          ""
         );
 
 
-      if (
-        Array.isArray(
-          parsedProjects
-        )
-      ) {
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "projects"
+            )
+            .select(
+              "*"
+            )
+            .eq(
+              "status",
+              "Published"
+            );
 
-        cmsProjects =
-          parsedProjects;
+
+        if (
+          error
+        ) {
+
+          throw error;
+
+        }
+
+
+        if (
+          !isMounted
+        ) {
+
+          return;
+
+        }
+
+
+        setCmsProjects(
+          Array.isArray(
+            data
+          )
+            ? data
+            : []
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load project:",
+          error
+        );
+
+
+        if (
+          isMounted
+        ) {
+
+          setCmsProjects(
+            []
+          );
+
+          setLoadError(
+            error?.message ||
+            "Unable to load project."
+          );
+
+        }
+
+
+      } finally {
+
+        if (
+          isMounted
+        ) {
+
+          setIsLoading(
+            false
+          );
+
+        }
 
       }
 
     }
 
-  } catch (
-    error
-  ) {
 
-    console.error(
-      "Failed to load CMS projects:",
-      error
-    );
+    loadProjects();
 
-  }
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
-     MAP PUBLISHED PROJECTS
+     NORMALIZE PUBLISHED
+     PROJECTS
   ========================= */
 
   const allProjects =
-    cmsProjects
+    useMemo(() => {
 
-      .filter(
-        (
-          project
-        ) =>
-          project &&
-          project.status ===
-            "Published"
-      )
+      return cmsProjects
 
-      .map(
-        (
-          project,
-          index
-        ) => {
+        .filter(
+          (
+            project
+          ) =>
+            project &&
+            project.status ===
+              "Published"
+        )
 
-          const discipline =
-            categoryToDiscipline[
-              project.category
-            ] ||
-            "other";
+        .map(
+          (
+            project,
+            index
+          ) => {
 
-
-          /* =========================
-             PROJECT YEAR
-          ========================= */
-
-          let year = "";
+            const discipline =
+              categoryToDiscipline[
+                project.category
+              ] ||
+              "other";
 
 
-          if (
-            project.date
-          ) {
+            /* =========================
+               PROJECT YEAR
+            ========================= */
 
-            const parsedDate =
-              new Date(
-                project.date
-              );
+            let year =
+              "";
 
 
             if (
-              !Number.isNaN(
-                parsedDate.getTime()
-              )
+              project.date
             ) {
 
-              year =
-                parsedDate
-                  .getFullYear()
-                  .toString();
+              const parsedDate =
+                new Date(
+                  `${project.date}T00:00:00`
+                );
+
+
+              if (
+                !Number.isNaN(
+                  parsedDate.getTime()
+                )
+              ) {
+
+                year =
+                  parsedDate
+                    .getFullYear()
+                    .toString();
+
+              }
 
             }
 
-          }
 
+            /* =========================
+               GALLERY
+            ========================= */
 
-          return {
+            const gallery =
 
-            ...project,
-
-            discipline,
-
-            year,
-
-            description:
-              project.description ||
-              "",
-
-            gallery:
               Array.isArray(
                 project.gallery
               )
+
                 ? project.gallery.filter(
                     Boolean
                   )
-                : [],
 
-            order:
-              typeof
-                project.order ===
-              "number"
-                ? project.order
-                : index,
+                : Array.isArray(
+                    project.images
+                  )
 
-          };
+                  ? project.images.filter(
+                      Boolean
+                    )
 
-        }
-      );
+                  : [];
+
+
+            return {
+
+              ...project,
+
+              discipline,
+
+              year,
+
+              description:
+                project.description ||
+                "",
+
+              gallery,
+
+
+              /* =========================
+                 FEATURED PORTFOLIO
+              ========================= */
+
+              featuredPortfolio:
+                Boolean(
+                  project.featured_portfolio
+                ),
+
+
+              /* =========================
+                 PORTFOLIO ORDER
+              ========================= */
+
+              portfolioOrder:
+                typeof project.portfolio_order ===
+                  "number"
+                  ? project.portfolio_order
+                  : null,
+
+
+              /* =========================
+                 PROJECT ORDER
+              ========================= */
+
+              projectOrder:
+                typeof project.project_order ===
+                  "number"
+                  ? project.project_order
+                  : index,
+
+            };
+
+          }
+        );
+
+    }, [
+      cmsProjects,
+    ]);
 
 
   /* =========================
@@ -253,58 +403,107 @@ export default function Project() {
   ========================= */
 
   const disciplineProjects =
-    allProjects
+    useMemo(() => {
 
-      .filter(
-        (
-          project
-        ) =>
-          project.discipline ===
-          disciplineSlug
-      )
+      return allProjects
 
-      .sort(
-        (
-          a,
-          b
-        ) => {
+        .filter(
+          (
+            project
+          ) =>
+            project.discipline ===
+            disciplineSlug
+        )
 
-          const aFeatured =
-            a.featuredPortfolio
-              ? 1
-              : 0;
+        .sort(
+          (
+            a,
+            b
+          ) => {
+
+            /* =========================
+               FEATURED FIRST
+            ========================= */
+
+            const aFeatured =
+              a.featuredPortfolio
+                ? 1
+                : 0;
 
 
-          const bFeatured =
-            b.featuredPortfolio
-              ? 1
-              : 0;
+            const bFeatured =
+              b.featuredPortfolio
+                ? 1
+                : 0;
 
 
-          /* FEATURED FIRST */
+            if (
+              aFeatured !==
+              bFeatured
+            ) {
 
-          if (
-            aFeatured !==
-            bFeatured
-          ) {
+              return (
+                bFeatured -
+                aFeatured
+              );
+
+            }
+
+
+            /* =========================
+               PORTFOLIO ORDER
+            ========================= */
+
+            if (
+              a.featuredPortfolio &&
+              b.featuredPortfolio
+            ) {
+
+              const aPortfolioOrder =
+                typeof a.portfolioOrder ===
+                  "number"
+                  ? a.portfolioOrder
+                  : Number.MAX_SAFE_INTEGER;
+
+
+              const bPortfolioOrder =
+                typeof b.portfolioOrder ===
+                  "number"
+                  ? b.portfolioOrder
+                  : Number.MAX_SAFE_INTEGER;
+
+
+              if (
+                aPortfolioOrder !==
+                bPortfolioOrder
+              ) {
+
+                return (
+                  aPortfolioOrder -
+                  bPortfolioOrder
+                );
+
+              }
+
+            }
+
+
+            /* =========================
+               PROJECT ORDER
+            ========================= */
 
             return (
-              bFeatured -
-              aFeatured
+              a.projectOrder -
+              b.projectOrder
             );
 
           }
+        );
 
-
-          /* CUSTOM ORDER */
-
-          return (
-            a.order -
-            b.order
-          );
-
-        }
-      );
+    }, [
+      allProjects,
+      disciplineSlug,
+    ]);
 
 
   /* =========================
@@ -322,9 +521,12 @@ export default function Project() {
 
 
   const project =
-    disciplineProjects[
-      projectIndex
-    ];
+    projectIndex >=
+      0
+      ? disciplineProjects[
+          projectIndex
+        ]
+      : null;
 
 
   /* =========================
@@ -422,6 +624,77 @@ export default function Project() {
       event.preventDefault();
 
     };
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    isLoading
+  ) {
+
+    return (
+
+      <div className="project-not-found">
+
+        <h1>
+          Loading project...
+        </h1>
+
+      </div>
+
+    );
+
+  }
+
+
+  /* =========================
+     LOAD ERROR
+  ========================= */
+
+  if (
+    loadError
+  ) {
+
+    return (
+
+      <>
+
+        <SEOHead
+          title="Unable to Load Project | Rohit Ohal Photography"
+          description="The photography project could not be loaded."
+        />
+
+
+        <div className="project-not-found">
+
+          <h1>
+            Unable to load project
+          </h1>
+
+
+          <p>
+            {loadError}
+          </p>
+
+
+          <Link
+            to="/portfolio"
+            className="project-nav-link"
+          >
+
+            ← Back to Portfolio
+
+          </Link>
+
+        </div>
+
+      </>
+
+    );
+
+  }
 
 
   /* =========================
@@ -574,9 +847,7 @@ export default function Project() {
             <div>
 
               <span>
-
                 Location
-
               </span>
 
 
@@ -597,9 +868,7 @@ export default function Project() {
             <div>
 
               <span>
-
                 Year
-
               </span>
 
 
@@ -620,9 +889,7 @@ export default function Project() {
             <div>
 
               <span>
-
                 Discipline
-
               </span>
 
 
@@ -646,9 +913,7 @@ export default function Project() {
           <div className="project-story">
 
             <h2>
-
               Project Story
-
             </h2>
 
 
@@ -736,8 +1001,7 @@ export default function Project() {
 
                 ←{" "}
                 {
-                  previousProject
-                    .title
+                  previousProject.title
                 }
 
               </Link>
@@ -761,8 +1025,7 @@ export default function Project() {
               >
 
                 {
-                  nextProject
-                    .title
+                  nextProject.title
                 }{" "}
                 →
 
@@ -793,14 +1056,14 @@ export default function Project() {
 
         currentIndex={
           lightboxIndex >=
-          0
+            0
             ? lightboxIndex
             : 0
         }
 
         isOpen={
           lightboxIndex >=
-          0
+            0
         }
 
         onClose={

@@ -19,7 +19,6 @@ import Portfolio from "../pages/Portfolio";
 import Discipline from "../pages/Discipline";
 import Project from "../pages/Project";
 
-import Weddings from "../pages/Weddings";
 import WeddingStory from "../pages/WeddingStory";
 
 import Journal from "../pages/Journal";
@@ -42,6 +41,7 @@ import MediaLibrary from "../admin/pages/MediaLibrary";
 import JournalAdmin from "../admin/pages/Journal";
 import HomepageAdmin from "../admin/pages/Homepage";
 
+
 /*
  * Admin pages are renamed where
  * the public page already uses
@@ -55,9 +55,16 @@ import SEOAdmin from "../admin/pages/SEO";
 import SettingsAdmin from "../admin/pages/Settings";
 
 
+/* =========================
+   APP ROUTES
+========================= */
+
 export default function AppRoutes() {
+
   return (
+
     <Routes>
+
 
       {/* =========================
           PUBLIC WEBSITE
@@ -86,6 +93,40 @@ export default function AppRoutes() {
         }
       />
 
+
+      {/* =========================
+          WEDDING STORY
+
+          IMPORTANT:
+          This route must appear before
+          the generic project route.
+
+          /portfolio/weddings/:slug
+          uses the premium WeddingStory
+          page instead of Project.
+      ========================= */}
+
+      <Route
+        path="/portfolio/weddings/:slug"
+        element={
+          <MainLayout>
+            <WeddingStory />
+          </MainLayout>
+        }
+      />
+
+
+      {/* =========================
+          PORTFOLIO DISCIPLINE
+
+          Examples:
+
+          /portfolio/weddings
+          /portfolio/portraits
+          /portfolio/events
+          /portfolio/industrial
+      ========================= */}
+
       <Route
         path="/portfolio/:disciplineSlug"
         element={
@@ -95,34 +136,25 @@ export default function AppRoutes() {
         }
       />
 
+
+      {/* =========================
+          GENERAL PORTFOLIO PROJECT
+
+          Weddings are handled by the
+          special route above.
+
+          Examples:
+
+          /portfolio/portraits/:projectSlug
+          /portfolio/industrial/:projectSlug
+          /portfolio/editorial/:projectSlug
+      ========================= */}
+
       <Route
         path="/portfolio/:disciplineSlug/:projectSlug"
         element={
           <MainLayout>
             <Project />
-          </MainLayout>
-        }
-      />
-
-
-      {/* =========================
-          WEDDINGS
-      ========================= */}
-
-      <Route
-        path="/weddings"
-        element={
-          <MainLayout>
-            <Weddings />
-          </MainLayout>
-        }
-      />
-
-      <Route
-        path="/weddings/:slug"
-        element={
-          <MainLayout>
-            <WeddingStory />
           </MainLayout>
         }
       />
@@ -288,7 +320,7 @@ export default function AppRoutes() {
 
 
       {/* =========================
-          ADMIN - ABOUT PAGE
+          ADMIN - ABOUT
       ========================= */}
 
       <Route
@@ -304,7 +336,7 @@ export default function AppRoutes() {
 
 
       {/* =========================
-          ADMIN - CONTACT PAGE
+          ADMIN - CONTACT
       ========================= */}
 
       <Route
@@ -352,7 +384,7 @@ export default function AppRoutes() {
 
 
       {/* =========================
-          404 - NOT FOUND
+          404
       ========================= */}
 
       <Route
@@ -365,5 +397,7 @@ export default function AppRoutes() {
       />
 
     </Routes>
+
   );
+
 }

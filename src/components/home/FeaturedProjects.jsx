@@ -1,6 +1,19 @@
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import {
+  getHomepageProjects,
+} from "../../services/projectService";
 
 import "./FeaturedProjects.css";
+
 
 /* =========================
    CATEGORY → DISCIPLINE MAP
@@ -15,87 +28,221 @@ const categoryToDiscipline = {
   Editorial: "editorial",
 };
 
+
+/* =========================
+   FEATURED PROJECTS
+========================= */
+
 export default function FeaturedProjects() {
+
   /* =========================
-     LOAD CMS PROJECTS
+     STATE
   ========================= */
 
-  let projects = [];
+  const [
+    projects,
+    setProjects,
+  ] = useState([]);
 
-  try {
-    const savedProjects =
-      localStorage.getItem(
-        "rohit-photography-projects"
-      );
 
-    if (savedProjects) {
-      const parsedProjects =
-        JSON.parse(savedProjects);
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-      if (
-        Array.isArray(
-          parsedProjects
-        )
-      ) {
-        projects =
-          parsedProjects;
-      }
-    }
-  } catch (error) {
-    console.error(
-      "Failed to load featured projects:",
-      error
-    );
-  }
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
 
   /* =========================
-     FEATURED PUBLISHED PROJECTS
+     LOAD FROM SUPABASE
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted = true;
+
+
+    async function loadProjects() {
+
+      try {
+
+        setLoading(true);
+
+        setError("");
+
+
+        const data =
+          await getHomepageProjects();
+
+
+        if (!mounted) {
+          return;
+        }
+
+
+        setProjects(
+          Array.isArray(data)
+            ? data
+            : []
+        );
+
+
+      } catch (loadError) {
+
+        console.error(
+          "Failed to load featured projects:",
+          loadError
+        );
+
+
+        if (mounted) {
+
+          setError(
+            loadError?.message ||
+              "Failed to load featured projects."
+          );
+
+        }
+
+
+      } finally {
+
+        if (mounted) {
+
+          setLoading(false);
+
+        }
+
+      }
+
+    }
+
+
+    loadProjects();
+
+
+    return () => {
+
+      mounted = false;
+
+    };
+
+  }, []);
+
+
+  /* =========================
+     PREPARE PROJECTS
   ========================= */
 
   const featuredProjects =
-    projects
+    useMemo(() => {
 
-      /* ONLY FEATURED + PUBLISHED */
+      return projects
 
-      .filter(
-        (project) =>
-          project.featuredHomepage ===
-            true &&
-          project.status ===
-            "Published"
-      )
+        /* =========================
+           SAFETY CHECK
 
-      /* SORT BY HOMEPAGE ORDER */
+           getHomepageProjects()
+           already filters these in
+           Supabase, but we keep this
+           check on the frontend too.
+        ========================= */
 
-      .sort((a, b) => {
-        const orderA =
-          typeof a.homepageOrder ===
-          "number"
-            ? a.homepageOrder
-            : Number.MAX_SAFE_INTEGER;
+        .filter(
+          (project) =>
+            project.featuredHomepage ===
+              true &&
+            project.status ===
+              "Published"
+        )
 
-        const orderB =
-          typeof b.homepageOrder ===
-          "number"
-            ? b.homepageOrder
-            : Number.MAX_SAFE_INTEGER;
 
-        return (
-          orderA -
-          orderB
+        /* =========================
+           SORT BY HOMEPAGE ORDER
+        ========================= */
+
+        .sort(
+          (a, b) => {
+
+            const orderA =
+              typeof a.homepageOrder ===
+              "number"
+                ? a.homepageOrder
+                : Number.MAX_SAFE_INTEGER;
+
+
+            const orderB =
+              typeof b.homepageOrder ===
+              "number"
+                ? b.homepageOrder
+                : Number.MAX_SAFE_INTEGER;
+
+
+            return (
+              orderA -
+              orderB
+            );
+
+          }
+        )
+
+
+        /* =========================
+           ADD DISCIPLINE SLUG
+        ========================= */
+
+        .map(
+          (project) => ({
+
+            ...project,
+
+            discipline:
+              categoryToDiscipline[
+                project.category
+              ] || "other",
+
+          })
         );
-      })
 
-      /* ADD DISCIPLINE */
+    }, [
+      projects,
+    ]);
 
-      .map((project) => ({
-        ...project,
 
-        discipline:
-          categoryToDiscipline[
-            project.category
-          ] || "other",
-      }));
+  /* =========================
+     LOADING
+
+     Keep section hidden while
+     Supabase is loading.
+  ========================= */
+
+  if (
+    loading
+  ) {
+
+    return null;
+
+  }
+
+
+  /* =========================
+     ERROR
+
+     Do not break homepage if
+     Supabase request fails.
+  ========================= */
+
+  if (
+    error
+  ) {
+
+    return null;
+
+  }
 
 
   /* =========================
@@ -106,7 +253,9 @@ export default function FeaturedProjects() {
     featuredProjects.length ===
     0
   ) {
+
     return null;
+
   }
 
 
@@ -115,32 +264,46 @@ export default function FeaturedProjects() {
   ========================= */
 
   return (
+
     <section className="featured-projects">
 
       <div className="featured-projects-container">
 
-        {/* HEADER */}
+
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <div className="featured-projects-header">
 
           <span className="featured-overline">
+
             FEATURED WORK
+
           </span>
 
+
           <h2>
+
             Selected Projects
+
           </h2>
 
+
           <p>
+
             A curated collection of
             stories, campaigns and
             commissions.
+
           </p>
 
         </div>
 
 
-        {/* PROJECT GRID */}
+        {/* =========================
+            PROJECT GRID
+        ========================= */}
 
         <div className="featured-projects-grid">
 
@@ -152,47 +315,72 @@ export default function FeaturedProjects() {
                   project.id ||
                   project.slug
                 }
-                to={`/portfolio/${project.discipline}/${project.slug}`}
+                to={
+                  `/portfolio/${project.discipline}/${project.slug}`
+                }
                 className="featured-project-card"
               >
 
-                {/* COVER IMAGE */}
+
+                {/* =====================
+                    COVER IMAGE
+                ===================== */}
 
                 {project.cover && (
+
                   <img
                     src={
                       project.cover
                     }
                     alt={
-                      project.title
+                      project.title ||
+                      "Photography Project"
                     }
                     loading="lazy"
                   />
+
                 )}
 
 
-                {/* PROJECT CONTENT */}
+                {/* =====================
+                    PROJECT CONTENT
+                ===================== */}
 
                 <div className="featured-project-content">
 
-                  <span>
-                    {
-                      project.category
-                    }
-                  </span>
+                  {project.category && (
+
+                    <span>
+
+                      {
+                        project.category
+                      }
+
+                    </span>
+
+                  )}
+
 
                   <h3>
+
                     {
-                      project.title
+                      project.title ||
+                      "Untitled Project"
                     }
+
                   </h3>
 
+
                   {project.location && (
+
                     <p>
+
                       {
                         project.location
                       }
+
                     </p>
+
                   )}
 
                 </div>
@@ -207,5 +395,7 @@ export default function FeaturedProjects() {
       </div>
 
     </section>
+
   );
+
 }

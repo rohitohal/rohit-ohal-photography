@@ -1,5 +1,7 @@
 import {
+  useEffect,
   useMemo,
+  useState,
 } from "react";
 
 import {
@@ -14,14 +16,22 @@ import {
   disciplines as defaultDisciplines,
 } from "../data/disciplines";
 
+import {
+  supabase,
+} from "../lib/supabase";
+
 
 /* =========================
-   STORAGE KEY
+   SUPABASE SETTING KEY
 ========================= */
 
-const DISCIPLINES_KEY =
-  "rohit-photography-disciplines";
+const DISCIPLINES_SETTING_KEY =
+  "portfolio_disciplines";
 
+
+/* =========================
+   DISCIPLINE PAGE
+========================= */
 
 export default function Discipline() {
 
@@ -31,101 +41,214 @@ export default function Discipline() {
 
 
   /* =========================
-     LOAD SAVED DISCIPLINES
+     DISCIPLINES
   ========================= */
 
-  const disciplines =
-    useMemo(() => {
+  const [
+    disciplines,
+    setDisciplines,
+  ] = useState(() =>
+    defaultDisciplines.map(
+      (discipline) => ({
+        ...discipline,
+      })
+    )
+  );
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+
+  /* =========================
+     LOAD DISCIPLINES
+     FROM SUPABASE
+  ========================= */
+
+  useEffect(() => {
+
+    let mounted =
+      true;
+
+
+    async function loadDisciplines() {
 
       try {
 
-        const saved =
-          localStorage.getItem(
-            DISCIPLINES_KEY
-          );
+        setLoading(
+          true
+        );
 
 
-        /*
-         * Nothing saved from Admin.
-         * Use default data.
-         */
+        const {
+          data,
+          error,
+        } =
+          await supabase
+            .from(
+              "site_settings"
+            )
+            .select(
+              "setting_value"
+            )
+            .eq(
+              "setting_key",
+              DISCIPLINES_SETTING_KEY
+            )
+            .maybeSingle();
 
-        if (!saved) {
 
-          return defaultDisciplines;
+        if (
+          error
+        ) {
+
+          throw error;
 
         }
 
 
-        const parsed =
-          JSON.parse(
-            saved
-          );
+        if (
+          !mounted
+        ) {
+
+          return;
+
+        }
+
+
+        const savedDisciplines =
+          data?.setting_value;
 
 
         /*
-         * Invalid saved data.
-         * Fall back safely.
+         * No Supabase settings yet.
+         * Keep default disciplines.
          */
 
         if (
           !Array.isArray(
-            parsed
+            savedDisciplines
           )
         ) {
 
-          return defaultDisciplines;
+          setDisciplines(
+            defaultDisciplines.map(
+              (discipline) => ({
+                ...discipline,
+              })
+            )
+          );
+
+
+          return;
 
         }
 
 
         /*
-         * Merge Admin discipline
-         * settings with defaults.
+         * Merge Supabase content
+         * with default definitions.
          *
-         * This keeps the original
-         * ID and slug available even
-         * if older saved data is
-         * incomplete.
+         * This keeps IDs/slugs safe
+         * if saved data is incomplete.
          */
 
-        return defaultDisciplines.map(
-          (
-            defaultDiscipline
-          ) => {
+        const mergedDisciplines =
+          defaultDisciplines.map(
+            (
+              defaultDiscipline
+            ) => {
 
-            const savedDiscipline =
-              parsed.find(
-                (
-                  item
-                ) =>
-                  item.id ===
-                  defaultDiscipline.id
-              );
+              const savedDiscipline =
+                savedDisciplines.find(
+                  (
+                    item
+                  ) =>
+                    item.id ===
+                    defaultDiscipline.id
+                );
 
 
-            return {
-              ...defaultDiscipline,
-              ...savedDiscipline,
-            };
+              return {
 
-          }
+                ...defaultDiscipline,
+
+                ...savedDiscipline,
+
+              };
+
+            }
+          );
+
+
+        setDisciplines(
+          mergedDisciplines
         );
 
 
-      } catch (error) {
+      } catch (
+        error
+      ) {
 
         console.error(
-          "Failed to load discipline data:",
+          "Failed to load discipline data from Supabase:",
           error
         );
 
 
-        return defaultDisciplines;
+        /*
+         * Safe fallback.
+         */
+
+        if (
+          mounted
+        ) {
+
+          setDisciplines(
+            defaultDisciplines.map(
+              (discipline) => ({
+                ...discipline,
+              })
+            )
+          );
+
+        }
+
+
+      } finally {
+
+        if (
+          mounted
+        ) {
+
+          setLoading(
+            false
+          );
+
+        }
 
       }
 
-    }, []);
+    }
+
+
+    loadDisciplines();
+
+
+    return () => {
+
+      mounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
@@ -133,20 +256,42 @@ export default function Discipline() {
   ========================= */
 
   const discipline =
-    disciplines.find(
-      (
-        item
-      ) =>
-        item.slug ===
-        disciplineSlug
+    useMemo(
+      () =>
+        disciplines.find(
+          (
+            item
+          ) =>
+            item.slug ===
+            disciplineSlug
+        ),
+      [
+        disciplines,
+        disciplineSlug,
+      ]
     );
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    loading
+  ) {
+
+    return null;
+
+  }
 
 
   /* =========================
      DISCIPLINE NOT FOUND
   ========================= */
 
-  if (!discipline) {
+  if (
+    !discipline
+  ) {
 
     return (
 

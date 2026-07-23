@@ -1,67 +1,346 @@
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import StatCard from "../components/StatCard/StatCard";
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import StatCard from
+  "../components/StatCard/StatCard";
+
+import {
+  getAllProjects,
+} from "../../services/projectService";
+
+import {
+  getAllPosts,
+} from "../../services/journalService";
+
+import {
+  getAllMedia,
+} from "../../services/mediaService";
 
 import "../styles/dashboard.css";
 
+
 /* =========================
-   SAFE LOCAL STORAGE READER
+   DASHBOARD
 ========================= */
 
-function getLocalStorageData(key) {
-  try {
-    const data = localStorage.getItem(key);
-
-    if (!data) {
-      return [];
-    }
-
-    const parsedData = JSON.parse(data);
-
-    return Array.isArray(parsedData)
-      ? parsedData
-      : [];
-  } catch (error) {
-    console.error(
-      `Failed to load ${key}:`,
-      error
-    );
-
-    return [];
-  }
-}
-
 export default function Dashboard() {
-  const navigate = useNavigate();
+
+  const navigate =
+    useNavigate();
+
 
   /* =========================
-     LOAD CMS DATA
+     PROJECTS
+     SUPABASE
   ========================= */
 
-  const projects = useMemo(
-    () =>
-      getLocalStorageData(
-        "rohit-photography-projects"
-      ),
-    []
-  );
+  const [
+    projects,
+    setProjects,
+  ] =
+    useState([]);
 
-  const media = useMemo(
-    () =>
-      getLocalStorageData(
-        "rohit-photography-media"
-      ),
-    []
-  );
 
-  const journalPosts = useMemo(
-    () =>
-      getLocalStorageData(
-        "rohit-photography-journal"
-      ),
-    []
-  );
+  const [
+    isProjectsLoading,
+    setIsProjectsLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     MEDIA
+     SUPABASE METADATA
+
+     Actual image files remain
+     stored in Cloudinary.
+  ========================= */
+
+  const [
+    media,
+    setMedia,
+  ] =
+    useState([]);
+
+
+  const [
+    isMediaLoading,
+    setIsMediaLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     JOURNAL
+     SUPABASE
+  ========================= */
+
+  const [
+    journalPosts,
+    setJournalPosts,
+  ] =
+    useState([]);
+
+
+  const [
+    isJournalLoading,
+    setIsJournalLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     LOAD PROJECTS
+  ========================= */
+
+  useEffect(() => {
+
+    let isMounted =
+      true;
+
+
+    async function loadProjects() {
+
+      try {
+
+        setIsProjectsLoading(
+          true
+        );
+
+
+        const projectData =
+          await getAllProjects();
+
+
+        if (!isMounted) {
+          return;
+        }
+
+
+        setProjects(
+          Array.isArray(
+            projectData
+          )
+            ? projectData
+            : []
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Dashboard projects:",
+          error
+        );
+
+
+        if (isMounted) {
+
+          setProjects(
+            []
+          );
+
+        }
+
+
+      } finally {
+
+        if (isMounted) {
+
+          setIsProjectsLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadProjects();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
+
+
+  /* =========================
+     LOAD MEDIA
+     FROM SUPABASE
+  ========================= */
+
+  useEffect(() => {
+
+    let isMounted =
+      true;
+
+
+    async function loadMedia() {
+
+      try {
+
+        setIsMediaLoading(
+          true
+        );
+
+
+        const mediaData =
+          await getAllMedia();
+
+
+        if (!isMounted) {
+          return;
+        }
+
+
+        setMedia(
+          Array.isArray(
+            mediaData
+          )
+            ? mediaData
+            : []
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Dashboard media:",
+          error
+        );
+
+
+        if (isMounted) {
+
+          setMedia(
+            []
+          );
+
+        }
+
+
+      } finally {
+
+        if (isMounted) {
+
+          setIsMediaLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadMedia();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
+
+
+  /* =========================
+     LOAD JOURNAL
+  ========================= */
+
+  useEffect(() => {
+
+    let isMounted =
+      true;
+
+
+    async function loadJournal() {
+
+      try {
+
+        setIsJournalLoading(
+          true
+        );
+
+
+        const posts =
+          await getAllPosts();
+
+
+        if (!isMounted) {
+          return;
+        }
+
+
+        setJournalPosts(
+          Array.isArray(
+            posts
+          )
+            ? posts
+            : []
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load Dashboard Journal posts:",
+          error
+        );
+
+
+        if (isMounted) {
+
+          setJournalPosts(
+            []
+          );
+
+        }
+
+
+      } finally {
+
+        if (isMounted) {
+
+          setIsJournalLoading(
+            false
+          );
+
+        }
+
+      }
+
+    }
+
+
+    loadJournal();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
+
 
   /* =========================
      STATISTICS
@@ -70,52 +349,81 @@ export default function Dashboard() {
   const totalProjects =
     projects.length;
 
+
   const totalImages =
     media.length;
+
 
   const totalJournalPosts =
     journalPosts.length;
 
+
   const publishedProjects =
     projects.filter(
-      (project) =>
+      (
+        project
+      ) =>
         project.status ===
         "Published"
     ).length;
 
+
   const publishedJournalPosts =
     journalPosts.filter(
-      (post) =>
+      (
+        post
+      ) =>
         post.status ===
         "Published"
     ).length;
 
+
   /* =========================
-     RECENT CONTENT
+     RECENT PROJECTS
   ========================= */
 
   const recentProjects =
-    projects
-      .slice()
-      .reverse()
-      .slice(0, 3);
+    projects.slice(
+      0,
+      3
+    );
+
+
+  /* =========================
+     RECENT JOURNAL
+  ========================= */
 
   const recentJournalPosts =
-    journalPosts
-      .slice()
-      .reverse()
-      .slice(0, 3);
+    journalPosts.slice(
+      0,
+      3
+    );
+
+
+  const isContentLoading =
+    isProjectsLoading ||
+    isJournalLoading;
+
 
   const hasRecentActivity =
-    recentProjects.length > 0 ||
-    recentJournalPosts.length > 0;
+    recentProjects.length >
+      0 ||
+    recentJournalPosts.length >
+      0;
+
+
+  /* =========================
+     RENDER
+  ========================= */
 
   return (
+
     <div className="dashboard-page">
 
-      {/* =========================
+
+      {/* =====================
           HEADER
-      ========================= */}
+      ===================== */}
 
       <div className="dashboard-header">
 
@@ -125,9 +433,11 @@ export default function Dashboard() {
             ADMIN PANEL
           </span>
 
+
           <h1>
             Welcome back, Rohit
           </h1>
+
 
           <p>
             Manage projects, media,
@@ -139,38 +449,68 @@ export default function Dashboard() {
 
       </div>
 
-      {/* =========================
+
+      {/* =====================
           STATISTICS
-      ========================= */}
+      ===================== */}
 
       <div className="stats-grid">
 
         <StatCard
           title="Projects"
-          value={totalProjects}
+          value={
+            isProjectsLoading
+              ? "..."
+              : totalProjects
+          }
           type="projects"
-          change={`${publishedProjects} published`}
+          change={
+            isProjectsLoading
+              ? "Loading..."
+              : `${publishedProjects} published`
+          }
         />
+
 
         <StatCard
           title="Images"
-          value={totalImages}
+          value={
+            isMediaLoading
+              ? "..."
+              : totalImages
+          }
           type="images"
-          change="Media Library"
+          change={
+            isMediaLoading
+              ? "Loading..."
+              : "Media Library"
+          }
         />
+
 
         <StatCard
           title="Journal Posts"
-          value={totalJournalPosts}
+          value={
+            isJournalLoading
+              ? "..."
+              : totalJournalPosts
+          }
           type="journal"
-          change={`${publishedJournalPosts} published`}
+          change={
+            isJournalLoading
+              ? "Loading..."
+              : `${publishedJournalPosts} published`
+          }
         />
+
 
         <StatCard
           title="Published Content"
           value={
-            publishedProjects +
-            publishedJournalPosts
+            isContentLoading
+              ? "..."
+              : publishedProjects +
+                publishedJournalPosts
           }
           type="storage"
           change="Projects + Journal"
@@ -178,15 +518,17 @@ export default function Dashboard() {
 
       </div>
 
-      {/* =========================
+
+      {/* =====================
           DASHBOARD CONTENT
-      ========================= */}
+      ===================== */}
 
       <div className="dashboard-grid">
 
-        {/* =========================
+
+        {/* =====================
             RECENT ACTIVITY
-        ========================= */}
+        ===================== */}
 
         <section className="dashboard-panel">
 
@@ -194,22 +536,39 @@ export default function Dashboard() {
             Recent Activity
           </h2>
 
-          {!hasRecentActivity ? (
+
+          {isContentLoading &&
+          !hasRecentActivity ? (
 
             <div className="empty-state">
+
+              Loading recent activity...
+
+            </div>
+
+          ) : !hasRecentActivity ? (
+
+            <div className="empty-state">
+
               Activity will appear here
               once you start adding
               projects and journal posts.
+
             </div>
 
           ) : (
 
             <div className="dashboard-activity-list">
 
-              {/* RECENT PROJECTS */}
+
+              {/* =====================
+                  RECENT PROJECTS
+              ===================== */}
 
               {recentProjects.map(
-                (project) => (
+                (
+                  project
+                ) => (
 
                   <button
                     key={
@@ -231,21 +590,36 @@ export default function Dashboard() {
                         PROJECT
                       </span>
 
+
                       <h3>
-                        {project.title ||
-                          "Untitled Project"}
+
+                        {
+                          project.title ||
+                          "Untitled Project"
+                        }
+
                       </h3>
 
+
                       <p>
-                        {project.category ||
-                          "Photography Project"}
+
+                        {
+                          project.category ||
+                          "Photography Project"
+                        }
+
                       </p>
 
                     </div>
 
+
                     <span className="dashboard-activity-status">
-                      {project.status ||
-                        "Draft"}
+
+                      {
+                        project.status ||
+                        "Draft"
+                      }
+
                     </span>
 
                   </button>
@@ -253,10 +627,15 @@ export default function Dashboard() {
                 )
               )}
 
-              {/* RECENT JOURNAL POSTS */}
+
+              {/* =====================
+                  RECENT JOURNAL
+              ===================== */}
 
               {recentJournalPosts.map(
-                (post) => (
+                (
+                  post
+                ) => (
 
                   <button
                     key={
@@ -278,21 +657,36 @@ export default function Dashboard() {
                         JOURNAL
                       </span>
 
+
                       <h3>
-                        {post.title ||
-                          "Untitled Article"}
+
+                        {
+                          post.title ||
+                          "Untitled Article"
+                        }
+
                       </h3>
 
+
                       <p>
-                        {post.category ||
-                          "Journal Post"}
+
+                        {
+                          post.category ||
+                          "Journal Post"
+                        }
+
                       </p>
 
                     </div>
 
+
                     <span className="dashboard-activity-status">
-                      {post.status ||
-                        "Draft"}
+
+                      {
+                        post.status ||
+                        "Draft"
+                      }
+
                     </span>
 
                   </button>
@@ -306,15 +700,17 @@ export default function Dashboard() {
 
         </section>
 
-        {/* =========================
+
+        {/* =====================
             QUICK ACTIONS
-        ========================= */}
+        ===================== */}
 
         <section className="dashboard-panel">
 
           <h2>
             Quick Actions
           </h2>
+
 
           <div className="quick-actions">
 
@@ -329,6 +725,7 @@ export default function Dashboard() {
               New Project
             </button>
 
+
             <button
               type="button"
               onClick={() =>
@@ -340,6 +737,7 @@ export default function Dashboard() {
               Upload Images
             </button>
 
+
             <button
               type="button"
               onClick={() =>
@@ -350,6 +748,7 @@ export default function Dashboard() {
             >
               New Journal Post
             </button>
+
 
             <button
               type="button"
@@ -369,5 +768,7 @@ export default function Dashboard() {
       </div>
 
     </div>
+
   );
+
 }

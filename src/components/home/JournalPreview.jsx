@@ -1,4 +1,14 @@
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import { Link } from "react-router-dom";
+
+import {
+  getPublishedPosts,
+} from "../../services/journalService";
 
 import "./JournalPreview.css";
 
@@ -7,140 +17,220 @@ import "./JournalPreview.css";
    CONSTANTS
 ========================= */
 
-const JOURNAL_KEY =
-  "rohit-photography-journal";
-
 const fallbackImage =
   "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200&q=80";
 
 
+/* =========================
+   JOURNAL PREVIEW
+========================= */
+
 export default function JournalPreview() {
+
   /* =========================
-     LOAD CMS JOURNAL POSTS
+     POSTS
   ========================= */
 
-  let journalPosts = [];
+  const [
+    journalPosts,
+    setJournalPosts,
+  ] =
+    useState([]);
 
-  try {
-    const savedPosts =
-      localStorage.getItem(
-        JOURNAL_KEY
-      );
 
-    if (savedPosts) {
-      const parsedPosts =
-        JSON.parse(
-          savedPosts
+  /* =========================
+     LOADING
+  ========================= */
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] =
+    useState(true);
+
+
+  /* =========================
+     LOAD FROM SUPABASE
+  ========================= */
+
+  useEffect(() => {
+
+    let isMounted =
+      true;
+
+
+    async function loadPosts() {
+
+      try {
+
+        setIsLoading(
+          true
         );
 
-      if (
-        Array.isArray(
-          parsedPosts
-        )
-      ) {
-        journalPosts =
-          parsedPosts;
+
+        const posts =
+          await getPublishedPosts();
+
+
+        if (
+          isMounted
+        ) {
+
+          setJournalPosts(
+            Array.isArray(posts)
+              ? posts
+              : []
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load homepage journal posts:",
+          error
+        );
+
+
+        if (
+          isMounted
+        ) {
+
+          setJournalPosts(
+            []
+          );
+
+        }
+
+      } finally {
+
+        if (
+          isMounted
+        ) {
+
+          setIsLoading(
+            false
+          );
+
+        }
+
       }
+
     }
-  } catch (error) {
-    console.error(
-      "Failed to load journal posts:",
-      error
-    );
-  }
+
+
+    loadPosts();
+
+
+    return () => {
+
+      isMounted =
+        false;
+
+    };
+
+  }, []);
 
 
   /* =========================
-     GET PUBLISHED POSTS
-  ========================= */
-
-  const publishedPosts =
-    journalPosts.filter(
-      (post) =>
-        post &&
-        post.status ===
-          "Published"
-    );
-
-
-  /* =========================
-     GET FEATURED POSTS
+     FEATURED POSTS
   ========================= */
 
   const featuredPosts =
-    publishedPosts
+    useMemo(() => {
 
-      .filter(
-        (post) =>
-          post.featured ===
-          true
-      )
+      return journalPosts
 
-      .sort(
-        (a, b) => {
+        .filter(
+          (post) =>
+            post &&
+            post.featured ===
+              true
+        )
 
-          const orderA =
-            typeof
-              a.homepageOrder ===
-            "number"
-              ? a.homepageOrder
-              : Number.MAX_SAFE_INTEGER;
+        .sort(
+          (a, b) => {
 
-          const orderB =
-            typeof
-              b.homepageOrder ===
-            "number"
-              ? b.homepageOrder
-              : Number.MAX_SAFE_INTEGER;
+            const orderA =
+              typeof
+                a.homepageOrder ===
+              "number"
+                ? a.homepageOrder
+                : Number.MAX_SAFE_INTEGER;
 
-          return (
-            orderA -
-            orderB
-          );
-        }
-      )
 
-      .slice(
-        0,
-        3
-      );
+            const orderB =
+              typeof
+                b.homepageOrder ===
+              "number"
+                ? b.homepageOrder
+                : Number.MAX_SAFE_INTEGER;
+
+
+            return (
+              orderA -
+              orderB
+            );
+
+          }
+        )
+
+        .slice(
+          0,
+          3
+        );
+
+    }, [
+      journalPosts,
+    ]);
 
 
   /* =========================
-     GET LATEST POSTS
+     LATEST POSTS
   ========================= */
 
   const latestPosts =
-    [...publishedPosts]
+    useMemo(() => {
 
-      .sort(
-        (a, b) => {
+      return [
+        ...journalPosts,
+      ]
 
-          const dateA =
-            new Date(
-              a.createdAt ||
-              a.date ||
-              0
-            ).getTime();
+        .sort(
+          (a, b) => {
 
-          const dateB =
-            new Date(
-              b.createdAt ||
-              b.date ||
-              0
-            ).getTime();
+            const dateA =
+              new Date(
+                a.createdAt ||
+                a.date ||
+                0
+              ).getTime();
 
-          return (
-            dateB -
-            dateA
-          );
-        }
-      )
 
-      .slice(
-        0,
-        3
-      );
+            const dateB =
+              new Date(
+                b.createdAt ||
+                b.date ||
+                0
+              ).getTime();
+
+
+            return (
+              dateB -
+              dateA
+            );
+
+          }
+        )
+
+        .slice(
+          0,
+          3
+        );
+
+    }, [
+      journalPosts,
+    ]);
 
 
   /* =========================
@@ -149,20 +239,23 @@ export default function JournalPreview() {
 
   const previewPosts =
     featuredPosts.length >
-    0
+      0
       ? featuredPosts
       : latestPosts;
 
 
   /* =========================
-     HIDE SECTION IF EMPTY
+     LOADING / EMPTY
   ========================= */
 
   if (
+    isLoading ||
     previewPosts.length ===
-    0
+      0
   ) {
+
     return null;
+
   }
 
 
@@ -172,6 +265,7 @@ export default function JournalPreview() {
 
   const mainPost =
     previewPosts[0];
+
 
   const sidePosts =
     previewPosts.slice(
@@ -184,44 +278,56 @@ export default function JournalPreview() {
      FORMAT DATE
   ========================= */
 
-  const formatDate = (
-    post
-  ) => {
+  const formatDate =
+    (
+      post
+    ) => {
 
-    const rawDate =
-      post?.date ||
-      post?.createdAt;
+      const rawDate =
+        post?.date ||
+        post?.createdAt;
 
-    if (!rawDate) {
-      return "";
-    }
 
-    try {
-      return new Date(
-        rawDate
-      ).toLocaleDateString(
-        "en-IN",
-        {
-          day:
-            "2-digit",
+      if (
+        !rawDate
+      ) {
 
-          month:
-            "long",
+        return "";
 
-          year:
-            "numeric",
-        }
-      );
+      }
 
-    } catch (error) {
-      console.error(
-        "Failed to format journal date:",
-        error
-      );
 
-      return rawDate;
-    }
-  };
+      try {
+
+        return new Date(
+          rawDate
+        ).toLocaleDateString(
+          "en-IN",
+          {
+            day:
+              "2-digit",
+
+            month:
+              "long",
+
+            year:
+              "numeric",
+          }
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to format journal date:",
+          error
+        );
+
+
+        return "";
+
+      }
+
+    };
 
 
   /* =========================
@@ -229,14 +335,15 @@ export default function JournalPreview() {
   ========================= */
 
   return (
+
     <section className="journal-preview">
 
       <div className="journal-preview-container">
 
 
-        {/* =========================
+        {/* =====================
             HEADER
-        ========================= */}
+        ===================== */}
 
         <div className="journal-preview-header">
 
@@ -244,29 +351,33 @@ export default function JournalPreview() {
             Field Notes
           </h2>
 
+
           <Link
             to="/journal"
             className="journal-preview-all"
           >
+
             READ THE JOURNAL
+
             <span aria-hidden="true">
               ↗
             </span>
+
           </Link>
 
         </div>
 
 
-        {/* =========================
+        {/* =====================
             EDITORIAL LAYOUT
-        ========================= */}
+        ===================== */}
 
         <div className="journal-preview-layout">
 
 
-          {/* =========================
-              MAIN FEATURED ARTICLE
-          ========================= */}
+          {/* =====================
+              MAIN ARTICLE
+          ===================== */}
 
           {mainPost && (
 
@@ -293,12 +404,15 @@ export default function JournalPreview() {
                   loading="lazy"
                 />
 
+
                 {mainPost.category && (
 
                   <span className="journal-preview-image-category">
+
                     {
                       mainPost.category
                     }
+
                   </span>
 
                 )}
@@ -313,11 +427,13 @@ export default function JournalPreview() {
                 ) && (
 
                   <span className="journal-preview-date">
+
                     {
                       formatDate(
                         mainPost
                       )
                     }
+
                   </span>
 
                 )}
@@ -333,10 +449,12 @@ export default function JournalPreview() {
                 >
 
                   <h3>
+
                     {
                       mainPost.title ||
                       "Untitled Article"
                     }
+
                   </h3>
 
                 </Link>
@@ -345,9 +463,11 @@ export default function JournalPreview() {
                 {mainPost.excerpt && (
 
                   <p>
+
                     {
                       mainPost.excerpt
                     }
+
                   </p>
 
                 )}
@@ -361,10 +481,13 @@ export default function JournalPreview() {
                   }
                   className="journal-preview-read"
                 >
+
                   READ
+
                   <span aria-hidden="true">
                     ↗
                   </span>
+
                 </Link>
 
               </div>
@@ -374,9 +497,9 @@ export default function JournalPreview() {
           )}
 
 
-          {/* =========================
+          {/* =====================
               SIDE ARTICLES
-          ========================= */}
+          ===================== */}
 
           <div className="journal-preview-side">
 
@@ -390,9 +513,6 @@ export default function JournalPreview() {
                     post.slug
                   }
                 >
-
-
-                  {/* IMAGE */}
 
                   <Link
                     to={
@@ -418,25 +538,20 @@ export default function JournalPreview() {
                   </Link>
 
 
-                  {/* CONTENT */}
-
                   <div className="journal-preview-side-content">
-
-
-                    {/* CATEGORY */}
 
                     {post.category && (
 
                       <span className="journal-preview-category">
+
                         {
                           post.category
                         }
+
                       </span>
 
                     )}
 
-
-                    {/* TITLE */}
 
                     <Link
                       to={
@@ -448,46 +563,46 @@ export default function JournalPreview() {
                     >
 
                       <h3>
+
                         {
                           post.title ||
                           "Untitled Article"
                         }
+
                       </h3>
 
                     </Link>
 
-
-                    {/* DATE */}
 
                     {formatDate(
                       post
                     ) && (
 
                       <span className="journal-preview-date">
+
                         {
                           formatDate(
                             post
                           )
                         }
+
                       </span>
 
                     )}
 
 
-                    {/* EXCERPT */}
-
                     {post.excerpt && (
 
                       <p>
+
                         {
                           post.excerpt
                         }
+
                       </p>
 
                     )}
 
-
-                    {/* READ */}
 
                     <Link
                       to={
@@ -497,10 +612,13 @@ export default function JournalPreview() {
                       }
                       className="journal-preview-read"
                     >
+
                       READ
+
                       <span aria-hidden="true">
                         ↗
                       </span>
+
                     </Link>
 
                   </div>
@@ -517,5 +635,7 @@ export default function JournalPreview() {
       </div>
 
     </section>
+
   );
+
 }
