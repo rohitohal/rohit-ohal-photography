@@ -19,14 +19,6 @@ const SETTING_KEY =
 
 
 /* =========================
-   LEGACY STORAGE KEY
-========================= */
-
-const LEGACY_KEY =
-  "rohit-photography-homepage-testimonials";
-
-
-/* =========================
    DEFAULT SETTINGS
 ========================= */
 
@@ -174,53 +166,6 @@ function normalizeSettings(
 
 
 /* =========================
-   LOAD LEGACY SETTINGS
-========================= */
-
-function getLegacySettings() {
-
-  try {
-
-    const saved =
-      localStorage.getItem(
-        LEGACY_KEY
-      );
-
-
-    if (
-      !saved
-    ) {
-
-      return null;
-
-    }
-
-
-    return normalizeSettings(
-      JSON.parse(
-        saved
-      )
-    );
-
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "Failed to load legacy Testimonials settings:",
-      error
-    );
-
-
-    return null;
-
-  }
-
-}
-
-
-/* =========================
    TESTIMONIAL SETTINGS
 ========================= */
 
@@ -341,7 +286,8 @@ export default function TestimonialsSettings() {
 
 
         /*
-         * Supabase record exists.
+         * Supabase is the single source
+         * of truth for Testimonials.
          */
 
         if (
@@ -361,39 +307,9 @@ export default function TestimonialsSettings() {
 
 
         /*
-         * No Supabase record yet.
-         * Load old localStorage
-         * settings for migration.
+         * No Supabase record exists.
+         * Use defaults in the form.
          */
-
-        const legacySettings =
-          getLegacySettings();
-
-
-        if (
-          legacySettings
-        ) {
-
-          setSettings(
-            legacySettings
-          );
-
-
-          setMessage({
-
-            type:
-              "info",
-
-            text:
-              "Existing Testimonials settings were loaded. Click Save Testimonials to migrate them to Supabase.",
-
-          });
-
-
-          return;
-
-        }
-
 
         setSettings({
 
@@ -418,21 +334,6 @@ export default function TestimonialsSettings() {
         if (
           mounted
         ) {
-
-          const legacySettings =
-            getLegacySettings();
-
-
-          if (
-            legacySettings
-          ) {
-
-            setSettings(
-              legacySettings
-            );
-
-          }
-
 
           setMessage({
 

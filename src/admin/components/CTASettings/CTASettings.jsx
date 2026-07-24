@@ -19,14 +19,6 @@ const SETTING_KEY =
 
 
 /* =========================
-   LEGACY STORAGE KEY
-========================= */
-
-const LEGACY_KEY =
-  "rohit-photography-homepage-cta";
-
-
-/* =========================
    DEFAULT SETTINGS
 ========================= */
 
@@ -87,53 +79,6 @@ function normalizeSettings(
     ...data,
 
   };
-
-}
-
-
-/* =========================
-   LOAD LEGACY SETTINGS
-========================= */
-
-function getLegacySettings() {
-
-  try {
-
-    const saved =
-      localStorage.getItem(
-        LEGACY_KEY
-      );
-
-
-    if (
-      !saved
-    ) {
-
-      return null;
-
-    }
-
-
-    return normalizeSettings(
-      JSON.parse(
-        saved
-      )
-    );
-
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "Failed to load legacy CTA settings:",
-      error
-    );
-
-
-    return null;
-
-  }
 
 }
 
@@ -254,7 +199,8 @@ export default function CTASettings() {
 
 
         /*
-         * Supabase settings exist.
+         * Supabase is the single source
+         * of truth for Homepage CTA.
          */
 
         if (
@@ -274,38 +220,9 @@ export default function CTASettings() {
 
 
         /*
-         * No Supabase record yet.
-         * Try old localStorage data.
+         * No Supabase record exists.
+         * Use defaults in the form.
          */
-
-        const legacySettings =
-          getLegacySettings();
-
-
-        if (
-          legacySettings
-        ) {
-
-          setSettings(
-            legacySettings
-          );
-
-
-          setMessage({
-
-            type:
-              "info",
-
-            text:
-              "Existing CTA settings were loaded. Click Save CTA to migrate them to Supabase.",
-
-          });
-
-
-          return;
-
-        }
-
 
         setSettings({
           ...defaultCTASettings,
@@ -325,21 +242,6 @@ export default function CTASettings() {
         if (
           mounted
         ) {
-
-          const legacySettings =
-            getLegacySettings();
-
-
-          if (
-            legacySettings
-          ) {
-
-            setSettings(
-              legacySettings
-            );
-
-          }
-
 
           setMessage({
 

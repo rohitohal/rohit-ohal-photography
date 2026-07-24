@@ -19,14 +19,6 @@ const SETTING_KEY =
 
 
 /* =========================
-   LEGACY STORAGE KEY
-========================= */
-
-const LEGACY_KEY =
-  "rohit-photography-homepage-why";
-
-
-/* =========================
    DEFAULT SETTINGS
 ========================= */
 
@@ -172,53 +164,6 @@ function normalizeSettings(
 
 
 /* =========================
-   LOAD LEGACY SETTINGS
-========================= */
-
-function getLegacySettings() {
-
-  try {
-
-    const saved =
-      localStorage.getItem(
-        LEGACY_KEY
-      );
-
-
-    if (
-      !saved
-    ) {
-
-      return null;
-
-    }
-
-
-    return normalizeSettings(
-      JSON.parse(
-        saved
-      )
-    );
-
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "Failed to load legacy Why Choose Me settings:",
-      error
-    );
-
-
-    return null;
-
-  }
-
-}
-
-
-/* =========================
    WHY CHOOSE ME SETTINGS
 ========================= */
 
@@ -339,8 +284,8 @@ export default function WhyChooseMeSettings() {
 
 
         /*
-         * Supabase already contains
-         * the Why Choose Me settings.
+         * Supabase is the single source
+         * of truth for Why Choose Me.
          */
 
         if (
@@ -360,39 +305,9 @@ export default function WhyChooseMeSettings() {
 
 
         /*
-         * No Supabase record yet.
-         * Load the existing local
-         * settings for migration.
+         * No Supabase record exists.
+         * Use defaults in the form.
          */
-
-        const legacySettings =
-          getLegacySettings();
-
-
-        if (
-          legacySettings
-        ) {
-
-          setSettings(
-            legacySettings
-          );
-
-
-          setMessage({
-
-            type:
-              "info",
-
-            text:
-              "Existing Why Choose Me settings were loaded. Click Save Why Choose Me to migrate them to Supabase.",
-
-          });
-
-
-          return;
-
-        }
-
 
         setSettings({
 
@@ -417,21 +332,6 @@ export default function WhyChooseMeSettings() {
         if (
           mounted
         ) {
-
-          const legacySettings =
-            getLegacySettings();
-
-
-          if (
-            legacySettings
-          ) {
-
-            setSettings(
-              legacySettings
-            );
-
-          }
-
 
           setMessage({
 

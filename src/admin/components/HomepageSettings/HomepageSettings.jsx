@@ -21,16 +21,6 @@ const SETTING_KEY =
 
 
 /* =========================
-   OLD LOCAL STORAGE KEY
-
-   Used only as migration fallback.
-========================= */
-
-const LEGACY_HOMEPAGE_KEY =
-  "rohit-photography-homepage";
-
-
-/* =========================
    DEFAULT SETTINGS
 ========================= */
 
@@ -104,60 +94,6 @@ function normalizeSettings(
     heroImages,
 
   };
-
-}
-
-
-/* =========================
-   LOAD LEGACY SETTINGS
-
-   Only used when Supabase has
-   no homepage_hero record.
-========================= */
-
-function getLegacySettings() {
-
-  try {
-
-    const saved =
-      localStorage.getItem(
-        LEGACY_HOMEPAGE_KEY
-      );
-
-
-    if (
-      !saved
-    ) {
-
-      return null;
-
-    }
-
-
-    const parsed =
-      JSON.parse(
-        saved
-      );
-
-
-    return normalizeSettings(
-      parsed
-    );
-
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "Failed to load legacy homepage settings:",
-      error
-    );
-
-
-    return null;
-
-  }
 
 }
 
@@ -300,8 +236,8 @@ export default function HomepageSettings() {
 
 
         /*
-         * Supabase already contains
-         * homepage hero settings.
+         * Supabase is the single source
+         * of truth for Homepage Hero.
          */
 
         if (
@@ -321,44 +257,8 @@ export default function HomepageSettings() {
 
 
         /*
-         * No Supabase record yet.
-         *
-         * Load old localStorage data
-         * so existing homepage content
-         * is not lost during migration.
-         */
-
-        const legacySettings =
-          getLegacySettings();
-
-
-        if (
-          legacySettings
-        ) {
-
-          setSettings(
-            legacySettings
-          );
-
-
-          setMessage({
-
-            type:
-              "info",
-
-            text:
-              "Existing homepage hero settings were loaded. Click Save Hero Settings to store them in Supabase.",
-
-          });
-
-
-          return;
-
-        }
-
-
-        /*
-         * Nothing exists yet.
+         * No Supabase record exists.
+         * Use defaults in the form.
          */
 
         setSettings({
@@ -379,27 +279,6 @@ export default function HomepageSettings() {
         if (
           mounted
         ) {
-
-          /*
-           * If Supabase fails, try the
-           * old data so the admin form
-           * still has the previous content.
-           */
-
-          const legacySettings =
-            getLegacySettings();
-
-
-          if (
-            legacySettings
-          ) {
-
-            setSettings(
-              legacySettings
-            );
-
-          }
-
 
           setMessage({
 

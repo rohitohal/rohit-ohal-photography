@@ -23,14 +23,6 @@ const SETTING_KEY =
 
 
 /* =========================
-   LEGACY STORAGE KEY
-========================= */
-
-const LEGACY_KEY =
-  "rohit-photography-homepage-disciplines";
-
-
-/* =========================
    DEFAULT DISCIPLINES
 ========================= */
 
@@ -94,53 +86,6 @@ function normalizeSelected(
   return [
     ...defaultSelectedDisciplines,
   ];
-
-}
-
-
-/* =========================
-   LOAD LEGACY SETTINGS
-========================= */
-
-function getLegacySettings() {
-
-  try {
-
-    const saved =
-      localStorage.getItem(
-        LEGACY_KEY
-      );
-
-
-    if (
-      !saved
-    ) {
-
-      return null;
-
-    }
-
-
-    return normalizeSelected(
-      JSON.parse(
-        saved
-      )
-    );
-
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "Failed to load legacy Homepage Disciplines:",
-      error
-    );
-
-
-    return null;
-
-  }
 
 }
 
@@ -261,12 +206,11 @@ export default function DisciplineSettings() {
 
 
         /*
-         * Supabase record exists.
+         * Supabase is the single source
+         * of truth for Homepage Disciplines.
          *
-         * Important:
-         * An empty array is valid.
-         * It means no disciplines
-         * should appear.
+         * An empty array is valid and means
+         * no disciplines should appear.
          */
 
         if (
@@ -290,38 +234,9 @@ export default function DisciplineSettings() {
 
 
         /*
-         * No Supabase record yet.
-         * Try old localStorage data.
+         * No Supabase record exists.
+         * Use the default selection.
          */
-
-        const legacySelected =
-          getLegacySettings();
-
-
-        if (
-          legacySelected
-        ) {
-
-          setSelected(
-            legacySelected
-          );
-
-
-          setMessage({
-
-            type:
-              "info",
-
-            text:
-              "Existing Homepage Disciplines were loaded. Click Save Disciplines to migrate them to Supabase.",
-
-          });
-
-
-          return;
-
-        }
-
 
         setSelected([
           ...defaultSelectedDisciplines,
@@ -341,21 +256,6 @@ export default function DisciplineSettings() {
         if (
           mounted
         ) {
-
-          const legacySelected =
-            getLegacySettings();
-
-
-          if (
-            legacySelected
-          ) {
-
-            setSelected(
-              legacySelected
-            );
-
-          }
-
 
           setMessage({
 
